@@ -184,6 +184,10 @@ AC_ARG_WITH(ivona, AS_HELP_STRING(--with-ivona, Compile with ivona support),
 	
 AM_CONDITIONAL(ivona_support, test $ivona_ok = "true")
 
+dnl oss included by default, why actually?
+STATIC_AUDIO_PLUGINS_LIST="oss"
+SPD_AUDIO_LIBS=
+
 AC_CHECK_LIB(audio,
         AuOpenServer,
 	nas_aud="true";echo "Compiling with NAS support.";,
@@ -202,6 +206,10 @@ AC_ARG_WITH(nas, AS_HELP_STRING(--with-nas, Compile with Network Audio System (N
  		 echo "")
 
 AM_CONDITIONAL(nas_support, test $nas_aud = "true")
+if test $nas_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -laudio -L/usr/X11R6/lib"
+fi
 
 AC_CHECK_LIB(ao,
         ao_play,
@@ -220,6 +228,10 @@ AC_ARG_WITH(libao, AS_HELP_STRING(--with-libao, Compile with libao support),
  		 echo "")
 
 AM_CONDITIONAL(libao_support, test $libao_aud = "true")
+if test $libao_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lao"
+fi
 
 
 AC_CHECK_LIB(asound,
@@ -239,15 +251,16 @@ AC_ARG_WITH(alsa, AS_HELP_STRING(--with-alsa, Compile with ALSA support),
  		 echo "")
 
 AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
+if test $alsa_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lasound"
+fi
 
 AC_CHECK_LIB(pulse,
         pa_threaded_mainloop_new,
 	pulse_aud="true";echo "Compiling with PulseAudio support.";,
         pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";,
 	-lpulse)
-
-
-AC_PATH_PROG([PYTHON],[python])
 
 AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support),
 		 if test $withval = "no"; then 
@@ -261,6 +274,22 @@ AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support)
  		 echo "")
 
 AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
+if test $pulse_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lpulse-simple"
+fi
+
+for name in $STATIC_AUDIO_PLUGINS_LIST; do
+        STATIC_AUDIO_PLUGINS_GET="$STATIC_AUDIO_PLUGINS_GET${name}_plugin_get,";
+        STATIC_AUDIO_PLUGINS_EXTERN="${STATIC_AUDIO_PLUGINS_EXTERN} extern spd_audio_plugin_t const * ${name}_plugin_get (void); "
+done
+
+dnl used in src/audio/static_plugins.c.in
+AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
+AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
+AC_SUBST(SPD_AUDIO_LIBS)
+
+AC_PATH_PROG([PYTHON],[python])
 
 glib_include=`pkg-config --cflags glib-2.0`
 AC_SUBST(glib_include)
@@ -356,5 +385,5 @@ AC_SUBST(ERROR_CFLAGS)
 AC_SUBST(RPATH)
 AC_SUBST(RDYNAMIC)
 
-AC_OUTPUT([Makefile src/Makefile src/server/Makefile src/modules/Makefile src/api/Makefile src/api/c/Makefile src/clients/Makefile src/clients/say/Makefile src/clients/spdsend/Makefile src/tests/Makefile src/audio/Makefile config/Makefile config/modules/Makefile config/clients/Makefile doc/Makefile src/api/python/Makefile src/session/Makefile])
+AC_OUTPUT([Makefile src/Makefile src/server/Makefile src/modules/Makefile src/api/Makefile src/api/c/Makefile src/clients/Makefile src/clients/say/Makefile src/clients/spdsend/Makefile src/tests/Makefile src/audio/Makefile src/audio/static_plugins.c config/Makefile config/modules/Makefile config/clients/Makefile doc/Makefile src/api/python/Makefile src/session/Makefile])
 
