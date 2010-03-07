@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
 #include <string.h>
@@ -37,6 +38,14 @@
 #include <pulse/error.h>
 
 #include "spd_audio.h"
+
+typedef struct {
+    AudioID id;
+    pa_simple *pa_simple;
+    char *pa_server;
+    int pa_min_audio_length;
+    volatile int pa_stop_playback;
+} spd_pulse_id_t;
 
 /* send a packet of XXX bytes to the sound device */
 #define PULSE_SEND_BYTES 256
@@ -71,20 +80,20 @@ static void MSG(char *message, ...)
 
 static AudioID * pulse_open (void **pars)
 {
-    AudioID * id;
+    spd_pulse_id_t * pulse_id;
 
-    id = (AudioID *) malloc(sizeof(AudioID));
+    pulse_id = (spd_pulse_id_t *) malloc(sizeof(spd_pulse_id_t));
 
-    id->pa_simple = NULL;
-    id->pa_server = (char *)pars[0];
+    pulse_id->pa_simple = NULL;
+    pulse_id->pa_server = (char *)pars[0];
 
-    if(! strcmp(id->pa_server, "default")) {
-    id->pa_server = NULL;
+    if(! strcmp(pulse_id->pa_server, "default")) {
+    pulse_id->pa_server = NULL;
     }
 
-    id->pa_min_audio_length = pars[1]?(int)pars[1] : DEFAULT_PA_MIN_AUDIO_LENgTH;
-    id->pa_stop_playback = 0;
-    return id;
+    pulse_id->pa_min_audio_length = pars[1]?(int)pars[1] : DEFAULT_PA_MIN_AUDIO_LENgTH;
+    pulse_id->pa_stop_playback = 0;
+    return (AudioID *)pulse_id;
 }
 
 static int pulse_play (AudioID * id, AudioTrack track)
@@ -97,6 +106,7 @@ static int pulse_play (AudioID * id, AudioTrack track)
     pa_sample_spec ss;
     pa_buffer_attr buffAttr;
     int error;
+    spd_pulse_id_t * pulse_id = (spd_pulse_id_t *)id;
 
     if(id == NULL) {
         return -1;
@@ -116,7 +126,7 @@ static int pulse_play (AudioID * id, AudioTrack track)
     }
     output_samples = track.samples;
     num_bytes = track.num_samples * bytes_per_sample;
-    if(id->pa_simple == NULL) {
+    if(pulse_id->pa_simple == NULL) {
         /* Choose the correct format */
         ss.rate = track.sample_rate;
         ss.channels = track.num_channels;
@@ -128,29 +138,29 @@ static int pulse_play (AudioID * id, AudioTrack track)
         /* Set prebuf to one sample so that keys are spoken as soon as typed rather than delayed until the next key pressed */
         buffAttr.maxlength = (uint32_t)-1;
         //buffAttr.tlength = (uint32_t)-1; - this is the default, which causes key echo to not work properly.
-        buffAttr.tlength = id->pa_min_audio_length;
+        buffAttr.tlength = pulse_id->pa_min_audio_length;
         buffAttr.prebuf = (uint32_t)-1;
         buffAttr.minreq = (uint32_t)-1;
         buffAttr.fragsize = (uint32_t)-1;
-        if(!(id->pa_simple = pa_simple_new(id->pa_server, "speech-dispatcher", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, &buffAttr, &error))) {
+        if(!(pulse_id->pa_simple = pa_simple_new(pulse_id->pa_server, "speech-dispatcher", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, &buffAttr, &error))) {
             fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
             return 1;
         }
     }
     MSG("bytes to play: %d, (%f secs)\n", num_bytes, (((float) (num_bytes) / 2) / (float) track.sample_rate));
-    id->pa_stop_playback = 0;
+    pulse_id->pa_stop_playback = 0;
     outcnt = 0;
     i = 0;
-    while((outcnt < num_bytes) && !id->pa_stop_playback) {
+    while((outcnt < num_bytes) && !pulse_id->pa_stop_playback) {
        if((num_bytes - outcnt) > PULSE_SEND_BYTES) {
            i = PULSE_SEND_BYTES;
        } else {
            i = (num_bytes - outcnt);
        }
-       if(pa_simple_write(id->pa_simple, ((char *)output_samples) + outcnt, i, &error) < 0) {
-           pa_simple_drain(id->pa_simple, NULL);
-           pa_simple_free(id->pa_simple);
-           id->pa_simple = NULL;
+       if(pa_simple_write(pulse_id->pa_simple, ((char *)output_samples) + outcnt, i, &error) < 0) {
+           pa_simple_drain(pulse_id->pa_simple, NULL);
+           pa_simple_free(pulse_id->pa_simple);
+           pulse_id->pa_simple = NULL;
            MSG("ERROR: Audio: pulse_play(): %s - closing device - re-open it in next run\n", pa_strerror(error));
        } else {
            MSG("Pulse: wrote %u bytes\n", i);
@@ -163,19 +173,23 @@ static int pulse_play (AudioID * id, AudioTrack track)
 /* stop the pulse_play() loop */
 static int pulse_stop (AudioID * id)
 {
-    id->pa_stop_playback = 1;
+    spd_pulse_id_t * pulse_id = (spd_pulse_id_t *)id;
+
+    pulse_id->pa_stop_playback = 1;
     return 0;
 }
 
 static int pulse_close (AudioID * id)
 {
-    if(id->pa_simple != NULL) {
-        pa_simple_drain(id->pa_simple, NULL);
-        pa_simple_free(id->pa_simple);
-        id->pa_simple = NULL;
+    spd_pulse_id_t * pulse_id = (spd_pulse_id_t *)id;
+
+    if(pulse_id->pa_simple != NULL) {
+        pa_simple_drain(pulse_id->pa_simple, NULL);
+        pa_simple_free(pulse_id->pa_simple);
+        pulse_id->pa_simple = NULL;
     }
 
-    free (id);
+    free (pulse_id);
     id = NULL;
 
     return 0;
