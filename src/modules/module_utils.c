@@ -1142,27 +1142,24 @@ module_audio_init_spd(char **status_info)
 		DBG("Using OSS audio output method");
 		module_audio_pars[0] = strdup(audio_settings.audio_oss_device);
 		module_audio_pars[1] = NULL;
-		module_audio_id = spd_audio_open(AUDIO_OSS, (void**) module_audio_pars, &error);
+		module_audio_id = spd_audio_open("oss", (void**) module_audio_pars, &error);
 		if (module_audio_id){
-		    module_audio_output_method = AUDIO_OSS;
 		    audio_output_set = 1;
 		}
 	    } else if (len == 5 && strncmp("libao", outputs, len) == 0){
 		DBG("Using libao audio output method");
 		module_audio_pars[0] = NULL;
 		module_audio_pars[1] = NULL;
-		module_audio_id = spd_audio_open(AUDIO_LIBAO, (void**) module_audio_pars, &error);
+		module_audio_id = spd_audio_open("libao", (void**) module_audio_pars, &error);
 		if (module_audio_id){
-		    module_audio_output_method = AUDIO_LIBAO;
 		    audio_output_set = 1;
 		}
 	    } else if (len == 4 && strncmp("alsa", outputs, len) == 0){
 		DBG("Using Alsa audio output method");
 		module_audio_pars[0] = audio_settings.audio_alsa_device;
 		module_audio_pars[1] = NULL;
-		module_audio_id = spd_audio_open(AUDIO_ALSA, (void**) module_audio_pars, &error);
+		module_audio_id = spd_audio_open("alsa", (void**) module_audio_pars, &error);
 		if (module_audio_id){
-		    module_audio_output_method = AUDIO_ALSA;
 		    audio_output_set = 1;
 		    break;
 		}
@@ -1170,9 +1167,8 @@ module_audio_init_spd(char **status_info)
 		DBG("Using NAS audio output method");
 		module_audio_pars[0] = audio_settings.audio_nas_server;
 		module_audio_pars[1] = NULL;
-		module_audio_id = spd_audio_open(AUDIO_NAS, (void**) module_audio_pars, &error);
+		module_audio_id = spd_audio_open("nas", (void**) module_audio_pars, &error);
 		if (module_audio_id){
-		    module_audio_output_method = AUDIO_NAS;
 		    audio_output_set = 1;
 		    break;
 		}
@@ -1180,9 +1176,8 @@ module_audio_init_spd(char **status_info)
 		DBG("Using PulseAudio output method");
 		module_audio_pars[0] = (void *) audio_settings.audio_pulse_server;
 		module_audio_pars[1] = (void *) audio_settings.audio_pulse_min_length;
-		module_audio_id = spd_audio_open(AUDIO_PULSE, (void**) module_audio_pars, &error);
+		module_audio_id = spd_audio_open("pulse", (void**) module_audio_pars, &error);
 		if (module_audio_id){
-		    module_audio_output_method = AUDIO_PULSE;
 		    audio_output_set = 1;
 		    break;
 		}
