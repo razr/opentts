@@ -37,7 +37,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#include "spd_audio.h"
+#include "spd_audio_plugin.h"
 
 typedef struct {
     AudioID id;

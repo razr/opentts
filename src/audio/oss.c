@@ -32,7 +32,7 @@
 
 #include <sys/soundcard.h>
 
-#include "spd_audio.h"
+#include "spd_audio_plugin.h"
 
 typedef struct {
     AudioID id;
