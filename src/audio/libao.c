@@ -72,12 +72,15 @@ static int libao_log_level;
 
 ao_device *device = NULL;
 
-static int libao_open (AudioID * id, void **pars)
+static AudioID * libao_open (void **pars)
 {
+  AudioID * id;
+
+  id = (AudioID *) malloc(sizeof(AudioID));
 
   ao_initialize ();
   default_driver = ao_default_driver_id ();
-  return 0;
+  return id;
 }
 
 static int libao_play (AudioID * id, AudioTrack track)
@@ -166,6 +169,8 @@ static int libao_close (AudioID * id)
   device = NULL;
 
   ao_shutdown ();
+
+  free (id);
   id = NULL;
 
   return 0;

@@ -69,8 +69,12 @@ static void MSG(char *message, ...)
 }
 #endif
 
-static int pulse_open (AudioID * id, void **pars)
+static AudioID * pulse_open (void **pars)
 {
+    AudioID * id;
+
+    id = (AudioID *) malloc(sizeof(AudioID));
+
     id->pa_simple = NULL;
     id->pa_server = (char *)pars[0];
 
@@ -80,7 +84,7 @@ static int pulse_open (AudioID * id, void **pars)
 
     id->pa_min_audio_length = pars[1]?(int)pars[1] : DEFAULT_PA_MIN_AUDIO_LENgTH;
     id->pa_stop_playback = 0;
-return 0;
+    return id;
 }
 
 static int pulse_play (AudioID * id, AudioTrack track)
@@ -170,6 +174,10 @@ static int pulse_close (AudioID * id)
         pa_simple_free(id->pa_simple);
         id->pa_simple = NULL;
     }
+
+    free (id);
+    id = NULL;
+
     return 0;
 }
 
