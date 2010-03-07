@@ -27,12 +27,16 @@
  *
  */
 
+#include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
 #include <string.h>
+#include <stdarg.h>
+
 #include <pulse/simple.h>
 #include <pulse/error.h>
-#include <stdarg.h>
+
+#include "spd_audio.h"
 
 /* send a packet of XXX bytes to the sound device */
 #define PULSE_SEND_BYTES 256
@@ -65,18 +69,7 @@ static void MSG(char *message, ...)
 }
 #endif
 
-int pulse_stop (AudioID * id);
-
-int pulse_open (AudioID * id, void **pars);
-
-int pulse_close (AudioID * id);
-
-int pulse_play (AudioID * id, AudioTrack track);
-
-int pulse_set_volume (AudioID * id, int volume);
-
-
-int pulse_open (AudioID * id, void **pars)
+static int pulse_open (AudioID * id, void **pars)
 {
     id->pa_simple = NULL;
     id->pa_server = (char *)pars[0];
@@ -90,7 +83,7 @@ int pulse_open (AudioID * id, void **pars)
 return 0;
 }
 
-int pulse_play (AudioID * id, AudioTrack track)
+static int pulse_play (AudioID * id, AudioTrack track)
 {
     int bytes_per_sample;
     int num_bytes;
@@ -164,13 +157,13 @@ int pulse_play (AudioID * id, AudioTrack track)
 }
 
 /* stop the pulse_play() loop */
-int pulse_stop (AudioID * id)
+static int pulse_stop (AudioID * id)
 {
     id->pa_stop_playback = 1;
     return 0;
 }
 
-int pulse_close (AudioID * id)
+static int pulse_close (AudioID * id)
 {
     if(id->pa_simple != NULL) {
         pa_simple_drain(id->pa_simple, NULL);
@@ -180,12 +173,12 @@ int pulse_close (AudioID * id)
     return 0;
 }
 
-int pulse_set_volume (AudioID * id, int volume)
+static int pulse_set_volume (AudioID * id, int volume)
 {
     return 0;
 }
 
-void pulse_set_loglevel (int level)
+static void pulse_set_loglevel (int level)
 {
     if (level){
         pulse_log_level = level;
@@ -193,7 +186,7 @@ void pulse_set_loglevel (int level)
 }
 
 /* Provide the pulse backend. */
-spd_audio_plugin_t pulse_functions = {
+static spd_audio_plugin_t pulse_functions = {
     pulse_open,
     pulse_play,
     pulse_stop,
@@ -201,3 +194,5 @@ spd_audio_plugin_t pulse_functions = {
     pulse_set_volume,
     pulse_set_loglevel
 };
+
+spd_audio_plugin_t * pulse_plugin_get (void) {return &pulse_functions;}
