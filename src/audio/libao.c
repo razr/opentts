@@ -197,6 +197,7 @@ libao_get_playcmd (void)
 /* Provide the libao backend. */
 static spd_audio_plugin_t libao_functions =
 {
+    "libao",
     libao_open,
     libao_play,
     libao_stop,
