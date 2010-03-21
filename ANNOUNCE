@@ -1,0 +1,101 @@
+
+Speech Dispatcher 0.6.7
+=======================
+
+The Brailcom organization is happy to announce the availability of
+Speech Dispatcher 0.6.7 developed as a part of the Free(b)Soft
+project. This is a minor release, it contains mostly bugfixes.  Please
+read `NOTES' bellow.
+
+* What is Speech Dispatcher?
+
+  Speech Dispatcher is a device independent layer for speech
+  synthesis, developed with the goal of making the usage of speech
+  synthesis easier for application programmers. It takes care of most
+  of the tasks necessary to solve in speech enabled applications. What
+  is a very high level GUI library to graphics, Speech Dispatcher is
+  to speech synthesis.
+
+  Key Speech Dispatcher features are:
+
+  - Message priority model that allows multiple simultaneous
+    connections to Speech Dispatcher from one or more clients
+    and tries to provide the user with the most important messages.
+
+  - Different output modules that talk to different synthesizers
+    so that the programmer doesn't need to care which particular
+    synthesizer is being used. Currently Festival, Flite, Epos, Espeak
+    and (non-free) Dectalk software, IBM TTS are supported. Festival
+    is an advanced Free Software synthesizer supporting various languages.
+    Espeak is a very fast multi-lingual synthesizer.
+
+  - Client-based configuration allows users to configure different
+    settings for different clients that connect to Speech Dispatcher.
+
+  - Simple interface for programs written in C, C++ provided through a
+    shared library. Python, Common Lisp and Guile interface. An Elisp library
+    is developed as a sperate project speechd-el. Possibly an interface
+    to any other language can be developed.
+
+* What is new in 0.6.7?
+
+ - Setting of prefered audio output method is now centralized in
+   speechd.conf instead of being scaterred around the various
+   output module configurations.
+
+ - 'spd-conf' configuration, diagnostics and troubleshooting tool
+   now makes it easy to create a user configuration for Speech Dispatcher
+   or to send a request for help with all appropriate logging information
+
+ - Dummy output module which attempts to play a pre-recorded help
+   message via various sound systems when all other modules fail
+
+ - Possibility to switch on verbose logging over SSIP
+   for easy debugging and bug-reporting from client applications
+
+ - Volume settings in Pulse Audio and avoidance of having to reopen
+   the PA connection on every synthesis request
+
+ - Punctuation mechanism in IBM TTS is now configurable
+
+ - New generic output modules for Espeak with Mbrola
+   and for Cepstral Swift.
+
+ - Bugfixes.
+
+ NOTES (0.6.7)
+
+   - There are changes in the configuration file since the previous
+     release. It is highly recommended to replace your speechd.conf
+     file with the speechd.conf provided in this package and copy your
+     settings there if you are upgrading from 0.6.6 or any older
+     versions. The old configuration file should also work, but
+     audio output method settings will in output modules configuration
+     will have no effect.
+
+   - By default, the communication port of Speech Dispatcher is only
+     opened for localhost connections. Please see the
+     LocalhostAccessOnly option in speechd.conf for information on how
+     to allow connections from other manchines as well.
+
+* Where to get it?
+
+  You can get the distribution tarball of the released version from
+  http://www.freebsoft.org/pub/projects/speechd/speech-dispatcher-0.6.7.tar.gz
+
+  We recommend you to fetch the sound icons for use with Speech Dispatcher.
+  They are available at
+  http://www.freebsoft.org/pub/projects/sound-icons/sound-icons-0.1.tar.gz
+
+  Corresponding Debian, Gentoo and Ubuntu packages will soon be available at
+  your distribution mirrors.
+
+  The home page of the project is http://www.freebsoft.org/speechd
+
+* How to report bugs?
+
+  Please report bugs at <speechd-@bugs@lists.freebsoft.org>. For other
+  contact please use <speechd@lists.freebsoft.org>
+  
+
+Happy synthesizing!
