@@ -48,13 +48,13 @@ if ! autoheader; then
 fi
 
 echo "Checking for missing scripts (automake -a)"
-if ! automake -a; then
+if ! automake -a --foreign; then
 	echo "automake -a failed!"
 	exit 1
 fi
 
 echo "Creating makefiles.in (automake)"
-if ! automake; then
+if ! automake --foreign; then
 	echo "automake failed!"
 	exit 1
 fi
