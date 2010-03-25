@@ -9,7 +9,6 @@ install-sh
 ltmain.sh
 missing
 Makefile
-config.h
 config.log
 config.status
 libtool
