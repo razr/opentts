@@ -98,7 +98,7 @@ spd_audio_open(char *name, void **pars, char **error)
 	function->set_loglevel(spd_audio_log_level);
 
 	if (function->open != NULL){
-	    id = function->open(pars);
+	    id = function->open(&pars[1]);
 	    if (id == NULL){
 		*error = (char*) strdup("Couldn't open ALSA device.");
 		return NULL;
@@ -119,7 +119,7 @@ spd_audio_open(char *name, void **pars, char **error)
 	function->set_loglevel(spd_audio_log_level);
 
 	if (function->open != NULL){
-	    id = function->open(pars);
+	    id = function->open(&pars[2]);
 	    if (id == NULL){
 		*error = (char*) strdup("Couldn't open connection to the NAS server.");
 		return NULL;
@@ -140,7 +140,7 @@ spd_audio_open(char *name, void **pars, char **error)
 	function->set_loglevel(spd_audio_log_level);
 
 	if (function->open != NULL){
-	    id = function->open(pars);
+	    id = function->open(&pars[3]);
 	    if (id == NULL){
 		*error = (char*) strdup("Couldn't open connection to the PulseAudio server.");
 		return NULL;
