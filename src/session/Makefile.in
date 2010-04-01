@@ -11,12 +11,12 @@ all:
 	sed -e "s#@SPEECHD_SYSTEM_STARTUP_CMD@#$(speechd_system_start_cmd)#" speechd-server-spawn.in > speechd-server-spawn
 
 install:
-	install -d -o root -m 755 $(DESTDIR)/$(bash_profile_dir)
-	install -o root -m 644 speechd-user-port.sh $(DESTDIR)/$(bash_profile_dir)
-	install -d -o root -m 755 $(DESTDIR)/@prefix@/bin
-	install -o root -m 755 speechd-server-spawn $(DESTDIR)/@prefix@/bin
-	install -d -o root -m 755 $(DESTDIR)/@mandir@/man1
-	install -o root -m 644 speechd-server-spawn.1 $(DESTDIR)/@mandir@/man1
+	install -d -m 755 $(DESTDIR)/$(bash_profile_dir)
+	install -m 644 speechd-user-port.sh $(DESTDIR)/$(bash_profile_dir)
+	install -d -m 755 $(DESTDIR)/@prefix@/bin
+	install -m 755 speechd-server-spawn $(DESTDIR)/@prefix@/bin
+	install -d -m 755 $(DESTDIR)/@mandir@/man1
+	install -m 644 speechd-server-spawn.1 $(DESTDIR)/@mandir@/man1
 
 uninstall:
 	rm -f $(DESTDIR)/$(bash_profile_dir)/speechd-user-port.sh
