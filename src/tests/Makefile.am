@@ -1,7 +1,7 @@
 
 localedir = $(datadir)/locale
 inc_local = "-I$(top_srcdir)/intl/"
-c_api = $(top_srcdir)/src/c/api
+c_api = $(top_srcdir)/src/api/c
 
 AM_CFLAGS = -I$(c_api) -DLOCALEDIR=\"$(localedir)\" -I/usr/include/ $(inc_local) @glib_include@ -I../audio/
 
