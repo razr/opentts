@@ -2,6 +2,7 @@
  * spd_audio_plugin.h -- The SPD Audio Plugin Header
  *
  * Copyright (C) 2004 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free

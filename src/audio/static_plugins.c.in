@@ -1,7 +1,7 @@
 /*
  * static_plugins.c -- spd audio library static plugins
  *
- * Copyright (C) 2010 Wind River Systems
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
