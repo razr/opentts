@@ -49,4 +49,7 @@ fixes for the audio output subsystem.
 Thanks to Gilles Casse <gcasse at oralux point org> for contributing
 the PulseAudio output module.
 
+Thanks to Andrei Kholodnyi <andrei.kholodnyi at gmail point com>
+for his cleanup of the audio subsystem.
+
 ...and to many others.
