@@ -2,4 +2,5 @@
 
 SUBDIRS= c python
 
+EXTRA_DIST = cl guile
 
