@@ -1,5 +1,4 @@
 
-localedir = $(datadir)/locale
 inc_local = "-I$(top_srcdir)/intl/"
 
 include_HEADERS        = spd_audio_plugin.h
@@ -25,5 +24,5 @@ endif
 
 EXTRA_DIST = alsa.c libao.c oss.c nas.c pulse.c static_plugins.c.in
 
-AM_CFLAGS = -DLOCALEDIR=\"$(localedir)\" -I/usr/include/ $(inc_local) @glib_include@
+libsdaudio_la_CPPFLAGS = $(inc_local) @glib_include@
 libsdaudio_la_LDFLAGS = -version-info @LIB_SDAUDIO_CURRENT@:@LIB_SDAUDIO_REVISION@:@LIB_SDAUDIO_AGE@ -lpthread $(SPD_AUDIO_LIBS)
