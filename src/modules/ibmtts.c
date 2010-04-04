@@ -63,7 +63,6 @@
 #include "spd_audio.h"
 #include "fdset.h"
 #include "module_utils.h"
-#include "module_utils_addvoice.c"
 
 #if HAVE_SNDFILE
 #include <sndfile.h>
@@ -1707,6 +1706,3 @@ free_voice_list()
     ibmtts_voice_list = NULL;
 }
 
-
-
-#include "module_main.c"
