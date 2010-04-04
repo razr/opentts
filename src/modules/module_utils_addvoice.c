@@ -106,7 +106,7 @@ DOTCONF_CB(AddVoice_cb)
     return NULL;
 }
 
-static void
+void
 module_register_settings_voices()
 {
     module_voice_table = g_hash_table_new(g_str_hash, g_str_equal);
@@ -115,7 +115,7 @@ module_register_settings_voices()
                                                  ARG_LIST, AddVoice_cb, NULL, 0);
 }
 
-static char*
+char*
 module_getvoice(char* language, EVoiceType voice)
 {
     SPDVoiceDef *voices;
