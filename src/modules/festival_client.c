@@ -62,8 +62,12 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+#include <glib.h>
+
 /* I'm including my local .h, not the Alan's one! */
 #include "festival_client.h"
+
+#include "module_utils.h"
 
 /* For testing endianness */
 int fapi_endian_loc = 1;
@@ -430,39 +434,6 @@ festival_accept_any_response(FT_Info *info)
     return 0;
 }
 
-#define FEST_SEND_CMD(format) \
-    { \
-        FILE *fd; \
-        char *str; \
-        fd = fdopen(dup(info->server_fd),"wb"); \
-        if (fd != NULL){ \
-          str = g_strdup_printf(format"\n"); \
-          fprintf(fd, str); \
-          DBG("-> Festival: |%s|", str); \
-          free(str); \
-          fclose(fd); \
-        }else{ \
-          DBG("Can't open connection"); \
-        } \
-    }
-
-#define FEST_SEND_CMDA(format, args...) \
-    { \
-        FILE *fd; \
-        char *str; \
-        fd = fdopen(dup(info->server_fd),"wb"); \
-        if (fd != NULL){ \
-          str = g_strdup_printf(format"\n", args); \
-          fprintf(fd, str); \
-          DBG("-> Festival: |%s|", str); \
-          free(str); \
-          fclose(fd); \
-        }else{ \
-          DBG("Can't open connection"); \
-        } \
-    }
-
-
 /* --- HELPER FUNCTIONS --- */
 int
 festival_check_info(FT_Info *info, char *fnname){
@@ -810,67 +781,7 @@ VoiceDescription** festivalGetVoices(FT_Info *info)
   return result;
 }
 
-/* --- SETTINGS COMMANDS --- */
-
-#define FEST_SET_STR(name, fest_param) \
-    int \
-    name(FT_Info *info, char *param, char **resp) \
-    { \
-        char *r; \
-        int ret; \
-        char *f; \
-        if (festival_check_info(info, #name)) return -1; \
-        if (param == NULL){ \
-	  FEST_SEND_CMD("("fest_param" nil)"); \
-        }else{ \
-          f = g_ascii_strdown(param, -1); \
-	  FEST_SEND_CMDA("("fest_param" \"%s\")", f); \
-          xfree(f); \
-	} \
-        ret = festival_read_response(info, &r); \
-        if (ret != 0) return -1; \
-        if (r != NULL){ \
-          if (resp != NULL) \
-             *resp = r; \
-          else \
-             free(r); \
-        } \
-        return ret; \
-    }
-
-#define FEST_SET_SYMB(name, fest_param) \
-    int \
-    name(FT_Info *info, char *param) \
-    { \
-        char *f = NULL; \
-        if (festival_check_info(info, #name)) return -1; \
-        if (param == NULL) return -1; \
-        FEST_SEND_CMDA("("fest_param" '%s)", f = g_ascii_strdown(param, -1)); \
-        xfree(f); \
-        return festival_read_response(info, NULL); \
-    } 
-
-#define FEST_SET_INT(name, fest_param) \
-    int \
-    name(FT_Info *info, int param) \
-    { \
-        if (festival_check_info(info, #name)) return -1; \
-        FEST_SEND_CMDA("("fest_param" %d)", param); \
-        return festival_read_response(info, NULL); \
-    }
-
-FEST_SET_SYMB(FestivalSetMultiMode, "speechd-enable-multi-mode")
-
-FEST_SET_INT(FestivalSetRate, "speechd-set-rate")
-FEST_SET_INT(FestivalSetPitch, "speechd-set-pitch")
-FEST_SET_SYMB(FestivalSetPunctuationMode, "speechd-set-punctuation-mode")
-FEST_SET_STR(FestivalSetCapLetRecogn, "speechd-set-capital-character-recognition-mode")
-FEST_SET_STR(FestivalSetLanguage, "speechd-set-language")
-FEST_SET_STR(FestivalSetVoice, "speechd-set-voice")
-FEST_SET_SYMB(FestivalSetSynthesisVoice, "speechd-set-festival-voice")
-
-
-static FT_Info *festivalDefaultInfo()
+FT_Info *festivalDefaultInfo()
 {
     FT_Info *info;
     info = (FT_Info *) malloc(sizeof(FT_Info));
