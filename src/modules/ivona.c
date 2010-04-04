@@ -45,6 +45,10 @@
 #define DEBUG_MODULE 1
 DECLARE_DEBUG();
 
+#define IVONA_CACHE_SIZE 256
+#define IVONA_CACHE_MAX_SAMPLES 65536
+#define IVONA_CACHE_MAX_STRLEN 11
+
 /* Thread and process control */
 static int ivona_speaking = 0;
 
@@ -81,8 +85,6 @@ MOD_OPTION_1_STR(IvonaSpeakerLanguage);
 MOD_OPTION_1_STR(IvonaSpeakerName);
 
 static struct dumbtts_conf *ivona_conf;
-
-#include "ivona_client.c"
 
 /* Public functions */
 
@@ -128,7 +130,7 @@ module_init(char **status_info)
     info = g_string_new("");
 
     /* Init Ivona */
-    if (ivona_init_sock()) {
+    if (ivona_init_sock(IvonaServerHost, IvonaServerPort)) {
         DBG("Couldn't init socket parameters");
 	*status_info = strdup("Can't initialize socket. "
 		"Check server host/port.");
@@ -340,7 +342,7 @@ _ivona_speak(void* nothing)
 		DBG("Got icon");
 	    }
 	    if (!audio && !icon[0]) {
-	    	if(!msg || !*msg || ivona_get_msgpart(&msg,&icon,&buf,&len)) {
+		if(!msg || !*msg || ivona_get_msgpart(ivona_conf, ivona_message_type, &msg,&icon,&buf,&len,ivona_cap_mode, IvonaDelimiters, ivona_punct_mode, IvonaPunctuationSome)) {
 	    	  ivona_speaking=0;
 	          if (ivona_stop) module_report_event_stop();
 		  else module_report_event_end();
@@ -383,7 +385,7 @@ _ivona_speak(void* nothing)
 		break;
 	    }
 	    if (icon[0]) {
-	        play_icon(icon);
+	        play_icon(IvonaSoundIconPath, icon);
 	        if (ivona_stop) {
 	            ivona_speaking=0;
 		    module_report_event_stop();
@@ -468,9 +470,3 @@ ivona_set_punctuation_mode(EPunctMode punct_mode)
 		break;
 	}
 }
-
-
-
-#include "module_main.c"
-
-

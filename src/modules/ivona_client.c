@@ -25,27 +25,37 @@
 #include <config.h>
 #endif
  
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+
+#include <glib.h>
+#include <libdumbtts.h>
+
+#include "fdset.h"
+#include "module_utils.h"
 
 static struct sockaddr_in sinadr;
-static char *ivona_get_wave_from_cache(char *to_say,int *nsamples);
-static void ivona_store_wave_in_cache(char *to_say,char *wave,int nsamples);
+char *ivona_get_wave_from_cache(char *to_say,int *nsamples);
+void ivona_store_wave_in_cache(char *to_say,char *wave,int nsamples);
 
-int ivona_init_sock(void)
+int ivona_init_sock(char *host, int port)
 {
-	if (!inet_aton(IvonaServerHost,&sinadr.sin_addr)) {
-		struct hostent *h = gethostbyname(IvonaServerHost);
+	if (!inet_aton(host,&sinadr.sin_addr)) {
+		struct hostent *h = gethostbyname(host);
 		if (!h) return -1;
 		memcpy(&sinadr.sin_addr, h->h_addr, sizeof(struct in_addr));
 		endhostent();
 	}
 	sinadr.sin_family = AF_INET;
-	sinadr.sin_port = htons(IvonaServerPort);
+	sinadr.sin_port = htons(port);
 	return 0;
 }
 
@@ -85,7 +95,7 @@ static int get_unichar(char **str)
 	return wc;
 }
 
-int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
+int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,char *icon,char **buf,int *len, int cap_mode, char *delimeters, int punct_mode, char * punct_some)
 {
 	int rc;
 	int isicon;
@@ -98,8 +108,8 @@ int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
 	isicon=0;
 	icon[0]=0;
 	if (*buf) **buf=0;
-	DBG("Ivona message %s type %d\n",*msg,ivona_message_type);
-	switch(ivona_message_type) {
+	DBG("Ivona message %s type %d\n",*msg,type);
+	switch(type) {
 		case MSGTYPE_SOUND_ICON:
 		if (strlen(*msg)<63) {
 			strcpy(icon,*msg);
@@ -117,11 +127,11 @@ int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
 			*msg=NULL;
 			return 1;
 		}
-		n=dumbtts_WCharString(ivona_conf,wc,*buf,*len,ivona_cap_mode,&isicon);
+		n=dumbtts_WCharString(conf,wc,*buf,*len,cap_mode,&isicon);
 		if (n>0) {
 			*len=n+128;
 			*buf=xrealloc(*buf,*len);
-			n=dumbtts_WCharString(ivona_conf,wc,*buf,*len,ivona_cap_mode,&isicon);
+			n=dumbtts_WCharString(conf,wc,*buf,*len,cap_mode,&isicon);
 		}
 		if (n) {
 			*msg=NULL;
@@ -133,21 +143,21 @@ int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
 		case MSGTYPE_KEY:
 		case MSGTYPE_CHAR:
 		
-		if (ivona_message_type == MSGTYPE_KEY) {
-			n=dumbtts_KeyString(ivona_conf,*msg,*buf,*len,ivona_cap_mode,&isicon);
+		if (type == MSGTYPE_KEY) {
+			n=dumbtts_KeyString(conf,*msg,*buf,*len,cap_mode,&isicon);
 		}
 		else {
-			n=dumbtts_CharString(ivona_conf,*msg,*buf,*len,ivona_cap_mode,&isicon);
+			n=dumbtts_CharString(conf,*msg,*buf,*len,cap_mode,&isicon);
 		}
 		DBG("Got n=%d",n);
 		if (n>0) {
 			*len=n+128;
 			*buf=xrealloc(*buf,*len);
-			if (ivona_message_type == MSGTYPE_KEY) {
-				n=dumbtts_KeyString(ivona_conf,*msg,*buf,*len,ivona_cap_mode,&isicon);
+			if (type == MSGTYPE_KEY) {
+				n=dumbtts_KeyString(conf,*msg,*buf,*len,cap_mode,&isicon);
 			}
 			else {
-				n=dumbtts_CharString(ivona_conf,*msg,*buf,*len,ivona_cap_mode,&isicon);
+				n=dumbtts_CharString(conf,*msg,*buf,*len,cap_mode,&isicon);
 			}
 		}
 		*msg=NULL;
@@ -157,7 +167,7 @@ int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
 		
 		case MSGTYPE_TEXT:
 		pos=0;
-		bytes=module_get_message_part(*msg,xbuf,&pos, 1023,IvonaDelimiters);
+		bytes=module_get_message_part(*msg,xbuf,&pos, 1023,delimeters);
 		DBG("Got bytes %d, %s",bytes,xbuf);
 		if (bytes <= 0) {
 			*msg=NULL;
@@ -167,12 +177,12 @@ int ivona_get_msgpart(char **msg,char *icon,char **buf,int *len)
 		xbuf[bytes]=0;
 		
 		
-		n=dumbtts_GetString(ivona_conf,xbuf,*buf,*len,ivona_punct_mode,IvonaPunctuationSome,",.;:!?");
+		n=dumbtts_GetString(conf,xbuf,*buf,*len,punct_mode,punct_some,",.;:!?");
 		
 		if (n>0) {
 			*len=n+128;
 			*buf=xrealloc(*buf,*len);
-			n=dumbtts_GetString(ivona_conf,xbuf,*buf,*len,ivona_punct_mode,IvonaPunctuationSome,",.;:!?");
+			n=dumbtts_GetString(conf,xbuf,*buf,*len,punct_mode,punct_some,",.;:!?");
 		}
 		if (n) {
 			*msg=NULL;
@@ -341,10 +351,10 @@ ivona_play_file(char *filename)
 }
 
 
-void play_icon(char *name)
+void play_icon(char* path, char *name)
 {
 	char buf[256];
-	sprintf(buf,"%s%s",IvonaSoundIconPath,name);
+	sprintf(buf,"%s%s",path,name);
 	ivona_play_file(buf);
 }
 
@@ -362,7 +372,7 @@ static struct ivona_cache {
 	char *wave;
 } ica_head,ica_tail,icas[IVONA_CACHE_SIZE];
 
-static void ivona_init_cache(void)
+void ivona_init_cache(void)
 {
 	ica_head.pred=&ica_tail;
 	ica_tail.succ=&ica_head;
@@ -420,7 +430,7 @@ void ivona_store_wave_in_cache(char *str,char *wave,int samples)
 	DBG("Stored cache %s",str);
 }
 
-static char *ivona_get_wave_from_cache(char *to_say,int *samples)
+char *ivona_get_wave_from_cache(char *to_say,int *samples)
 {
 	struct ivona_cache *ica;
 	if (strlen(to_say)>IVONA_CACHE_MAX_STRLEN) return NULL;
