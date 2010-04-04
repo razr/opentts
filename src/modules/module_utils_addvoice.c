@@ -25,7 +25,13 @@
 #include <config.h>
 #endif
  
+#include <stdio.h>
+#include <string.h>
+
 #include <glib.h>
+#include <dotconf.h>
+
+#include "module_utils.h"
 
 GHashTable *module_voice_table = NULL;
 

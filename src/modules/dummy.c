@@ -34,7 +34,6 @@
 #include "fdset.h"
 
 #include "module_utils.h"
-#include "module_utils_addvoice.c"
 
 #define MODULE_NAME     "dummy"
 #define MODULE_VERSION  "0.1"
@@ -291,7 +290,3 @@ _dummy_child()
   DBG("Done, exiting from child.");
   exit(0);
 }
-
-
-
-#include "module_main.c"
