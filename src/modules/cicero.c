@@ -27,11 +27,12 @@
  
 #include <fdset.h>
 #include <errno.h>
-#include "module_utils.h"
 #include <sys/poll.h>
 #include <fcntl.h>
 #include <langinfo.h>
 #include <sys/stat.h>
+
+#include "module_utils.h"
 
 #define MODULE_NAME     "cicero"
 #define MODULE_VERSION  "0.3"
@@ -480,4 +481,3 @@ cicero_set_voice(EVoiceType voice)
 {
 }
 
-#include "module_main.c"
