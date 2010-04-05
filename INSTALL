@@ -172,7 +172,10 @@ sensitive.
 Then please do:
 
  $ cd speech-dispatcher-0.6.5
- $ ./build.sh
+ $ autoreconf -i
+
+You will see messages about creating an m4 sub directory, but those
+can be disregarded.
 
 Now the configure file should be created and you can proceed like with
 an ordinary instalation.

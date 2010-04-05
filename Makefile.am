@@ -2,6 +2,6 @@
 
 SUBDIRS= src config doc
 
-EXTRA_DIST= intl build.sh version.sh
+EXTRA_DIST= intl
 
 MAINTAINERCLEANFILES=configure

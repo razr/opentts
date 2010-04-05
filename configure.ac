@@ -1,57 +1,47 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
 
-dnl Process this file with autoconf to produce a configure script.
-AC_INIT(configure.ac)
+AC_PREREQ([2.63])
+AC_INIT([OpenTTS], [0.0], [opentts-dev@lists.opentts.org])
+AM_INIT_AUTOMAKE([foreign])
+LT_PREREQ([2.2])
+LT_INIT([dlopen])
+AC_CONFIG_SRCDIR([src/audio/alsa.c])
+AC_CONFIG_HEADERS([config.h])
 
-AC_LANG(C)
-
-dnl progs
+# checks for programs.
+AC_PROG_AWK
 AC_PROG_CC
-
-dnl info
-AM_INIT_AUTOMAKE("speech-dispatcher", "`cat version.sh|grep '^VERSION'|awk -F= '{print $2}'`")
-
-AM_CONFIG_HEADER(config.h)
-
-
-dnl Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS(limits.h sys/ioctl.h sys/time.h unistd.h)
-
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_HEADER_TIME
-
-dnl Checks for library functions.
-AC_PROG_GCC_TRADITIONAL
-AC_CHECK_FUNCS(select socket)
-
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_PATH_PROG([PYTHON],[python])
 
-AC_PROG_LIBTOOL
+# Checks for header files.
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h langinfo.h limits.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h wchar.h wctype.h])
 
-# by Marcelo Magallon <mmagallo@efis.ucr.ac.cr>
-# Turn around -rpath problem with libtool
-# This define should be improbable enough to not conflict with anything
-case ${host} in
-  *-pc-linux-gnu)
-    AC_MSG_RESULT([Fixing libtool for -rpath problems.])
-    sed < libtool > libtool-2 \
-    's/^hardcode_libdir_flag_spec.*$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/'
-    mv libtool-2 libtool
-    chmod 755 libtool
-  ;;
-esac
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_UINT32_T
 
-dnl Checks for libraries.
+# Checks for library functions.
+AC_FUNC_FORK
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([dup2 gethostbyname gettimeofday memmove memset mkdir select socket strcasecmp strchr strcspn strdup strerror strncasecmp strndup strstr strtol])
+
+# Checks for libraries.
 AC_CHECK_LIB(m,
         sqrt, echo "",
         echo "*** Required math library missing! See INSTALL .";exit 1)
 AC_CHECK_LIB(dl,
-        main, echo "",
+        dlopen, echo "",
         echo "*** Required dl library missing! See INSTALL .";exit 1)
 AC_CHECK_LIB(dotconf,
-        main, echo "",
+        dotconf_create, echo "",
         echo "*** Required DotConf library missing! See INSTALL .";exit 1)
 AC_CHECK_LIB(glib-2.0,
         g_list_append, echo "",
@@ -60,7 +50,7 @@ AC_CHECK_LIB(pthread,
         pthread_create, echo "",
         echo "*** Required pthread library missing! See INSTALL .";exit 1)
 
-dnl Check for libsndfile.
+# Check for libsndfile.
 PKG_CHECK_MODULES(SNDFILE, sndfile >= 1.0.2, ac_cv_sndfile=1, ac_cv_sndfile=0)
 
 AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
@@ -69,7 +59,7 @@ AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
 AC_SUBST(SNDFILE_CFLAGS)
 AC_SUBST(SNDFILE_LIBS)
 
-dnl Check for Flite (currently required)
+# Check for Flite (currently required)
 AC_CHECK_LIB(flite,
         flite_init, echo "",
         echo "",
@@ -112,7 +102,7 @@ AC_ARG_WITH(flite, AS_HELP_STRING(--with-flite, Compile with Festival Lite (Flit
 
 AM_CONDITIONAL(flite_support, test $flite_ok = "true")
 
-dnl Check for IBM TTS
+# Check for IBM TTS
 AC_CHECK_LIB(ibmeci,
         eciStop,
         ibmtts_ok="true";ibmtts_include="-I/opt/IBM/ibmtts/inc/"; echo "Compiling with IBM TTS support.",
@@ -137,7 +127,7 @@ AC_SUBST(ibmtts_include)
 # Additional library check added by Willie Walker to account
 # for how the SunStudio CC compiler works.
 #
-dnl check for espeak support
+# check for espeak support
 if test "$GCC" = yes; then
     EXTRA_ESPEAK_LIBS="-lpthread -lm"
 else
@@ -164,7 +154,7 @@ AC_ARG_WITH(espeak, AS_HELP_STRING(--with-espeak, Compile with espeak support),
 
 AM_CONDITIONAL(espeak_support, test $espeak_ok = "true")
 
-dnl check for dumbtts support
+# check for dumbtts support
 AC_CHECK_LIB(dumbtts,
 	dumbtts_TTSInit,
 	ivona_ok="true"; echo "Compiling with Ivona support.";,
@@ -184,7 +174,7 @@ AC_ARG_WITH(ivona, AS_HELP_STRING(--with-ivona, Compile with ivona support),
 	
 AM_CONDITIONAL(ivona_support, test $ivona_ok = "true")
 
-dnl oss included by default, why actually?
+# oss included by default, why actually?
 STATIC_AUDIO_PLUGINS_LIST="oss"
 SPD_AUDIO_LIBS=
 
@@ -284,7 +274,7 @@ for name in $STATIC_AUDIO_PLUGINS_LIST; do
         STATIC_AUDIO_PLUGINS_EXTERN="${STATIC_AUDIO_PLUGINS_EXTERN} extern spd_audio_plugin_t const * ${name}_plugin_get (void); "
 done
 
-dnl used in src/audio/static_plugins.c.in
+# used in src/audio/static_plugins.c.in
 AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
 AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
 AC_SUBST(SPD_AUDIO_LIBS)
@@ -385,5 +375,23 @@ AC_SUBST(ERROR_CFLAGS)
 AC_SUBST(RPATH)
 AC_SUBST(RDYNAMIC)
 
-AC_OUTPUT([Makefile src/Makefile src/server/Makefile src/modules/Makefile src/api/Makefile src/api/c/Makefile src/clients/Makefile src/clients/say/Makefile src/clients/spdsend/Makefile src/tests/Makefile src/audio/Makefile src/audio/static_plugins.c config/Makefile config/modules/Makefile config/clients/Makefile doc/Makefile src/api/python/Makefile src/session/Makefile])
+AC_CONFIG_FILES([Makefile
+                 config/Makefile
+                 config/clients/Makefile
+                 config/modules/Makefile
+                 doc/Makefile
+                 src/Makefile
+                 src/api/Makefile
+                 src/api/c/Makefile
+                 src/api/python/Makefile
+                 src/audio/Makefile
+                 src/audio/static_plugins.c
+                 src/clients/Makefile
+                 src/clients/say/Makefile
+                 src/clients/spdsend/Makefile
+                 src/modules/Makefile
+                 src/server/Makefile
+                 src/session/Makefile
+                 src/tests/Makefile])
+AC_OUTPUT
 
