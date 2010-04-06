@@ -32,6 +32,13 @@ AC_SUBST(LIBOPENTTS_CURRENT)
 AC_SUBST(LIBOPENTTS_REVISION)
 AC_SUBST(LIBOPENTTS_AGE)
 
+LIB_SDAUDIO_CURRENT=2
+LIB_SDAUDIO_REVISION=2
+LIB_SDAUDIO_AGE=0
+AC_SUBST(LIB_SDAUDIO_CURRENT)
+AC_SUBST(LIB_SDAUDIO_REVISION)
+AC_SUBST(LIB_SDAUDIO_AGE)
+
 # checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -66,6 +73,8 @@ AC_CHECK_LIB(dl,
 AC_CHECK_LIB(pthread,
         pthread_create, echo "",
         echo "*** Required pthread library missing! See INSTALL .";exit 1)
+AC_CHECK_LIB([ltdl], [lt_dlopen], [], [
+        AC_MSG_ERROR(libltdl3-dev is required for plugin loading)])
 
 PKG_CHECK_MODULES(GLIB,glib-2.0,,exit)
 AC_SUBST(GLIB_CFLAGS)
@@ -92,9 +101,23 @@ AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
 AC_SUBST(SNDFILE_CFLAGS)
 AC_SUBST(SNDFILE_LIBS)
 
-# oss included by default, why actually?
-STATIC_AUDIO_PLUGINS_LIST="oss"
-SPD_AUDIO_LIBS=
+AC_ARG_WITH(audio-static-plugins, AS_HELP_STRING(--with-audio-static-plugins, [Compile audio plugins statically (default=no)]),
+        AS_IF([test "x$with_audio_static_plugins" = xyes], AC_MSG_NOTICE(Forced compilation audio plugins statically)),
+        [with_audio_static_plugins=no])
+
+AM_CONDITIONAL(audio_static, test x$with_audio_static_plugins = xyes)
+
+# Audio subsystem part
+STATIC_AUDIO_PLUGINS_LIST=
+AC_ARG_WITH(oss, AS_HELP_STRING(--with-oss, [Compile with OSS support (default)]),
+        AS_IF([test "x$with_oss" = xno], AC_MSG_WARN(Forced compilation without OSS support.)),
+        [with_oss=yes])
+
+AM_CONDITIONAL(oss_support, test $with_oss = "yes")
+if test $with_oss = "yes"; then
+        AS_IF([test "x$with_audio_static_plugins" = xyes],
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST oss")
+fi
 
 AC_CHECK_LIB(audio,
         AuOpenServer,
@@ -115,8 +138,10 @@ AC_ARG_WITH(nas, AS_HELP_STRING(--with-nas, Compile with Network Audio System (N
 
 AM_CONDITIONAL(nas_support, test $nas_aud = "true")
 if test $nas_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -laudio -L/usr/X11R6/lib"
+        NAS_LIBS="-L/usr/X11R6/lib -lXau -laudio"
+        AC_SUBST(NAS_LIBS)
+        AS_IF([test "x$with_audio_static_plugins" = xyes],
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas")
 fi
 
 AC_CHECK_LIB(ao,
@@ -137,13 +162,13 @@ AC_ARG_WITH(libao, AS_HELP_STRING(--with-libao, Compile with libao support),
 
 AM_CONDITIONAL(libao_support, test $libao_aud = "true")
 if test $libao_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lao"
+        LIBAO_LIBS="-lao"
+        AC_SUBST(LIBAO_LIBS)
+        AS_IF([test "x$with_audio_static_plugins" = xyes],
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao")
 fi
 
-
-AC_CHECK_LIB(asound,
-        snd_pcm_open,
+        PKG_CHECK_MODULES(ALSA,alsa,
 	alsa_aud="true";echo "Compiling with ALSA support.";,
         alsa_aud="false";echo "*** ALSA C API library missing. Compiling without ALSA support! See INSTALL.";)
 
@@ -160,15 +185,15 @@ AC_ARG_WITH(alsa, AS_HELP_STRING(--with-alsa, Compile with ALSA support),
 
 AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
 if test $alsa_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lasound"
+        AC_SUBST(ALSA_CFLAGS)
+        AC_SUBST(ALSA_LIBS)
+        AS_IF([test "x$with_audio_static_plugins" = xyes],
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa")
 fi
 
-AC_CHECK_LIB(pulse,
-        pa_threaded_mainloop_new,
+PKG_CHECK_MODULES(PULSE,libpulse-simple,
 	pulse_aud="true";echo "Compiling with PulseAudio support.";,
-        pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";,
-	-lpulse)
+        pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";)
 
 AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support),
 		 if test $withval = "no"; then 
@@ -183,8 +208,10 @@ AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support)
 
 AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
 if test $pulse_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lpulse-simple"
+        AC_SUBST(PULSE_CFLAGS)
+        AC_SUBST(PULSE_LIBS)
+        AS_IF([test "x$with_audio_static_plugins" = xyes],
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse")
 fi
 
 for name in $STATIC_AUDIO_PLUGINS_LIST; do
@@ -195,7 +222,6 @@ done
 # used in src/audio/static_plugins.c.in
 AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
 AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
-AC_SUBST(SPD_AUDIO_LIBS)
 
 # Check for Flite (currently required)
 AC_CHECK_LIB(flite,
@@ -357,6 +383,8 @@ snddatadir='${datadir}/sounds/opentts'
 AC_SUBST(snddatadir)
 modulebindir='${libdir}/opentts-modules'
 AC_SUBST(modulebindir)
+ottslibdir='${libdir}/opentts/audio'
+AC_SUBST(ottslibdir)
 
 AC_ARG_VAR(pidpath, Absolute path to a pid file)
 

@@ -254,3 +254,4 @@ static spd_audio_plugin_t nas_functions = {
 };
 
 spd_audio_plugin_t * nas_plugin_get (void) {return &nas_functions;}
+spd_audio_plugin_t * SPD_AUDIO_PLUGIN_ENTRY (void)  __attribute__ ((weak, alias("nas_plugin_get")));

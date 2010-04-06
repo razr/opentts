@@ -835,5 +835,6 @@ static spd_audio_plugin_t alsa_functions = {
 };
 
 spd_audio_plugin_t * alsa_plugin_get (void) {return &alsa_functions;}
+spd_audio_plugin_t * SPD_AUDIO_PLUGIN_ENTRY (void)  __attribute__ ((weak, alias("alsa_plugin_get")));
 #undef MSG
 #undef ERR
