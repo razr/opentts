@@ -59,6 +59,111 @@ AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
 AC_SUBST(SNDFILE_CFLAGS)
 AC_SUBST(SNDFILE_LIBS)
 
+# oss included by default, why actually?
+STATIC_AUDIO_PLUGINS_LIST="oss"
+SPD_AUDIO_LIBS=
+
+AC_CHECK_LIB(audio,
+        AuOpenServer,
+	nas_aud="true";echo "Compiling with NAS support.";,
+        nas_aud="false";echo "*** NAS Audio library missing. Compiling without NAS support! See INSTALL.";,
+	-L/usr/X11R6/lib -lXau)
+
+AC_ARG_WITH(nas, AS_HELP_STRING(--with-nas, Compile with Network Audio System (NAS) support),
+		 if test $withval = "no"; then 
+		    echo "Forced compilation without NAS support.";
+		    nas_aud="false";
+		 else 
+		    if test $nas_aud = "false"; then
+		       echo "NAS support is not available. Sorry."; exit 1;
+		    fi
+                 fi
+ 		 echo "")
+
+AM_CONDITIONAL(nas_support, test $nas_aud = "true")
+if test $nas_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -laudio -L/usr/X11R6/lib"
+fi
+
+AC_CHECK_LIB(ao,
+        ao_play,
+	libao_aud="true";echo "Compiling with libao support.";,
+        libao_aud="false";echo "*** libao library missing. Compiling without libao support! See INSTALL.";)
+
+AC_ARG_WITH(libao, AS_HELP_STRING(--with-libao, Compile with libao support),
+		 if test $withval = "no"; then 
+		    echo "Forced compilation without libao support.";
+		    libao_aud="false";
+		 else 
+		    if test $libao_aud = "false"; then
+		       echo "libao support is not available. Sorry."; exit 1;
+		    fi
+                 fi
+ 		 echo "")
+
+AM_CONDITIONAL(libao_support, test $libao_aud = "true")
+if test $libao_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lao"
+fi
+
+
+AC_CHECK_LIB(asound,
+        snd_pcm_open,
+	alsa_aud="true";echo "Compiling with ALSA support.";,
+        alsa_aud="false";echo "*** ALSA C API library missing. Compiling without ALSA support! See INSTALL.";)
+
+AC_ARG_WITH(alsa, AS_HELP_STRING(--with-alsa, Compile with ALSA support),
+		 if test $withval = "no"; then 
+		    echo "Forced compilation without ALSA support.";
+		    alsa_aud="false";
+		 else 
+		    if test $alsa_aud = "false"; then
+		       echo "ALSA support is not available. Sorry."; exit 1;
+		    fi
+                 fi
+ 		 echo "")
+
+AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
+if test $alsa_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lasound"
+fi
+
+AC_CHECK_LIB(pulse,
+        pa_threaded_mainloop_new,
+	pulse_aud="true";echo "Compiling with PulseAudio support.";,
+        pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";,
+	-lpulse)
+
+AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support),
+		 if test $withval = "no"; then 
+		    echo "Forced compilation without PulseAudio support.";
+		    pulse_aud="false";
+		 else 
+		    if test $pulse_aud = "false"; then
+		       echo "PulseAudio support is not available. Sorry."; exit 1;
+		    fi
+                 fi
+ 		 echo "")
+
+AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
+if test $pulse_aud = "true"; then
+        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse";
+        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lpulse-simple"
+fi
+
+for name in $STATIC_AUDIO_PLUGINS_LIST; do
+        STATIC_AUDIO_PLUGINS_GET="$STATIC_AUDIO_PLUGINS_GET${name}_plugin_get,";
+        STATIC_AUDIO_PLUGINS_EXTERN="${STATIC_AUDIO_PLUGINS_EXTERN} extern spd_audio_plugin_t const * ${name}_plugin_get (void); "
+done
+
+# used in src/audio/static_plugins.c.in
+AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
+AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
+AC_SUBST(SPD_AUDIO_LIBS)
+
 # Check for Flite (currently required)
 AC_CHECK_LIB(flite,
         flite_init, echo "",
@@ -173,113 +278,6 @@ AC_ARG_WITH(ivona, AS_HELP_STRING(--with-ivona, Compile with ivona support),
  		 echo "")
 	
 AM_CONDITIONAL(ivona_support, test $ivona_ok = "true")
-
-# oss included by default, why actually?
-STATIC_AUDIO_PLUGINS_LIST="oss"
-SPD_AUDIO_LIBS=
-
-AC_CHECK_LIB(audio,
-        AuOpenServer,
-	nas_aud="true";echo "Compiling with NAS support.";,
-        nas_aud="false";echo "*** NAS Audio library missing. Compiling without NAS support! See INSTALL.";,
-	-L/usr/X11R6/lib -lXau)
-
-AC_ARG_WITH(nas, AS_HELP_STRING(--with-nas, Compile with Network Audio System (NAS) support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without NAS support.";
-		    nas_aud="false";
-		 else 
-		    if test $nas_aud = "false"; then
-		       echo "NAS support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(nas_support, test $nas_aud = "true")
-if test $nas_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -laudio -L/usr/X11R6/lib"
-fi
-
-AC_CHECK_LIB(ao,
-        ao_play,
-	libao_aud="true";echo "Compiling with libao support.";,
-        libao_aud="false";echo "*** libao library missing. Compiling without libao support! See INSTALL.";)
-
-AC_ARG_WITH(libao, AS_HELP_STRING(--with-libao, Compile with libao support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without libao support.";
-		    libao_aud="false";
-		 else 
-		    if test $libao_aud = "false"; then
-		       echo "libao support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(libao_support, test $libao_aud = "true")
-if test $libao_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lao"
-fi
-
-
-AC_CHECK_LIB(asound,
-        snd_pcm_open,
-	alsa_aud="true";echo "Compiling with ALSA support.";,
-        alsa_aud="false";echo "*** ALSA C API library missing. Compiling without ALSA support! See INSTALL.";)
-
-AC_ARG_WITH(alsa, AS_HELP_STRING(--with-alsa, Compile with ALSA support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without ALSA support.";
-		    alsa_aud="false";
-		 else 
-		    if test $alsa_aud = "false"; then
-		       echo "ALSA support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
-if test $alsa_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lasound"
-fi
-
-AC_CHECK_LIB(pulse,
-        pa_threaded_mainloop_new,
-	pulse_aud="true";echo "Compiling with PulseAudio support.";,
-        pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";,
-	-lpulse)
-
-AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without PulseAudio support.";
-		    pulse_aud="false";
-		 else 
-		    if test $pulse_aud = "false"; then
-		       echo "PulseAudio support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
-if test $pulse_aud = "true"; then
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse";
-        SPD_AUDIO_LIBS="$SPD_AUDIO_LIBS -lpulse-simple"
-fi
-
-for name in $STATIC_AUDIO_PLUGINS_LIST; do
-        STATIC_AUDIO_PLUGINS_GET="$STATIC_AUDIO_PLUGINS_GET${name}_plugin_get,";
-        STATIC_AUDIO_PLUGINS_EXTERN="${STATIC_AUDIO_PLUGINS_EXTERN} extern spd_audio_plugin_t const * ${name}_plugin_get (void); "
-done
-
-# used in src/audio/static_plugins.c.in
-AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
-AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
-AC_SUBST(SPD_AUDIO_LIBS)
-
-AC_PATH_PROG([PYTHON],[python])
 
 glib_include=`pkg-config --cflags glib-2.0`
 AC_SUBST(glib_include)
