@@ -24,8 +24,10 @@
 
 
 /* this file is strictly based on flite.c */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-#include "config.h"
 #include <libdumbtts.h>
 #include "spd_audio.h"
 

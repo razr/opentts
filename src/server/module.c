@@ -22,6 +22,10 @@
  * $Id: module.c,v 1.40 2008-07-07 14:30:51 hanke Exp $
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #define _GNU_SOURCE
 
 #include <sys/wait.h>

@@ -21,6 +21,10 @@
  * @author: Olivier BERT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include <fdset.h>
 #include <errno.h>
 #include "module_utils.h"

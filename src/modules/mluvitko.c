@@ -2,8 +2,12 @@
  * CVS revision: $Id: mluvitko.c,v 1.1 2001-04-10 10:42:05 cerha Exp $
  * Author: Tomas Cerha <cerha@brailcom.cz> */
 
-#define VERSION "0.0.1"
+#define MODULE_VERSION "0.0.1"
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include <stdio.h>
 #include <glib.h>
 
@@ -30,7 +34,7 @@ OutputModule *module_init(void) {
    printf("mluvitko: init_module()\n");
 
    /*modinfo.name = g_strdup("mluvitko"),
-   modinfo.description = g_strdup_printf("Czech software synthesizer, version %s",VERSION);*/
+   modinfo.description = g_strdup_printf("Czech software synthesizer, version %s",MODULE_VERSION);*/
    return &modinfo;
 }
 

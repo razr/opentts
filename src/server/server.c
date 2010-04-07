@@ -22,6 +22,10 @@
   * $Id: server.c,v 1.85 2008-06-27 12:28:58 hanke Exp $
   */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include "speechd.h"
 #include "server.h"
 #include "set.h"

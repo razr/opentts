@@ -23,6 +23,10 @@
  */
 
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include <flite/flite.h>
 #include "spd_audio.h"
 

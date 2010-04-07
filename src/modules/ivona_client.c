@@ -21,6 +21,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/types.h>

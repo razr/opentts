@@ -21,6 +21,10 @@
  * $Id: options.c,v 1.9 2006-07-11 16:12:26 hanke Exp $
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 /* NOTE: Be careful not to include options.h, we would
    get repetitive initializations warnings */
 
