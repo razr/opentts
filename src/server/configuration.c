@@ -1,7 +1,8 @@
 
 /*
- * dc_decl.h - Dotconf functions and types for Speech Dispatcher
+ * configuration.c - dotconf functions for OpenTTSd
  *
+ * Copyright (C) 2010 OpenTTS developers
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *
  * This is free software; you can redistribute it and/or modify it
@@ -18,14 +19,12 @@
  * along with this package; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
- *
- * $Id: config.c,v 1.18 2009-05-14 08:11:33 hanke Exp $
  */
 
 #include <dotconf.h>
 
 #include "speechd.h"
-#include "config.h"
+#include "configuration.h"
 #include "intl/fdsetconv.h"
 
 static TFDSetClientSpecific *cl_spec_section;
