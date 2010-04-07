@@ -43,6 +43,10 @@
 #include "module_utils.h"
 #include "ivona_client.h"
 
+#if HAVE_SNDFILE
+#include <sndfile.h>
+#endif
+
 static struct sockaddr_in sinadr;
 
 int ivona_init_sock(char *host, int port)
