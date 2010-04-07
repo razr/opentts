@@ -342,7 +342,7 @@ _ivona_speak(void* nothing)
 		DBG("Got icon");
 	    }
 	    if (!audio && !icon[0]) {
-		if(!msg || !*msg || ivona_get_msgpart(ivona_conf, ivona_message_type, &msg,&icon,&buf,&len,ivona_cap_mode, IvonaDelimiters, ivona_punct_mode, IvonaPunctuationSome)) {
+		if(!msg || !*msg || ivona_get_msgpart(ivona_conf, ivona_message_type, &msg,icon,&buf,&len,ivona_cap_mode, IvonaDelimiters, ivona_punct_mode, IvonaPunctuationSome)) {
 	    	  ivona_speaking=0;
 	          if (ivona_stop) module_report_event_stop();
 		  else module_report_event_end();
@@ -365,7 +365,7 @@ _ivona_speak(void* nothing)
 	    
 	    next_icon[0]=0;
 	    if (msg && *msg) {
-	        if (!ivona_get_msgpart(&msg,&next_icon,&buf,&len)) {
+	        if (!ivona_get_msgpart(ivona_conf, ivona_message_type, &msg, next_icon, &buf, &len, ivona_cap_mode, IvonaDelimiters, ivona_punct_mode, IvonaPunctuationSome)) {
 		    if (buf && *buf) {
 		        next_offset=0;
 		        next_audio=ivona_get_wave_from_cache(buf,&next_samples);
