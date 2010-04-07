@@ -34,6 +34,7 @@
 #include "fdset.h"
 
 #include "module_utils.h"
+#include "ivona_client.h"
 
 #if HAVE_SNDFILE
 #include <sndfile.h>
@@ -44,10 +45,6 @@
 
 #define DEBUG_MODULE 1
 DECLARE_DEBUG();
-
-#define IVONA_CACHE_SIZE 256
-#define IVONA_CACHE_MAX_SAMPLES 65536
-#define IVONA_CACHE_MAX_STRLEN 11
 
 /* Thread and process control */
 static int ivona_speaking = 0;

@@ -41,10 +41,9 @@
 
 #include "fdset.h"
 #include "module_utils.h"
+#include "ivona_client.h"
 
 static struct sockaddr_in sinadr;
-char *ivona_get_wave_from_cache(char *to_say,int *nsamples);
-void ivona_store_wave_in_cache(char *to_say,char *wave,int nsamples);
 
 int ivona_init_sock(char *host, int port)
 {
@@ -360,7 +359,6 @@ void play_icon(char* path, char *name)
 
 #define IVONA_CACHE_SIZE 256
 #define IVONA_CACHE_MAX_SAMPLES 65536
-#define IVONA_CACHE_MAX_STRLEN 11
 
 static int ivona_cache_count;
 
