@@ -21,6 +21,10 @@
  * $Id: module_main.c,v 1.17 2008-10-15 17:05:37 hanke Exp $
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,10 +73,6 @@ if (!strcmp(cmd_buf, #command"\n")){ \
  pthread_mutex_unlock(&module_stdout_mutex);\
 }
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
- 
 int 
 main(int argc, char *argv[])
 {
