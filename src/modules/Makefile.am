@@ -49,7 +49,7 @@ sd_espeak_SOURCES = espeak.c module_main.c module_utils.c module_utils.h
 sd_espeak_LDFLAGS = @RPATH@ '$(spdlibdir)'
 sd_espeak_LDADD = $(top_srcdir)/src/common/libcommon.la  -lsdaudio -lespeak -ldotconf @glib_libs@ @SNDFILE_LIBS@ @gthread_libs@ @EXTRA_ESPEAK_LIBS@
 
-sd_ivona_SOURCES = ivona.c ivona_client.c module_main.c module_utils.c module_utils.h
+sd_ivona_SOURCES = ivona.c ivona_client.c ivona_client.h module_main.c module_utils.c module_utils.h
 sd_ivona_LDFLAGS = @RPATH@ '$(spdlibdir)'
 sd_ivona_LDADD = $(top_srcdir)/src/common/libcommon.la  -lsdaudio -ldumbtts -lpthread -ldotconf @glib_libs@ @SNDFILE_LIBS@ @gthread_libs@
 
