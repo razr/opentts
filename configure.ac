@@ -387,6 +387,7 @@ AC_CONFIG_FILES([Makefile
                  src/clients/Makefile
                  src/clients/say/Makefile
                  src/clients/spdsend/Makefile
+                 src/common/Makefile
                  src/modules/Makefile
                  src/server/Makefile
                  src/session/Makefile

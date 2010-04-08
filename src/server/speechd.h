@@ -65,8 +65,8 @@ union semun {
 };
 #endif
 
-#include "def.h"
-#include "fdset.h"
+#include <def.h>
+#include <fdset.h>
 #include "module.h"
 #include "parse.h"
 #include "compare.h"

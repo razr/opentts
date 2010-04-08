@@ -27,8 +27,8 @@
  
 #include <stdio.h>
 
-#include "fdset.h"
-#include "fdsetconv.h"
+#include <fdset.h>
+#include <fdsetconv.h>
 
 #include "festival_client.h"
 #include "module_utils.h"

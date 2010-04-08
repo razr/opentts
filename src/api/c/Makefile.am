@@ -1,5 +1,5 @@
 
-inc_local = "-I$(top_srcdir)/intl/"
+inc_local = "-I$(top_srcdir)/src/common/"
 
 include_HEADERS = libspeechd.h
 

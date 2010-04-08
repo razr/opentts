@@ -26,7 +26,7 @@
 #endif
  
 #include <stdio.h>
-#include "fdsetconv.h"
+#include <fdsetconv.h>
 #include "module_utils.h"
 
 static char* module_audio_pars[10];

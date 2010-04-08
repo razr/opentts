@@ -31,7 +31,7 @@
  
 #include <glib.h>
 
-#include "fdset.h"
+#include <fdset.h>
 
 #include "module_utils.h"
 

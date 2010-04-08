@@ -44,7 +44,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
-#include "fdset.h"
+#include <fdset.h>
 #include "spd_audio.h"
 
 int log_level;

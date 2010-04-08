@@ -31,7 +31,7 @@
 #include <libdumbtts.h>
 #include "spd_audio.h"
 
-#include "fdset.h"
+#include <fdset.h>
 
 #include "module_utils.h"
 #include "ivona_client.h"

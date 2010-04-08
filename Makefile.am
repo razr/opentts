@@ -2,6 +2,4 @@
 
 SUBDIRS= src config doc
 
-EXTRA_DIST= intl
-
 MAINTAINERCLEANFILES=configure

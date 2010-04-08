@@ -41,7 +41,7 @@
 #ifndef _FESTIVAL_CLIENT_H_
 #define _FESTIVAL_CLIENT_H_
 
-#include "fdset.h"
+#include <fdset.h>
 
 #define FESTIVAL_DEFAULT_SERVER_HOST "localhost"
 #define FESTIVAL_DEFAULT_SERVER_PORT 1314

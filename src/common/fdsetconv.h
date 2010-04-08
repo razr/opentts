@@ -1,6 +1,3 @@
-
-#include "fdset.h"
-
 #ifndef FDSETCONV_H
 #define FDSETCONV_H
 

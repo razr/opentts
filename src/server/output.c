@@ -27,7 +27,7 @@
  
 #include "output.h"
 
-#include "fdsetconv.c"
+#include <fdsetconv.h>
 #include "parse.h"
 
 #ifdef TEMP_FAILURE_RETRY	/* GNU libc */

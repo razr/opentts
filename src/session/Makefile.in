@@ -3,7 +3,7 @@ datadir = @datadir@
 sysconfdir = @sysconfdir@
 datarootdir = @datarootdir@
 bash_profile_dir = @BASH_PROFILE_DIR@
-speechd_default_port = $(shell grep SPEECHD_DEFAULT_PORT ../../intl/def.h | awk '{print $$3}')
+speechd_default_port = $(shell grep SPEECHD_DEFAULT_PORT ../common/def.h | awk '{print $$3}')
 speechd_system_start_cmd = @SPEECHD_SYSTEM_START_CMD@
 
 all:

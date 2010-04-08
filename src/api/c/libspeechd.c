@@ -43,7 +43,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "def.h"
+#include <def.h>
 #include "libspeechd.h"
 
 /* Comment/uncomment to switch debugging on/off */
