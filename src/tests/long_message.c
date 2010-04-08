@@ -29,8 +29,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "libspeechd.h"
-#include "def.h"
+#include <libspeechd.h>
+#include <def.h>
 
 int main() {
    SPDConnection *sockfd;

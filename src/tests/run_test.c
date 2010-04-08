@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "def.h"
+#include <def.h>
 
 #define FATAL(msg) { printf(msg"\n"); exit(1); }
 

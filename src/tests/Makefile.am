@@ -1,5 +1,5 @@
 
-inc_local = "-I$(top_srcdir)/intl/"
+inc_local = "-I$(top_srcdir)/src/common"
 c_api = $(top_srcdir)/src/api/c
 
 AM_CFLAGS = -I$(c_api) $(inc_local) @glib_include@ -I../audio/
