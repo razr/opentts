@@ -39,39 +39,7 @@
 ssize_t getline (char **lineptr, size_t *n, FILE *f);
 #endif
 
-#define PROCESS_CMD(command, function) \
-if (!strcmp(cmd_buf, #command"\n")){ \
- char *msg; \
- pthread_mutex_lock(&module_stdout_mutex); \
- if (printf("%s\n", msg = (char*) function()) < 0){ \
-     DBG("Broken pipe, exiting...\n"); \
-     module_close(2); \
- } \
- fflush(stdout); \
- pthread_mutex_unlock(&module_stdout_mutex);\
- xfree(msg); \
-}
-
-#define PROCESS_CMD_W_ARGS(command, function) \
-if (!strncmp(cmd_buf, #command, strlen(#command))){	\
- char *msg; \
- pthread_mutex_lock(&module_stdout_mutex); \
- if (printf("%s\n", msg = (char*) function(cmd_buf)) < 0){ \
-     DBG("Broken pipe, exiting...\n"); \
-     module_close(2); \
- } \
- fflush(stdout); \
- pthread_mutex_unlock(&module_stdout_mutex);\
- xfree(msg); \
-}
-
-#define PROCESS_CMD_NRP(command, function) \
-if (!strcmp(cmd_buf, #command"\n")){ \
- pthread_mutex_lock(&module_stdout_mutex); \
- function(); \
- fflush(stdout); \
- pthread_mutex_unlock(&module_stdout_mutex);\
-}
+int dispatch_cmd(char *cmd_line);
 
 int 
 main(int argc, char *argv[])
@@ -160,25 +128,63 @@ main(int argc, char *argv[])
 
 	DBG("CMD: <%s>", cmd_buf);
 
-	PROCESS_CMD(SPEAK, do_speak) 
-        else PROCESS_CMD(SOUND_ICON, do_sound_icon)
-        else PROCESS_CMD(CHAR, do_char)
-        else PROCESS_CMD(KEY, do_key)
-        else PROCESS_CMD_NRP(STOP, do_stop) 
-        else PROCESS_CMD_NRP(PAUSE, do_pause) 
-        else PROCESS_CMD(LIST VOICES, do_list_voices)
-        else PROCESS_CMD(SET, do_set) 
-        else PROCESS_CMD(AUDIO, do_audio) 
-        else PROCESS_CMD(LOGLEVEL, do_loglevel)
-	else PROCESS_CMD_W_ARGS(DEBUG, do_debug)
-        else PROCESS_CMD_NRP(QUIT, do_quit) 
-        else{
-          printf("300 ERR UNKNOWN COMMAND\n"); 
-          fflush(stdout);
-        }
+dispatch_cmd(cmd_buf);
 	
 	xfree(cmd_buf);
     } 
 }
 
-#undef PROCESS_CMD
+int dispatch_cmd(char *cmd_line){
+char *cmd = NULL;
+size_t cmd_len;
+char *msg = NULL;
+
+cmd_len = strcspn(cmd_line, " \t\n\r\f");
+cmd = g_strndup(cmd_line, cmd_len);
+pthread_mutex_lock(&module_stdout_mutex);
+
+if( ! strcasecmp("audio", cmd)){
+msg = do_audio();
+} else if( ! strcasecmp("set", cmd)){
+msg = do_set();
+} else if( ! strcasecmp("speak", cmd)){
+msg = do_speak();
+} else if( ! strcasecmp("key", cmd)){
+msg = do_key();
+} else if(! strcasecmp("sound_icon", cmd)){
+msg = do_sound_icon();
+} else if(! strcasecmp("char", cmd)){
+msg = do_char();
+} else if(! strcasecmp("pause", cmd)){
+do_pause();
+} else if( ! strcasecmp("stop", cmd)){
+do_stop();
+} else if( ! strcasecmp("list_voices", cmd)){
+msg = do_list_voices();
+} else if( ! strcasecmp("loglevel", cmd)){
+msg = do_loglevel();
+} else if( ! strcasecmp("debug", cmd)){
+msg = do_debug(cmd_line);
+} else if( ! strcasecmp("quit", cmd)){
+do_quit();
+} else {
+/*should we log?*/
+          printf("300 ERR UNKNOWN COMMAND\n");
+fflush(stdout);
+}
+
+if(msg != NULL ){
+ if ( 0 > printf("%s\n", msg)){
+     DBG("Broken pipe, exiting...\n");
+     module_close(2);
+ }
+ fflush(stdout);
+xfree(msg);
+}
+
+pthread_mutex_unlock(&module_stdout_mutex);
+g_free(cmd);
+
+return(0);
+}
+
