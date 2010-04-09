@@ -336,7 +336,7 @@ _output_get_voices(OutputModule *module)
     MSG(1, "ERROR: Can't list voices for broken output module");
     OL_RET(-1);
   }
-  output_send_data("LIST VOICES\n", module, 0);
+  output_send_data("LIST_VOICES\n", module, 0);
   reply = output_read_reply(module);
 
   if (reply == NULL){
