@@ -112,7 +112,7 @@ xfree(void *data)
     if (data != NULL) free(data);
 }
 
-char*
+gchar*
 do_message(EMessageType msgtype)
 {
     int ret;
@@ -131,7 +131,7 @@ do_message(EMessageType msgtype)
         n = 0;
         ret = getline(&cur_line, &n, stdin);
         nlines++;
-        if (ret == -1) return strdup("401 ERROR INTERNAL");
+        if (ret == -1) return g_strdup("401 ERROR INTERNAL");
 
         if (!strcmp(cur_line, "..\n")){
             xfree(cur_line);
@@ -148,7 +148,7 @@ do_message(EMessageType msgtype)
     
 
     if ((msgtype != MSGTYPE_TEXT) && (nlines > 2)){
-        return strdup("305 DATA MORE THAN ONE LINE");
+        return g_strdup("305 DATA MORE THAN ONE LINE");
     }
 
     if ((msgtype == MSGTYPE_CHAR) && (!strcmp(msg->str,"space"))){
@@ -159,30 +159,30 @@ do_message(EMessageType msgtype)
     ret = module_speak(msg->str, strlen(msg->str), msgtype);
 
     g_string_free(msg,1);
-    if (ret <= 0) return strdup("301 ERROR CANT SPEAK");
+    if (ret <= 0) return g_strdup("301 ERROR CANT SPEAK");
     
-    return strdup("200 OK SPEAKING");
+    return g_strdup("200 OK SPEAKING");
 }
 
-char*
+gchar*
 do_speak(void)
 {
     return do_message(MSGTYPE_TEXT);
 }
 
-char*
+gchar*
 do_sound_icon(void)
 {
     return do_message(MSGTYPE_SOUND_ICON);
 }
 
-char*
+gchar*
 do_char(void)
 {
     return do_message(MSGTYPE_CHAR);
 }
 
-char*
+gchar*
 do_key(void)
 {
     return do_message(MSGTYPE_KEY);
@@ -231,7 +231,7 @@ do_pause(void)
      else err = 2; \
  }
 
-char*
+gchar*
 do_set(void)
 {
     char *cur_item = NULL;
@@ -273,11 +273,11 @@ do_set(void)
         xfree(line);
     }
 
-    if (err == 0) return strdup("203 OK SETTINGS RECEIVED");
-    if (err == 1) return strdup("302 ERROR BAD SYNTAX");
-    if (err == 2) return strdup("303 ERROR INVALID PARAMETER OR VALUE");
+    if (err == 0) return g_strdup("203 OK SETTINGS RECEIVED");
+    if (err == 1) return g_strdup("302 ERROR BAD SYNTAX");
+    if (err == 2) return g_strdup("303 ERROR INVALID PARAMETER OR VALUE");
     
-    return strdup("401 ERROR INTERNAL"); /* Can't be reached */
+    return g_strdup("401 ERROR INTERNAL"); /* Can't be reached */
 }
 
 #define SET_AUDIO_STR(name,idx) \
@@ -287,7 +287,7 @@ do_set(void)
      else module_audio_pars[idx] = strdup(cur_value); \
  }
 
-char*
+gchar*
 do_audio(void)
 {
     char *cur_item = NULL;
@@ -328,8 +328,8 @@ do_audio(void)
         xfree(line);
     }
 
-    if (err == 1) return strdup("302 ERROR BAD SYNTAX");
-    if (err == 2) return strdup("303 ERROR INVALID PARAMETER OR VALUE");
+    if (err == 1) return g_strdup("302 ERROR BAD SYNTAX");
+    if (err == 2) return g_strdup("303 ERROR INVALID PARAMETER OR VALUE");
 
     err = module_audio_init(&status);
 
@@ -350,7 +350,7 @@ do_audio(void)
      spd_audio_set_loglevel(module_audio_id, number); \
  }
 
-char*
+gchar*
 do_loglevel(void)
 {
     char *cur_item = NULL;
@@ -386,15 +386,15 @@ do_loglevel(void)
         xfree(line);
     }
 
-    if (err == 1) return strdup("302 ERROR BAD SYNTAX");
-    if (err == 2) return strdup("303 ERROR INVALID PARAMETER OR VALUE");
+    if (err == 1) return g_strdup("302 ERROR BAD SYNTAX");
+    if (err == 2) return g_strdup("303 ERROR INVALID PARAMETER OR VALUE");
 
     msg = g_strdup_printf("203 OK LOG LEVEL SET");
 
     return msg;
 }
 
-char*
+gchar*
 do_debug(char* cmd_buf)
 {
   /* TODO: Develop the full on/off logic etc. */
@@ -406,13 +406,13 @@ do_debug(char* cmd_buf)
 
   if (!cmd[1]){
     g_strfreev(cmd);
-    return strdup("302 ERROR BAD SYNTAX");
+    return g_strdup("302 ERROR BAD SYNTAX");
   }
 
   if (!strcmp(cmd[1], "ON")){
     if (!cmd[2]){
       g_strfreev(cmd);
-      return strdup("302 ERROR BAD SYNTAX");
+      return g_strdup("302 ERROR BAD SYNTAX");
     }
 
 
@@ -422,7 +422,7 @@ do_debug(char* cmd_buf)
     if (CustomDebugFile == NULL){
       DBG("ERROR: Can't open custom debug file for logging: %d (%s)",
 	  errno, strerror(errno));
-      return strdup("303 CANT OPEN CUSTOM DEBUG FILE");
+      return g_strdup("303 CANT OPEN CUSTOM DEBUG FILE");
     }
     if (Debug == 1)
       Debug = 3;
@@ -441,14 +441,14 @@ do_debug(char* cmd_buf)
     CustomDebugFile = NULL;
     DBG("Additional logging into specific path terminated");
   }else{
-    return strdup("302 ERROR BAD SYNTAX");
+    return g_strdup("302 ERROR BAD SYNTAX");
   }
 
   g_strfreev(cmd);
   return g_strdup("200 OK DEBUGGING ON");
 }
 
-char *
+gchar *
 do_list_voices(void)
 {
   VoiceDescription **voices;
@@ -459,7 +459,7 @@ do_list_voices(void)
 
   voices = module_list_voices();
   if (voices == NULL){
-    return strdup("304 CANT LIST VOICES");
+    return g_strdup("304 CANT LIST VOICES");
   }
   
   voice_list = g_string_new("");

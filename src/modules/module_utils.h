@@ -192,18 +192,18 @@ void module_sigblockall(void);
 void module_sigblockusr(sigset_t *signal_set);
 void module_sigunblockusr(sigset_t *signal_set);
 
-char* do_message(EMessageType msgtype);
-char* do_speak(void);
-char* do_sound_icon(void);
-char* do_char(void);
-char* do_key(void);
+gchar* do_message(EMessageType msgtype);
+gchar* do_speak(void);
+gchar* do_sound_icon(void);
+gchar* do_char(void);
+gchar* do_key(void);
 void  do_stop(void);
 void  do_pause(void);
-char* do_list_voices(void);
-char* do_set(void);
-char* do_audio(void);
-char* do_loglevel(void);
-char* do_debug(char *cmd_buf);
+gchar* do_list_voices(void);
+gchar* do_set(void);
+gchar* do_audio(void);
+gchar* do_loglevel(void);
+gchar* do_debug(char *cmd_buf);
 void do_quit(void);
 
 

@@ -179,7 +179,7 @@ if(msg != NULL ){
      module_close(2);
  }
  fflush(stdout);
-xfree(msg);
+g_free(msg);
 }
 
 pthread_mutex_unlock(&module_stdout_mutex);
