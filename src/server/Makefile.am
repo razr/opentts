@@ -8,7 +8,7 @@ speech_dispatcher_LDFLAGS = @RDYNAMIC@
 inc_local = -I$(top_srcdir)/src/common/
 
 speech_dispatcher_CFLAGS = @ERROR_CFLAGS@
-speech_dispatcher_CPPFLAGS = $(inc_local) @glib_include@ -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" -DMODULEBINDIR=\"@modulebindir@\"  -DVERSION=\"@VERSION@\" -DPACKAGE=\"@PACKAGE@\" -DPIDPATH=\"@pidpath@\" 
+speech_dispatcher_CPPFLAGS = $(inc_local) @glib_include@ -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" -DMODULEBINDIR=\"@modulebindir@\" -DPIDPATH=\"@pidpath@\" 
 
 if ENABLE_SESSION
 speech_dispatcher_CPPFLAGS += -DENABLE_SESSION
