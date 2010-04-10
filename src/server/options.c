@@ -2,6 +2,7 @@
  * options.c - Parse and process possible command line options
  *
  * Copyright (C) 2003, 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -18,21 +19,33 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: options.c,v 1.13 2008-07-10 15:35:56 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
-/* NOTE: Be careful not to include options.h, we would
-   get repetitive initializations warnings */
 
+#include <getopt.h>
 #include <sys/stat.h>
 
 #include "speechd.h"
 
 #include "options.h"
+
+static struct option spd_long_options[] = {
+    {"run-daemon", 0, 0, 'd'},
+    {"run-single", 0, 0, 's'},
+    {"log-level", 1, 0, 'l'},
+    {"port", 1, 0, 'p'},
+    {"pid-file", 1, 0, 'P'},
+    {"config-file", 1, 0, 'C'},
+    {"version", 0, 0, 'v'},
+    {"debug", 0, 0, 'D'},
+    {"help", 0, 0, 'h'},
+    {0, 0, 0, 0}
+};
+
+static char* spd_short_options = "dsl:p:P:C:vDh";
 
 void
 options_print_help(char *argv[])

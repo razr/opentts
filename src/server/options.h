@@ -2,6 +2,7 @@
  * options.h - Defines possible command line options
  *
  * Copyright (C) 2003, 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -18,26 +19,11 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: options.h,v 1.7 2008-07-07 14:31:08 hanke Exp $
  */
 
-#include <getopt.h>
-
-static struct option spd_long_options[] = {
-    {"run-daemon", 0, 0, 'd'},
-    {"run-single", 0, 0, 's'},
-    {"log-level", 1, 0, 'l'},
-    {"port", 1, 0, 'p'},
-    {"pid-file", 1, 0, 'P'},
-    {"config-file", 1, 0, 'C'},
-    {"version", 0, 0, 'v'},
-    {"debug", 0, 0, 'D'},
-    {"help", 0, 0, 'h'},
-    {0, 0, 0, 0}
-};
-
-static char* spd_short_options = "dsl:p:P:C:vDh";
-
+#ifndef OPTIONS_H
+#define OPTIONS_H
 void options_print_help(char *argv[]);
 void options_print_version(void);
 void options_parse(int argc, char *argv[]);
+#endif
