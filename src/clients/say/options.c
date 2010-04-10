@@ -24,12 +24,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
-/* NOTE: Be careful not to include options.h, we would
-   get repetitive initializations warnings */
-
-#define PACKAGE "spd-say"
-#define VERSION "0.4"
 
 #include <stdio.h>
 #include <stdlib.h>
