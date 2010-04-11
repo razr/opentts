@@ -29,6 +29,7 @@
 #include <time.h>
 #include <string.h>
 #include <ao/ao.h>
+#include <glib.h>
 
 #include "spd_audio_plugin.h"
 
@@ -41,7 +42,7 @@
      struct timeval tv; \
      char *tstr; \
      t = time(NULL); \
-     tstr = strdup(ctime(&t)); \
+     tstr = g_strdup(ctime(&t)); \
      tstr[strlen(tstr)-1] = 0; \
      gettimeofday(&tv,NULL); \
      fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
@@ -49,7 +50,7 @@
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
      fflush(stderr); \
-     xfree(tstr); \
+     g_free(tstr); \
   }
 
 #define ERR(arg...) \
@@ -58,7 +59,7 @@
      struct timeval tv; \
      char *tstr; \
      t = time(NULL); \
-     tstr = strdup(ctime(&t)); \
+     tstr = g_strdup(ctime(&t)); \
      tstr[strlen(tstr)-1] = 0; \
      gettimeofday(&tv,NULL); \
      fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
@@ -66,7 +67,7 @@
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
      fflush(stderr); \
-     xfree(tstr); \
+     g_free(tstr); \
   }
 
 static volatile int ao_stop_playback = 0;

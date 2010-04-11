@@ -38,6 +38,7 @@
 #include <pthread.h>
 
 #include <sys/soundcard.h>
+#include <glib.h>
 
 #include "spd_audio_plugin.h"
 
@@ -61,7 +62,7 @@ static int _oss_sync(spd_oss_id_t *id);
      struct timeval tv; \
      char *tstr; \
      t = time(NULL); \
-     tstr = strdup(ctime(&t)); \
+     tstr = g_strdup(ctime(&t)); \
      tstr[strlen(tstr)-1] = 0; \
      gettimeofday(&tv,NULL); \
      fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
@@ -69,7 +70,7 @@ static int _oss_sync(spd_oss_id_t *id);
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
      fflush(stderr); \
-     xfree(tstr); \
+     g_free(tstr); \
   }
 
 #define ERR(arg...) \
@@ -78,7 +79,7 @@ static int _oss_sync(spd_oss_id_t *id);
      struct timeval tv; \
      char *tstr; \
      t = time(NULL); \
-     tstr = strdup(ctime(&t)); \
+     tstr = g_strdup(ctime(&t)); \
      tstr[strlen(tstr)-1] = 0; \
      gettimeofday(&tv,NULL); \
      fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
@@ -86,17 +87,11 @@ static int _oss_sync(spd_oss_id_t *id);
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
      fflush(stderr); \
-     xfree(tstr); \
+     g_free(tstr); \
   }
 
 static int oss_log_level;
 static char const * oss_play_cmd="play";
-
-void
-xfree(void* p)
-{
-    if (p != NULL) free(p);
-}
 
 static int
 _oss_open(spd_oss_id_t *id)
