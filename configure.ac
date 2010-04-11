@@ -9,6 +9,28 @@ LT_INIT([dlopen])
 AC_CONFIG_SRCDIR([src/audio/alsa.c])
 AC_CONFIG_HEADERS([config.h])
 
+# libtool version numbers for the API:
+#
+# This is taken from the libtool manual.
+# It is an algorithm, so follow all of the steps.
+#
+# 1. start with 0:0:0 for the first public release.
+# This will be set as soon as we rename the library.
+# 2. Only change these numbers as the last step before a release.
+# 3. If the library source has changed since the last release,
+# increment revision.
+# 4. If any interfaces have been added, removed or changed since the
+# last release, increment current and set revision to 0.
+# 5. If any interfaces have been added since the last release, increment age.
+# 6. If any interfaces have been removed since the last release, set age to 0.
+#
+LIB_SPD_CURRENT=3
+LIB_SPD_REVISION=1
+LIB_SPD_AGE=1
+AC_SUBST(LIB_SPD_CURRENT)
+AC_SUBST(LIB_SPD_REVISION)
+AC_SUBST(LIB_SPD_AGE)
+
 # checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -338,20 +360,6 @@ AC_SUBST(spdlib2dir)
 
 
 AC_ARG_VAR(pidpath, Absolute path to a pid file)
-
-LIB_SDAUDIO_CURRENT=2
-LIB_SDAUDIO_REVISION=2
-LIB_SDAUDIO_AGE=0
-AC_SUBST(LIB_SDAUDIO_CURRENT)
-AC_SUBST(LIB_SDAUDIO_REVISION)
-AC_SUBST(LIB_SDAUDIO_AGE)
-
-LIB_SPD_CURRENT=3
-LIB_SPD_REVISION=1
-LIB_SPD_AGE=1
-AC_SUBST(LIB_SPD_CURRENT)
-AC_SUBST(LIB_SPD_REVISION)
-AC_SUBST(LIB_SPD_AGE)
 
 # Extra libraries for sockets added by Willie Walker
 # based upon how SunStudio libraries work.  Also
