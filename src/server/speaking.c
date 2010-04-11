@@ -62,7 +62,7 @@ speak(void* data)
     /* Block all signals and set thread states */
     set_speak_thread_attributes();
 
-    poll_fds = spd_malloc (2 * sizeof(struct pollfd));
+    poll_fds = g_malloc (2 * sizeof(struct pollfd));
     
     main_pfd.fd = speaking_pipe[0];
     main_pfd.events = POLLIN;
@@ -279,7 +279,7 @@ reload_message(TSpeechDMessage *msg)
         }
 
         newtext = strip_index_marks(pos, client_settings->ssml_mode);
-        spd_free(msg->buf);
+        g_free(msg->buf);
         
         if (newtext == NULL) return -1;
         msg->buf = newtext;
@@ -287,8 +287,8 @@ reload_message(TSpeechDMessage *msg)
 
         if(queue_message(msg, -msg->settings.uid, 0, MSGTYPE_TEXT, 0) == 0){
             if(SPEECHD_DEBUG) FATAL("Can't queue message\n");
-	    spd_free(msg->buf);
-	    spd_free(msg);
+	    g_free(msg->buf);
+	    g_free(msg);
             return -1;
         }
 
@@ -298,8 +298,8 @@ reload_message(TSpeechDMessage *msg)
 
         if(queue_message(msg, -msg->settings.uid, 0, MSGTYPE_TEXT, 0) == 0){
             if(SPEECHD_DEBUG) FATAL("Can't queue message\n");
-	    spd_free(msg->buf);
-	    spd_free(msg);
+	    g_free(msg->buf);
+	    g_free(msg);
             return -1;
         }
 
@@ -546,11 +546,11 @@ report_index_mark(TSpeechDMessage *msg, char *index_mark)
 			  EVENT_INDEX_MARK,
 			  msg->id, msg->settings.uid, index_mark);
     ret = socket_send_msg(msg->settings.fd, cmd);
+    g_free(cmd);
     if (ret){
 	MSG(1, "ERROR: Can't report index mark!");
 	return -1;
     }
-    spd_free(cmd);
     return 0;
 }
 
@@ -567,7 +567,7 @@ report_index_mark(TSpeechDMessage *msg, char *index_mark)
       MSG(2, "ERROR: Can't report index mark!"); \
       return -1; \
     } \
-    spd_free(cmd); \
+    g_free(cmd); \
     return 0; \
   } 
 
@@ -599,7 +599,7 @@ is_sb_speaking(void)
 	if (index_mark == NULL) return SPEAKING=0;
 
 	if (!strcmp(index_mark, "no")){
-	    spd_free(index_mark);
+	    g_free(index_mark);
 	    return SPEAKING;
 	}
 
@@ -642,12 +642,12 @@ is_sb_speaking(void)
 	    }else{
 		MSG(5, "Setting current index_mark for the message to %s", index_mark);
 		if (current_message->settings.index_mark != NULL)
-		    free(current_message->settings.index_mark);
-		current_message->settings.index_mark = strdup(index_mark);
+		    g_free(current_message->settings.index_mark);
+		current_message->settings.index_mark = g_strdup(index_mark);
 	    }
 	    
 	}
-	spd_free(index_mark);
+	g_free(index_mark);
     }else{
 	MSG(5, "Speaking module is NULL, SPEAKING==%d", SPEAKING);
 	SPEAKING = 0;

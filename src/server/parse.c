@@ -49,15 +49,15 @@
 
 #define CHECK_SSIP_COMMAND(cmd_name, parse_function, allowed_in_block)\
     if(!strcmp(command, cmd_name)){ \
-        spd_free(command); \
+        g_free(command); \
         if ((allowed_in_block == BLOCK_NO) && SpeechdSocket[fd].inside_block) \
-            return strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK); \
+            return g_strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK); \
         return (char*) (parse_function) (buf, bytes, fd); \
     }
 
 #define NOT_ALLOWED_INSIDE_BLOCK() \
     if(SpeechdSocket[fd].inside_block > 0) \
-        return strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK);
+        return g_strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK);
 
 #define ALLOWED_INSIDE_BLOCK() ;
 
@@ -79,7 +79,7 @@ parse(const char *buf, const int bytes, const int fd)
     assert(fd > 0);
     if ((buf == NULL) || (bytes == 0)){
         if(SPEECHD_DEBUG) FATAL("invalid buffer for parse()\n");
-        return strdup(ERR_INTERNAL);
+        return g_strdup(ERR_INTERNAL);
     }
  
     /* First the condition that we are not in data mode and we
@@ -95,7 +95,7 @@ parse(const char *buf, const int bytes, const int fd)
 
         if (command == NULL){
             if(SPEECHD_DEBUG) FATAL("Invalid buffer for parse()\n");
-            return strdup(ERR_INTERNAL); 
+            return g_strdup(ERR_INTERNAL); 
         }		
 
         CHECK_SSIP_COMMAND("set", parse_set, BLOCK_OK);
@@ -118,24 +118,24 @@ parse(const char *buf, const int bytes, const int fd)
             write(fd, OK_BYE, strlen(OK_BYE));
             speechd_connection_destroy(fd);
             /* This is internal Speech Dispatcher message, see serve() */
-            spd_free(command);
-            return strdup("999 CLIENT GONE"); /* This is an internal message, not part of SSIP */
+            g_free(command);
+            return g_strdup("999 CLIENT GONE"); /* This is an internal message, not part of SSIP */
         }
 	
         if (!strcmp(command,"speak")){
-	    spd_free(command);
+	    g_free(command);
             /* Ckeck if we have enough space in awaiting_data table for
              * this client, that can have higher file descriptor that
              * everything we got before */
             r = server_data_on(fd);
             if (r!=0){
                 if(SPEECHD_DEBUG) FATAL("Can't switch to data on mode\n");
-                return strdup(ERR_INTERNAL);
+                return g_strdup(ERR_INTERNAL);
             }
-            return strdup(OK_RECEIVE_DATA);
+            return g_strdup(OK_RECEIVE_DATA);
         }
-        spd_free(command);
-        return strdup(ERR_INVALID_COMMAND);
+        g_free(command);
+        return g_strdup(ERR_INVALID_COMMAND);
 
         /* The other case is that we are in awaiting_data mode and
          * we are waiting for text that is comming through the chanel */
@@ -160,17 +160,17 @@ parse(const char *buf, const int bytes, const int fd)
             if ((bytes == 3) && (SpeechdSocket[fd].o_bytes > 2)) SpeechdSocket[fd].o_bytes -= 2;
 
 	    /* Check if message contains any data */
-            if (SpeechdSocket[fd].o_bytes == 0) return strdup(OK_MSG_CANCELED);
+            if (SpeechdSocket[fd].o_bytes == 0) return g_strdup(OK_MSG_CANCELED);
 
 	    /* Check buffer for proper UTF-8 encoding */
 	    if (!g_utf8_validate(SpeechdSocket[fd].o_buf->str, SpeechdSocket[fd].o_bytes, NULL))
 	      {
 		MSG(3, "ERROR: Invalid character encoding on input (failed UTF-8 validation)");
 		MSG(3, "Rejecting this message.");
-		return strdup(ERR_INVALID_ENCODING);
+		return g_strdup(ERR_INVALID_ENCODING);
 	      }
 
-            new = (TSpeechDMessage*) spd_malloc(sizeof(TSpeechDMessage));
+            new = (TSpeechDMessage*) g_malloc(sizeof(TSpeechDMessage));
             new->bytes = SpeechdSocket[fd].o_bytes;
 	    assert(SpeechdSocket[fd].o_buf != NULL);
 	    new->buf = deescape_dot(SpeechdSocket[fd].o_buf->str, new->bytes);
@@ -178,9 +178,9 @@ parse(const char *buf, const int bytes, const int fd)
             MSG(5, "New buf is now: |%s|", new->buf);		
             if((msg_uid = queue_message(new, fd, 1, MSGTYPE_TEXT, reparted)) == 0){
                 if(SPEECHD_DEBUG) FATAL("Can't queue message\n");
-                free(new->buf);
-                free(new);
-                return strdup(ERR_INTERNAL);
+                g_free(new->buf);
+                g_free(new);
+                return g_strdup(ERR_INTERNAL);
             }			       
 
             /* Clear the counter of bytes in the output buffer. */
@@ -216,7 +216,7 @@ parse(const char *buf, const int bytes, const int fd)
     if (end_data == 1) goto enddata;
 
     /* Don't reply on data */
-    return strdup("999 DATA");
+    return g_strdup("999 DATA");
 
 }
 #undef CHECK_SSIP_COMMAND
@@ -224,7 +224,7 @@ parse(const char *buf, const int bytes, const int fd)
 #define CHECK_PARAM(param) \
     if (param == NULL){ \
        MSG(3, "Missing parameter from client"); \
-       return strdup(ERR_MISSING_PARAMETER); \
+       return g_strdup(ERR_MISSING_PARAMETER); \
     } 
 
 #define GET_PARAM_INT(name, pos) \
@@ -232,9 +232,9 @@ parse(const char *buf, const int bytes, const int fd)
        char *helper; \
        helper = get_param(buf, pos, bytes, 0); \
        CHECK_PARAM(helper); \
-       if (!isanum(helper)) return strdup(ERR_NOT_A_NUMBER); \
+       if (!isanum(helper)) return g_strdup(ERR_NOT_A_NUMBER); \
        name = atoi(helper); \
-       spd_free(helper); \
+       g_free(helper); \
    }
 
 #define CONV_DOWN 1
@@ -247,7 +247,7 @@ parse(const char *buf, const int bytes, const int fd)
 /* Tests if cmd is the same as str AND deallocates cmd if
    the test is succesful */
 #define TEST_CMD(cmd, str) \
-    (!strcmp(cmd, str) ? spd_free(cmd), 1 : 0 )
+    (!strcmp(cmd, str) ? g_free(cmd), 1 : 0 )
 
 /* Parses @history commands and calls the appropriate history_ functions. */
 char*
@@ -273,9 +273,9 @@ parse_history(const char *buf, const int bytes, const int fd)
             /* TODO: This needs to be (sim || am)-plified */
             who = get_param(buf,3,bytes, 1);
             CHECK_PARAM(who);
-            if (!strcmp(who, "self")) return strdup(ERR_NOT_IMPLEMENTED);
-            if (!strcmp(who, "all")) return strdup(ERR_NOT_IMPLEMENTED);                          
-            if (!isanum(who)) return strdup(ERR_NOT_A_NUMBER);
+            if (!strcmp(who, "self")) return g_strdup(ERR_NOT_IMPLEMENTED);
+            if (!strcmp(who, "all")) return g_strdup(ERR_NOT_IMPLEMENTED);                          
+            if (!isanum(who)) return g_strdup(ERR_NOT_A_NUMBER);
             
             GET_PARAM_INT(start, 4);
             GET_PARAM_INT(num, 5);
@@ -290,7 +290,7 @@ parse_history(const char *buf, const int bytes, const int fd)
             GET_PARAM_INT(msg_id, 3);
             return (char*) history_get_message(msg_id);
         }else{
-            return strdup(ERR_MISSING_PARAMETER);
+            return g_strdup(ERR_MISSING_PARAMETER);
         }
     }
     else if (TEST_CMD(cmd_main, "cursor")){       
@@ -316,8 +316,8 @@ parse_history(const char *buf, const int bytes, const int fd)
                 return (char*) history_cursor_set_pos(fd, who, pos);
             }
             else{
-                spd_free(location);
-                return strdup(ERR_MISSING_PARAMETER);
+                g_free(location);
+                return g_strdup(ERR_MISSING_PARAMETER);
             }
         }
         else if (TEST_CMD(hist_cur_sub, "forward")){
@@ -329,8 +329,8 @@ parse_history(const char *buf, const int bytes, const int fd)
         else if (TEST_CMD(hist_cur_sub,"get")){
             return (char*) history_cursor_get(fd);
         }else{
-            spd_free(hist_cur_sub);
-            return strdup(ERR_MISSING_PARAMETER);
+            g_free(hist_cur_sub);
+            return g_strdup(ERR_MISSING_PARAMETER);
         }
             
     }
@@ -341,15 +341,15 @@ parse_history(const char *buf, const int bytes, const int fd)
     }
     else if (TEST_CMD(cmd_main,"sort")){
         // TODO: everything :)
-        return strdup(ERR_NOT_IMPLEMENTED);
+        return g_strdup(ERR_NOT_IMPLEMENTED);
     }
     else{
-        spd_free(cmd_main);
-        return strdup(ERR_MISSING_PARAMETER);
+        g_free(cmd_main);
+        return g_strdup(ERR_MISSING_PARAMETER);
     }
 
  
-    return strdup(ERR_INVALID_COMMAND);
+    return g_strdup(ERR_INVALID_COMMAND);
 }
 
 #define SSIP_SET_COMMAND(param) \
@@ -369,12 +369,12 @@ parse_history(const char *buf, const int bytes, const int fd)
         if(TEST_CMD(helper_s, "on")) param = 1; \
         else if(TEST_CMD(helper_s, "off")) param = 0; \
         else{ \
-            spd_free(helper_s); \
-            return strdup(ERR_PARAMETER_NOT_ON_OFF); \
+            g_free(helper_s); \
+            return g_strdup(ERR_PARAMETER_NOT_ON_OFF); \
         } \
         SSIP_SET_COMMAND(param); \
-        if (ret) return strdup(err_message); \
-        return strdup(ok_message); \
+        if (ret) return g_strdup(err_message); \
+        return g_strdup(ok_message); \
     }
 
 char*
@@ -393,10 +393,10 @@ parse_set(const char *buf, const int bytes, const int fd)
     else if (isanum(who_s)){
         who = 1;
         uid = atoi(who_s);
-	spd_free(who_s);
+	g_free(who_s);
     }else{
-        spd_free(who_s);
-        return strdup(ERR_PARAMETER_INVALID);
+        g_free(who_s);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
 
     GET_PARAM_STR(set_sub, 2, CONV_DOWN);
@@ -407,7 +407,7 @@ parse_set(const char *buf, const int bytes, const int fd)
         NOT_ALLOWED_INSIDE_BLOCK();
         
         /* Setting priority only allowed for "self" */
-        if (who != 0) return strdup(ERR_COULDNT_SET_PRIORITY); 
+        if (who != 0) return g_strdup(ERR_COULDNT_SET_PRIORITY); 
         GET_PARAM_STR(priority_s, 3, CONV_DOWN);
 
         if (TEST_CMD(priority_s, "important")) priority = 1;
@@ -416,13 +416,13 @@ parse_set(const char *buf, const int bytes, const int fd)
         else if (TEST_CMD(priority_s, "notification")) priority = 4;
         else if (TEST_CMD(priority_s, "progress")) priority = 5;
         else{
-            spd_free(priority_s);
-            return strdup(ERR_UNKNOWN_PRIORITY);
+            g_free(priority_s);
+            return g_strdup(ERR_UNKNOWN_PRIORITY);
         }
 
         ret = set_priority_self(fd, priority);
-        if (ret) return strdup(ERR_COULDNT_SET_PRIORITY);	
-        return strdup(OK_PRIORITY_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_PRIORITY);	
+        return g_strdup(OK_PRIORITY_SET);
     }
     else if (TEST_CMD(set_sub, "language")){
         char *language;
@@ -430,10 +430,10 @@ parse_set(const char *buf, const int bytes, const int fd)
         GET_PARAM_STR(language, 3, CONV_DOWN);
 
         SSIP_SET_COMMAND(language);
-	spd_free(language);
+	g_free(language);
 
-        if (ret) return strdup(ERR_COULDNT_SET_LANGUAGE);
-        return strdup(OK_LANGUAGE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_LANGUAGE);
+        return g_strdup(OK_LANGUAGE_SET);
     }
     else if (TEST_CMD(set_sub, "synthesis_voice")){
         char *synthesis_voice;
@@ -441,68 +441,68 @@ parse_set(const char *buf, const int bytes, const int fd)
         GET_PARAM_STR(synthesis_voice, 3, CONV_DOWN);
 
         SSIP_SET_COMMAND(synthesis_voice);
-	spd_free(synthesis_voice);
+	g_free(synthesis_voice);
 
-        if (ret) return strdup(ERR_COULDNT_SET_VOICE);
-        return strdup(OK_VOICE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_VOICE);
+        return g_strdup(OK_VOICE_SET);
     }
     else if (TEST_CMD(set_sub, "client_name")){
         char *client_name;
         NOT_ALLOWED_INSIDE_BLOCK();
 
         /* Setting client name only allowed for "self" */
-        if (who != 0) return strdup(ERR_PARAMETER_INVALID);
+        if (who != 0) return g_strdup(ERR_PARAMETER_INVALID);
       
         GET_PARAM_STR(client_name, 3, CONV_DOWN);
 
         ret = set_client_name_self(fd, client_name);       
-        spd_free(client_name);
+        g_free(client_name);
 
-        if (ret) return strdup(ERR_COULDNT_SET_CLIENT_NAME);
-        return strdup(OK_CLIENT_NAME_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_CLIENT_NAME);
+        return g_strdup(OK_CLIENT_NAME_SET);
     }
     else if (!strcmp(set_sub, "rate")){
         signed int rate;
         GET_PARAM_INT(rate, 3);
 
-        if(rate < -100) return strdup(ERR_RATE_TOO_LOW);
-        if(rate > +100) return strdup(ERR_RATE_TOO_HIGH);
+        if(rate < -100) return g_strdup(ERR_RATE_TOO_LOW);
+        if(rate > +100) return g_strdup(ERR_RATE_TOO_HIGH);
 
         SSIP_SET_COMMAND(rate);
-        if (ret) return strdup(ERR_COULDNT_SET_RATE);
-        return strdup(OK_RATE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_RATE);
+        return g_strdup(OK_RATE_SET);
     }
     else if (TEST_CMD(set_sub, "pitch")){
         signed int pitch;
         GET_PARAM_INT(pitch, 3);
 
-        if(pitch < -100) return strdup(ERR_PITCH_TOO_LOW);
-        if(pitch > +100) return strdup(ERR_PITCH_TOO_HIGH);
+        if(pitch < -100) return g_strdup(ERR_PITCH_TOO_LOW);
+        if(pitch > +100) return g_strdup(ERR_PITCH_TOO_HIGH);
 
         SSIP_SET_COMMAND(pitch);
-        if (ret) return strdup(ERR_COULDNT_SET_PITCH);
-        return strdup(OK_PITCH_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_PITCH);
+        return g_strdup(OK_PITCH_SET);
     }
     else if (TEST_CMD(set_sub, "volume")){
         signed int volume;
         GET_PARAM_INT(volume, 3);
 
-        if(volume < -100) return strdup(ERR_VOLUME_TOO_LOW);
-        if(volume > +100) return strdup(ERR_VOLUME_TOO_HIGH);
+        if(volume < -100) return g_strdup(ERR_VOLUME_TOO_LOW);
+        if(volume > +100) return g_strdup(ERR_VOLUME_TOO_HIGH);
 
         SSIP_SET_COMMAND(volume);
-        if (ret) return strdup(ERR_COULDNT_SET_VOLUME);
-        return strdup(OK_VOLUME_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_VOLUME);
+        return g_strdup(OK_VOLUME_SET);
     }
     else if (TEST_CMD(set_sub, "voice")){
         char *voice;
         GET_PARAM_STR(voice, 3, CONV_DOWN);
 
         SSIP_SET_COMMAND(voice);
-        spd_free(voice);
+        g_free(voice);
 
-        if (ret) return strdup(ERR_COULDNT_SET_VOICE);
-        return strdup(OK_VOICE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_VOICE);
+        return g_strdup(OK_VOICE_SET);
     }
     else if (TEST_CMD(set_sub, "punctuation")){
         char *punct_s;
@@ -515,14 +515,14 @@ parse_set(const char *buf, const int bytes, const int fd)
         else if(TEST_CMD(punct_s,"some")) punctuation_mode = PUNCT_SOME;        
         else if(TEST_CMD(punct_s,"none")) punctuation_mode = PUNCT_NONE;        
         else{
-            spd_free(punct_s);
-            return strdup(ERR_PARAMETER_INVALID);
+            g_free(punct_s);
+            return g_strdup(ERR_PARAMETER_INVALID);
         }
 
         SSIP_SET_COMMAND(punctuation_mode);
 
-        if (ret) return strdup(ERR_COULDNT_SET_PUNCT_MODE);
-        return strdup(OK_PUNCT_MODE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_PUNCT_MODE);
+        return g_strdup(OK_PUNCT_MODE_SET);
     }
     else if (TEST_CMD(set_sub, "output_module")){
         char *output_module;
@@ -530,10 +530,10 @@ parse_set(const char *buf, const int bytes, const int fd)
         GET_PARAM_STR(output_module, 3, CONV_DOWN);
 
         SSIP_SET_COMMAND(output_module);
-        spd_free(output_module);
+        g_free(output_module);
 
-        if (ret) return strdup(ERR_COULDNT_SET_OUTPUT_MODULE);
-        return strdup(OK_OUTPUT_MODULE_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_OUTPUT_MODULE);
+        return g_strdup(OK_OUTPUT_MODULE_SET);
     }
     else if (TEST_CMD(set_sub, "cap_let_recogn")){
         int capital_letter_recognition;
@@ -545,22 +545,22 @@ parse_set(const char *buf, const int bytes, const int fd)
         else if(TEST_CMD(recognition, "spell")) capital_letter_recognition = RECOGN_SPELL;        
         else if(TEST_CMD(recognition, "icon")) capital_letter_recognition = RECOGN_ICON;        
         else{
-            spd_free(recognition);
-            return strdup(ERR_PARAMETER_INVALID);
+            g_free(recognition);
+            return g_strdup(ERR_PARAMETER_INVALID);
         }
 
         SSIP_SET_COMMAND(capital_letter_recognition);
 
-        if (ret) return strdup(ERR_COULDNT_SET_CAP_LET_RECOG);
-        return strdup(OK_CAP_LET_RECOGN_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_CAP_LET_RECOG);
+        return g_strdup(OK_CAP_LET_RECOGN_SET);
     }
     else if (!strcmp(set_sub, "pause_context")){
         int pause_context;
         GET_PARAM_INT(pause_context, 3);
 
         SSIP_SET_COMMAND(pause_context);
-        if (ret) return strdup(ERR_COULDNT_SET_PAUSE_CONTEXT);
-        return strdup(OK_PAUSE_CONTEXT_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_PAUSE_CONTEXT);
+        return g_strdup(OK_PAUSE_CONTEXT_SET);
     }
     else SSIP_ON_OFF_PARAM(spelling,
 	    OK_SPELLING_SET, ERR_COULDNT_SET_SPELLING,
@@ -575,7 +575,7 @@ parse_set(const char *buf, const int bytes, const int fd)
         char *par_s;
 	int par;
 
-	if (who != 0) return strdup(ERR_PARAMETER_INVALID);
+	if (who != 0) return g_strdup(ERR_PARAMETER_INVALID);
 
         GET_PARAM_STR(scope, 3, CONV_DOWN);
         GET_PARAM_STR(par_s, 4, CONV_DOWN);
@@ -583,21 +583,21 @@ parse_set(const char *buf, const int bytes, const int fd)
         if(TEST_CMD(par_s,"on")) par = 1;
         else if(TEST_CMD(par_s,"off")) par = 0;        
         else{
-            spd_free(par_s);
-            return strdup(ERR_PARAMETER_INVALID);
+            g_free(par_s);
+            return g_strdup(ERR_PARAMETER_INVALID);
         }
 
 	ret = set_notification_self(fd, scope, par);
-	spd_free(scope);
+	g_free(scope);
 	           
-        if (ret) return strdup(ERR_COULDNT_SET_NOTIFICATION);
-        return strdup(OK_NOTIFICATION_SET);
+        if (ret) return g_strdup(ERR_COULDNT_SET_NOTIFICATION);
+        return g_strdup(OK_NOTIFICATION_SET);
     }
     else{
-        return strdup(ERR_PARAMETER_INVALID);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
 
-    return strdup(ERR_INVALID_COMMAND);
+    return g_strdup(ERR_INVALID_COMMAND);
 }
 #undef SSIP_SET_COMMAND
 
@@ -618,25 +618,25 @@ parse_stop(const char *buf, const int bytes, const int fd)
     }
     else if (TEST_CMD(who_s, "self")){
         uid = get_client_uid_by_fd(fd);
-        if(uid == 0) return strdup(ERR_INTERNAL);
+        if(uid == 0) return g_strdup(ERR_INTERNAL);
 	pthread_mutex_lock(&element_free_mutex);    
         speaking_stop(uid);
 	pthread_mutex_unlock(&element_free_mutex);    
     }
     else if (isanum(who_s)){
         uid = atoi(who_s);
-        spd_free(who_s);
+        g_free(who_s);
 
-        if (uid <= 0) return strdup(ERR_ID_NOT_EXIST);
+        if (uid <= 0) return g_strdup(ERR_ID_NOT_EXIST);
 	pthread_mutex_lock(&element_free_mutex);    
         speaking_stop(uid);
 	pthread_mutex_unlock(&element_free_mutex);    
     }else{
-        spd_free(who_s);
-        return strdup(ERR_PARAMETER_INVALID);
+        g_free(who_s);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
 
-    return strdup(OK_STOPPED);
+    return g_strdup(OK_STOPPED);
 }
 
 char*
@@ -654,21 +654,21 @@ parse_cancel(const char *buf, const int bytes, const int fd)
     }
     else if (TEST_CMD(who_s, "self")){
         uid = get_client_uid_by_fd(fd);
-        if(uid == 0) return strdup(ERR_INTERNAL);
+        if(uid == 0) return g_strdup(ERR_INTERNAL);
         speaking_cancel(uid);
     }
     else if (isanum(who_s)){
         uid = atoi(who_s);
-        spd_free(who_s);
+        g_free(who_s);
 
-        if (uid <= 0) return strdup(ERR_ID_NOT_EXIST);
+        if (uid <= 0) return g_strdup(ERR_ID_NOT_EXIST);
         speaking_cancel(uid);
     }else{
-        spd_free(who_s);
-        return strdup(ERR_PARAMETER_INVALID);
+        g_free(who_s);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
 
-    return strdup(OK_CANCELED);
+    return g_strdup(OK_CANCELED);
 }
 
 char*
@@ -691,7 +691,7 @@ parse_pause(const char *buf, const int bytes, const int fd)
     }
     else if (TEST_CMD(who_s, "self")){
         uid = get_client_uid_by_fd(fd);
-        if(uid == 0) return strdup(ERR_INTERNAL);
+        if(uid == 0) return g_strdup(ERR_INTERNAL);
         pause_requested = 2;
         pause_requested_fd = fd;
         pause_requested_uid = uid;
@@ -699,18 +699,18 @@ parse_pause(const char *buf, const int bytes, const int fd)
     }
     else if (isanum(who_s)){
         uid = atoi(who_s);
-        spd_free(who_s);
-        if (uid <= 0) return strdup(ERR_ID_NOT_EXIST);
+        g_free(who_s);
+        if (uid <= 0) return g_strdup(ERR_ID_NOT_EXIST);
         pause_requested = 2;
         pause_requested_fd = fd;
         pause_requested_uid = uid;
         speaking_semaphore_post();
     }else{
-        spd_free(who_s);
-        return strdup(ERR_PARAMETER_INVALID);
+        g_free(who_s);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
 
-    return strdup(OK_PAUSED);
+    return g_strdup(OK_PAUSED);
 }
 
 char*
@@ -728,20 +728,20 @@ parse_resume(const char *buf, const int bytes, const int fd)
     }
     else if (TEST_CMD(who_s, "self")){
         uid = get_client_uid_by_fd(fd);
-        if(uid == 0) return strdup(ERR_INTERNAL);
+        if(uid == 0) return g_strdup(ERR_INTERNAL);
         speaking_resume(uid);
     }
     else if (isanum(who_s)){
         uid = atoi(who_s);
-        spd_free(who_s);
-        if (uid <= 0) return strdup(ERR_ID_NOT_EXIST);
+        g_free(who_s);
+        if (uid <= 0) return g_strdup(ERR_ID_NOT_EXIST);
         speaking_resume(uid);
     }else{
-        spd_free(who_s);
-        return strdup(ERR_PARAMETER_INVALID);
+        g_free(who_s);
+        return g_strdup(ERR_PARAMETER_INVALID);
     }
     
-    return strdup(OK_RESUMED);
+    return g_strdup(OK_RESUMED);
 }
 
 char*
@@ -752,11 +752,11 @@ parse_general_event(const char *buf, const int bytes, const int fd, EMessageType
 
     GET_PARAM_STR(param, 1, NO_CONV);
 
-    if (param == NULL)	return strdup(ERR_MISSING_PARAMETER);
+    if (param == NULL)	return g_strdup(ERR_MISSING_PARAMETER);
     
     if (param[0] == 0){
-	spd_free(param);
-	return strdup(ERR_MISSING_PARAMETER);
+	g_free(param);
+	return g_strdup(ERR_MISSING_PARAMETER);
     }
 
     /* Check for proper UTF-8 */
@@ -765,22 +765,22 @@ parse_general_event(const char *buf, const int bytes, const int fd, EMessageType
       {
 	MSG(3, "ERROR: Invalid character encoding on event input (failed UTF-8 validation)");
 	MSG(3, "Rejecting this event (char/key/sound_icon).");
-	return strdup(ERR_INVALID_ENCODING);
+	return g_strdup(ERR_INVALID_ENCODING);
       }
 
 
-    msg = (TSpeechDMessage*) spd_malloc(sizeof(TSpeechDMessage));
+    msg = (TSpeechDMessage*) g_malloc(sizeof(TSpeechDMessage));
     msg->bytes = strlen(param);
-    msg->buf = strdup(param);
+    msg->buf = g_strdup(param);
 
     if(queue_message(msg, fd, 1, type, SpeechdSocket[fd].inside_block) == 0){
         if (SPEECHD_DEBUG) FATAL("Couldn't queue message\n");
         MSG(2, "Error: Couldn't queue message!\n");            
     }   
 
-    spd_free(param);
+    g_free(param);
 
-    return strdup(OK_MESSAGE_QUEUED);
+    return g_strdup(OK_MESSAGE_QUEUED);
 }
 
 char*
@@ -810,8 +810,7 @@ parse_list(const char* buf, const int bytes, const int fd)
     GET_PARAM_STR(list_type, 1, CONV_DOWN);
 
     if(TEST_CMD(list_type, "voices")){
-        voice_list = (char*) spd_malloc(1024);
-        sprintf(voice_list,
+        voice_list = g_strdup(
                 C_OK_VOICES"-MALE1\r\n"
                 C_OK_VOICES"-MALE2\r\n"
                 C_OK_VOICES"-MALE3\r\n"
@@ -852,11 +851,11 @@ parse_list(const char* buf, const int bytes, const int fd)
       
       uid = get_client_uid_by_fd(fd);		       
       settings = get_client_settings_by_uid(uid);
-      if (settings == NULL) return strdup(ERR_INTERNAL);
+      if (settings == NULL) return g_strdup(ERR_INTERNAL);
       module_name = settings->output_module;
-      if (module_name == NULL) return strdup(ERR_NO_OUTPUT_MODULE);
+      if (module_name == NULL) return g_strdup(ERR_NO_OUTPUT_MODULE);
       voices = output_list_voices(module_name);
-      if (voices == NULL)  return strdup(ERR_CANT_REPORT_VOICES);
+      if (voices == NULL)  return g_strdup(ERR_CANT_REPORT_VOICES);
 
       result = g_string_new("");
       for (i=0; ; i++){
@@ -869,8 +868,8 @@ parse_list(const char* buf, const int bytes, const int fd)
       g_string_free(result, 0);	
       return helper;      
     }else{
-      spd_free(list_type);
-      return strdup(ERR_PARAMETER_INVALID);
+      g_free(list_type);
+      return g_strdup(ERR_PARAMETER_INVALID);
     }
 }
 
@@ -885,7 +884,7 @@ parse_get(const char *buf, const int bytes, const int fd)
 
     settings = get_client_settings_by_fd(fd);
     if (settings == NULL) 
-        return strdup(ERR_INTERNAL);
+        return g_strdup(ERR_INTERNAL);
 
     GET_PARAM_STR(get_type, 1, CONV_DOWN);
     if(TEST_CMD(get_type, "voice")) {
@@ -935,8 +934,8 @@ parse_get(const char *buf, const int bytes, const int fd)
         return helper;      
     }
     else{
-      spd_free(get_type);
-      return strdup(ERR_PARAMETER_INVALID);
+      g_free(get_type);
+      return g_strdup(ERR_PARAMETER_INVALID);
     }
 }
 
@@ -945,9 +944,7 @@ parse_help(const char* buf, const int bytes, const int fd)
 {
     char *help;
 
-    help = (char*) spd_malloc(1024 * sizeof(char));
-
-    sprintf(help, 
+    help = g_strdup(
             C_OK_HELP"-  SPEAK           -- say text \r\n"
             C_OK_HELP"-  KEY             -- say a combination of keys \r\n"
             C_OK_HELP"-  CHAR            -- say a character \r\n"
@@ -972,21 +969,21 @@ parse_block(const char *buf, const int bytes, const int fd)
         assert(SpeechdSocket[fd].inside_block >= 0);
         if (SpeechdSocket[fd].inside_block == 0){
             SpeechdSocket[fd].inside_block = ++SpeechdStatus.max_gid;
-            return strdup(OK_INSIDE_BLOCK);
+            return g_strdup(OK_INSIDE_BLOCK);
         }else{
-            return strdup(ERR_ALREADY_INSIDE_BLOCK);
+            return g_strdup(ERR_ALREADY_INSIDE_BLOCK);
         }        
     }
     else if (TEST_CMD(cmd_main, "end")){
         assert(SpeechdSocket[fd].inside_block >= 0);
         if (SpeechdSocket[fd].inside_block > 0){
             SpeechdSocket[fd].inside_block = 0;
-            return strdup(OK_OUTSIDE_BLOCK);
+            return g_strdup(OK_OUTSIDE_BLOCK);
         }else{
-            return strdup(ERR_ALREADY_OUTSIDE_BLOCK);
+            return g_strdup(ERR_ALREADY_OUTSIDE_BLOCK);
         }        
     }
-    else return strdup(ERR_PARAMETER_INVALID);
+    else return g_strdup(ERR_PARAMETER_INVALID);
 }
    
 /*
@@ -1022,10 +1019,9 @@ deescape_dot(const char *orig_text, size_t orig_len)
     if (orig_text == NULL)
         return NULL;
 
-    out_text = spd_malloc(orig_len + 1);
+    out_text = g_malloc(orig_len + 1);
     /* We may have allocated more than we need.  In any case, out_text
-     * can be no longer than orig_text.
-     * Note: spd_malloc aborts the program on failure to allocate. */
+     * can be no longer than orig_text. */
 
     out_ptr = out_text;
     if (orig_len >= 2) {
@@ -1076,8 +1072,7 @@ get_param(const char *buf, const int n, const int bytes, const int lower_case)
     int i, y, z = 0;
 
     assert (bytes != 0);
-    param = (char*) spd_malloc(bytes);
-    assert(param != NULL);
+    param = (char*) g_malloc(bytes);
 	
     strcpy(param,"");
     i = 0;
@@ -1096,7 +1091,7 @@ get_param(const char *buf, const int n, const int bytes, const int lower_case)
     }
 
     if(z <= 0){
-        spd_free(param);
+        g_free(param);
         return NULL;   
     }
 
@@ -1109,7 +1104,7 @@ get_param(const char *buf, const int n, const int bytes, const int lower_case)
 
     if(lower_case){
         par = g_ascii_strdown(param, strlen(param));
-	spd_free(param);
+	g_free(param);
     }else{
 	par = param;
     }   

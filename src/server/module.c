@@ -44,10 +44,10 @@ ssize_t getline (char **lineptr, size_t *n, FILE *f);
 void
 destroy_module(OutputModule *module)
 {
-    spd_free(module->name);
-    spd_free(module->filename);
-    spd_free(module->configfilename);
-    spd_free(module);
+    g_free(module->name);
+    g_free(module->filename);
+    g_free(module->configfilename);
+    g_free(module);
 }
 
 OutputModule*
@@ -62,9 +62,9 @@ load_output_module(char* mod_name, char* mod_prog, char* mod_cfgfile, char* mod_
 
     if (mod_name == NULL) return NULL;
     
-    module = (OutputModule*) spd_malloc(sizeof(OutputModule));
+    module = (OutputModule*) g_malloc(sizeof(OutputModule));
 
-    module->name = (char*) spd_strdup(mod_name);
+    module->name = (char*) g_strdup(mod_name);
     module->filename = (char*) spd_get_path(mod_prog, MODULEBINDIR);    
     
     module_conf_dir = g_strdup_printf("%s/modules/",
@@ -73,7 +73,7 @@ load_output_module(char* mod_name, char* mod_prog, char* mod_cfgfile, char* mod_
     module->configfilename = (char*) spd_get_path(mod_cfgfile, module_conf_dir);
     g_free(module_conf_dir);
 
-    if (mod_dbgfile != NULL) module->debugfilename = strdup(mod_dbgfile);
+    if (mod_dbgfile != NULL) module->debugfilename = g_strdup(mod_dbgfile);
     else module->debugfilename = NULL;
 
     if (!strcmp(mod_name, "testing")){
@@ -142,7 +142,7 @@ load_output_module(char* mod_name, char* mod_prog, char* mod_cfgfile, char* mod_
         assert(0);
     default:
 
-	if (cfg) spd_free(arg1);
+	if (cfg) g_free(arg1);
 
         module->pid = fr;
         close(module->pipe_in[0]);

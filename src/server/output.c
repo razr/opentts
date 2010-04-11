@@ -50,25 +50,6 @@ safe_write(int fd, const void *buf, size_t count) {
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - strndup, and getline are gcc-isms
  */
-char *strndup ( const char *s, size_t n)
-{
-        size_t nAvail;
-        char *p;
-
-        if ( !s )
-                return 0;
-
-        if ( strlen(s) > n )
-                nAvail = n + 1;
-        else
-                nAvail = strlen(s) + 1;
-        p = malloc ( nAvail );
-        memcpy ( p, s, nAvail );
-        p[nAvail - 1] = '\0';
-
-        return p;
-}
-
 #define BUFFER_LEN 256
 ssize_t getline (char **lineptr, size_t *n, FILE *f)
 {
@@ -250,22 +231,6 @@ output_read_reply(OutputModule *output)
     return rstr;
 }
 
-char*
-output_read_reply2(OutputModule *output)
-{
-    int bytes;
-    char *reply;
-    
-
-    reply = malloc( 1024 * sizeof(char));
-
-    bytes = read(output->pipe_out[0], reply, 1024);
-    reply[bytes] = 0;
-    MSG2(1, "output_module", "2Read: %d bytes: <%s>", bytes, reply);
-
-    return reply;
-}
-
 int
 output_send_data(char* cmd, OutputModule *output, int wfr)
 {
@@ -348,7 +313,7 @@ _output_get_voices(OutputModule *module)
   //TODO: only 256 voices supported here
   lines = g_strsplit(reply->str, "\n", 256);
   g_string_free(reply, TRUE);
-  voice_dscr = malloc(256*sizeof(VoiceDescription*));
+  voice_dscr = g_malloc(256*sizeof(VoiceDescription*));
   for (i = 0; !errors && (lines[i] != NULL); i++) {
     MSG(1, "LINE here:|%s|", lines[i]);
     if (strlen(lines[i])<=4){
@@ -366,10 +331,10 @@ _output_get_voices(OutputModule *module)
       errors = TRUE;
       } else {
         //Fill in VoiceDescription
-        voice_dscr[i] = (VoiceDescription*) malloc(sizeof(VoiceDescription));
-        voice_dscr[i]->name=strdup(atoms[0]);
-        voice_dscr[i]->language=strdup(atoms[1]);
-        voice_dscr[i]->dialect=strdup(atoms[2]);
+        voice_dscr[i] = (VoiceDescription*) g_malloc(sizeof(VoiceDescription));
+        voice_dscr[i]->name=g_strdup(atoms[0]);
+        voice_dscr[i]->language=g_strdup(atoms[1]);
+        voice_dscr[i]->dialect=g_strdup(atoms[2]);
       }
     if (atoms != NULL)
       g_strfreev(atoms);
@@ -533,7 +498,7 @@ output_send_debug(OutputModule *output, int flag, char* log_path)
     if (flag){
       cmd_str = g_strdup_printf("DEBUG ON %s \n", log_path);
       err = output_send_data(cmd_str, output, 1);
-      spd_free(cmd_str);
+      g_free(cmd_str);
       if (err){
 	MSG(3, "ERROR: Can't set debugging on for output module %s", output->name);
 	OL_RET(-1);
@@ -676,7 +641,7 @@ output_module_is_speaking(OutputModule *output, char **index_mark)
 		if (response->str[3] == '-'){
 		    char *p;
 		    p = strchr(response->str, '\n');
-		    *index_mark = (char*) strndup(response->str+4, p-response->str-4);
+		    *index_mark = g_strndup(response->str+4, p-response->str-4);
 		    MSG2(5, "output_module", "Detected INDEX MARK: %s", *index_mark);
 		}else{
 		    MSG2(2, "output_module", "Error: Wrong communication from output module!"
@@ -690,18 +655,18 @@ output_module_is_speaking(OutputModule *output, char **index_mark)
 	    retcode = 0;
 	    MSG2(5, "output_module", "Received event:\n %s", response->str);
 	    if (!strncmp(response->str, "701", 3))
-		*index_mark = (char*) strdup("__spd_begin");
+		*index_mark =  g_strdup("__spd_begin");
 	    else if (!strncmp(response->str, "702", 3))
-		*index_mark = (char*) strdup("__spd_end");
+		*index_mark =  g_strdup("__spd_end");
 	    else if (!strncmp(response->str, "703", 3))
-		*index_mark = (char*) strdup("__spd_stopped");
+		*index_mark =  g_strdup("__spd_stopped");
 	    else if (!strncmp(response->str, "704", 3))
-		*index_mark = (char*) strdup("__spd_paused");
+		*index_mark =  g_strdup("__spd_paused");
 	    else if (!strncmp(response->str, "700", 3)) {
 		char *p;
 		p = strchr(response->str, '\n');
 		MSG2(5, "output_module", "response:|%s|\n p:|%s|", response->str, p);
-		*index_mark = (char*) strndup(response->str+4, p-response->str-4);
+		*index_mark = g_strndup(response->str+4, p-response->str-4);
 		MSG2(5, "output_module", "Detected INDEX MARK: %s", *index_mark);
 	    } else {
 		MSG2(2, "output_module", "ERROR: Unknown event received from output module");
@@ -900,7 +865,7 @@ escape_dot(char *otext)
         ret = otext;
     }else{
         g_string_append(ntext, otext);
-        free(ootext);
+        g_free(ootext);
         ret = ntext->str;
 	g_string_free(ntext, 0);
     }

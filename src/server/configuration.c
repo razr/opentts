@@ -33,8 +33,6 @@
 
 static TFDSetClientSpecific *cl_spec_section;
 
-/* So that gcc doesn't comply about casts to char* */
-extern char* spd_strdup(char* string);
 
 
 /* == CONFIGURATION MANAGEMENT FUNCTIONS */
@@ -48,8 +46,8 @@ add_config_option(configoption_t *options, int *num_config_options, char *name, 
     configoption_t *opts;
 
     (*num_config_options)++;
-    opts = (configoption_t*) realloc(options, (*num_config_options) * sizeof(configoption_t));
-    opts[*num_config_options-1].name = strdup(name);
+    opts = (configoption_t*) g_realloc(options, (*num_config_options) * sizeof(configoption_t));
+    opts[*num_config_options-1].name = g_strdup(name);
     opts[*num_config_options-1].type = type;
     opts[*num_config_options-1].callback = callback;
     opts[*num_config_options-1].info = info;
@@ -66,9 +64,9 @@ free_config_options(configoption_t *opts, int *num)
     if (opts == NULL) return;
 
     for(i=0; i<=(*num)-1; i++){
-        spd_free((char*) opts[i].name);
+        g_free((char*) opts[i].name);
     }
-    spd_free(opts);
+    g_free(opts);
     *num = 0;
     opts = NULL;
 }
@@ -81,9 +79,9 @@ free_config_options(configoption_t *opts, int *num)
    { \
        assert(cmd->data.str != NULL); \
        if (!cl_spec_section) \
-           GlobalFDSet.arg = strdup(cmd->data.str); \
+           GlobalFDSet.arg = g_strdup(cmd->data.str); \
        else \
-           cl_spec_section->val.arg = strdup(cmd->data.str); \
+           cl_spec_section->val.arg = g_strdup(cmd->data.str); \
        return NULL; \
    }    
 
@@ -107,7 +105,7 @@ free_config_options(configoption_t *opts, int *num)
        val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str)); \
        if (val_str == NULL) FATAL("Invalid parameter in configuration"); \
        val = fconv(val_str); \
-       spd_free(val_str); \
+       g_free(val_str); \
        if (val == -1) FATAL("Invalid parameter in configuration."); \
        if (!cl_spec_section) \
            GlobalFDSet.arg = val; \
@@ -206,8 +204,8 @@ DOTCONF_CB(cb_LanguageDefaultModule)
     if(cmd->data.list[0] == NULL) FATAL("No language specified for LanguageDefaultModule");
     if(cmd->data.list[0] == NULL) FATAL("No module specified for LanguageDefaultModule");
     
-    key = strdup(cmd->data.list[0]);
-    value = strdup(cmd->data.list[1]);
+    key = g_strdup(cmd->data.list[0]);
+    value = g_strdup(cmd->data.list[1]);
 
     g_hash_table_insert(language_default_modules, key, value);
 
@@ -233,7 +231,7 @@ DOTCONF_CB(cb_LogDir)
 
   if (strcmp(cmd->data.str, "default")){
     // cmd->data.str different from "default"
-    SpeechdOptions.log_dir = strdup(cmd->data.str);
+    SpeechdOptions.log_dir = g_strdup(cmd->data.str);
   }
   logging_init();
   return NULL;
@@ -247,10 +245,8 @@ DOTCONF_CB(cb_CustomLogFile)
 
     if(cmd->data.list[0] == NULL) FATAL("No log kind specified in CustomLogFile");
     if(cmd->data.list[1] == NULL) FATAL("No log file specified in CustomLogFile");
-    kind = strdup(cmd->data.list[0]);
-    assert(kind != NULL);
-    file = strdup(cmd->data.list[1]);
-    assert(file != NULL);
+    kind = g_strdup(cmd->data.list[0]);
+    file = g_strdup(cmd->data.list[1]);
 
     custom_log_kind = kind;
     if (!strncmp(file,"stdout",6)){
@@ -280,7 +276,7 @@ DOTCONF_CB(cb_AddModule)
 
     OutputModule *cur_mod;
 
-    if (cmd->data.list[0] != NULL) module_name = strdup(cmd->data.list[0]);
+    if (cmd->data.list[0] != NULL) module_name = g_strdup(cmd->data.list[0]);
     else FATAL("No output module name specified in configuration under AddModule");
 
     module_prgname = cmd->data.list[1];
@@ -298,10 +294,10 @@ DOTCONF_CB(cb_AddModule)
 
     MSG(5,"Module name=%s being inserted into hash table", cur_mod->name);
     assert(cur_mod->name != NULL);
-    g_hash_table_insert(output_modules, strdup(module_name), cur_mod);
-    output_modules_list=g_list_append(output_modules_list, strdup(module_name));
+    g_hash_table_insert(output_modules, g_strdup(module_name), cur_mod);
+    output_modules_list=g_list_append(output_modules_list, g_strdup(module_name));
 
-    spd_free(module_name);
+    g_free(module_name);
 
     return NULL;
 }
@@ -321,8 +317,8 @@ DOTCONF_CB(cb_BeginClient)
     if (cmd->data.str == NULL)
         FATAL("Configuration: You must specify some client's name for BeginClient");
 
-    cl_spec = (TFDSetClientSpecific*) spd_malloc(sizeof(TFDSetClientSpecific));
-    cl_spec->pattern = spd_strdup(cmd->data.str);
+    cl_spec = (TFDSetClientSpecific*) g_malloc(sizeof(TFDSetClientSpecific));
+    cl_spec->pattern = g_strdup(cmd->data.str);
     cl_spec_section = cl_spec;
 
     MSG(3, "Reading configuration for pattern %s", cl_spec->pattern);
@@ -430,8 +426,8 @@ load_default_global_set_options()
     GlobalFDSet.rate = 0;
     GlobalFDSet.pitch = 0;
     GlobalFDSet.volume = 0;
-    GlobalFDSet.client_name = strdup("unknown:unknown:unknown");
-    GlobalFDSet.language = strdup("en");
+    GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");
+    GlobalFDSet.language = g_strdup("en");
     GlobalFDSet.output_module = NULL;
     GlobalFDSet.voice = MALE1;
     GlobalFDSet.cap_let_recogn = 0;
@@ -442,14 +438,14 @@ load_default_global_set_options()
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - default to OSS for Solaris */
-    GlobalFDSet.audio_output_method = strdup("oss");
+    GlobalFDSet.audio_output_method = g_strdup("oss");
 #else
-    GlobalFDSet.audio_output_method = strdup("pulse,alsa");
+    GlobalFDSet.audio_output_method = g_strdup("pulse,alsa");
 #endif /* __SUNPRO_C */
-    GlobalFDSet.audio_oss_device = strdup("/dev/dsp");
-    GlobalFDSet.audio_alsa_device = strdup("default");
-    GlobalFDSet.audio_nas_server = strdup("tcp/localhost:5450");
-    GlobalFDSet.audio_pulse_server = strdup("default");
+    GlobalFDSet.audio_oss_device = g_strdup("/dev/dsp");
+    GlobalFDSet.audio_alsa_device = g_strdup("default");
+    GlobalFDSet.audio_nas_server = g_strdup("tcp/localhost:5450");
+    GlobalFDSet.audio_pulse_server = g_strdup("default");
     GlobalFDSet.audio_pulse_min_length = 100;
 
     SpeechdOptions.max_history_messages = 10000;

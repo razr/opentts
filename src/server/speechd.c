@@ -145,7 +145,7 @@ MSG2(int level, char *kind, char *format, ...)
                 char *tstr;
 		struct timeval tv;
                 t = time(NULL);
-		tstr = strdup(ctime(&t));
+		tstr = g_strdup(ctime(&t));
 		gettimeofday(&tv,NULL);                
 		assert(tstr);
 		/* Remove the trailing \n */
@@ -165,7 +165,7 @@ MSG2(int level, char *kind, char *format, ...)
 		  fprintf(debug_logfile, "[%s : %d] speechd: ",
 			  tstr, (int) tv.tv_usec);
                 }
-		spd_free(tstr);
+		g_free(tstr);
             }
             for(i=1;i<level;i++){
                 if(std_log) {
@@ -223,7 +223,7 @@ MSG(int level, char *format, ...)
                 char *tstr;
 		struct timeval tv;
                 t = time(NULL);
-		tstr = strdup(ctime(&t));
+		tstr = g_strdup(ctime(&t));
 		gettimeofday(&tv,NULL);
                 /* Remove the trailing \n */
 		assert(tstr);
@@ -237,7 +237,7 @@ MSG(int level, char *format, ...)
 			  tstr, (int) tv.tv_usec);
 		/*                fprintf(logfile, "[%s : %d] speechd: ",
 				  tstr, (int) tv.tv_usec);*/
-		spd_free(tstr);
+		g_free(tstr);
             }
 	    
             for(i=1;i<level;i++){
@@ -289,7 +289,7 @@ speechd_connection_new(int server_socket)
 
     /* Check if there is space for server status data; allocate it */
     if(client_socket >= SpeechdStatus.num_fds-1){
-	SpeechdSocket = (TSpeechdSock*) realloc(SpeechdSocket,
+	SpeechdSocket = (TSpeechdSock*) g_realloc(SpeechdSocket,
 						SpeechdStatus.num_fds*2*
 						sizeof(TSpeechdSock)); 
         SpeechdStatus.num_fds *= 2;
@@ -310,8 +310,8 @@ speechd_connection_new(int server_socket)
     }
     new_fd_set->fd = client_socket;
     new_fd_set->uid = ++SpeechdStatus.max_uid;
-    p_client_socket = (int*) spd_malloc(sizeof(int));
-    p_client_uid = (int*) spd_malloc(sizeof(int));
+    p_client_socket = (int*) g_malloc(sizeof(int));
+    p_client_uid = (int*) g_malloc(sizeof(int));
     *p_client_socket = client_socket;
     *p_client_uid = SpeechdStatus.max_uid;
 
@@ -535,7 +535,7 @@ speechd_init()
     output_modules = g_hash_table_new(g_str_hash, g_str_equal);
     assert(output_modules != NULL);
 
-    SpeechdSocket = (TSpeechdSock*) spd_malloc(START_NUM_FD * sizeof(TSpeechdSock));
+    SpeechdSocket = (TSpeechdSock*) g_malloc(START_NUM_FD * sizeof(TSpeechdSock));
     SpeechdStatus.num_fds = START_NUM_FD;
     for(i=0; i<=START_NUM_FD-1; i++){
         SpeechdSocket[i].awaiting_data = 0;              
@@ -580,9 +580,9 @@ speechd_init()
 	  mkdir(SpeechdOptions.debug_destination, S_IRWXU);
 	}
       }else{
-	SpeechdOptions.log_dir = strdup("/var/log/speech-dispatcher/");
+	SpeechdOptions.log_dir = g_strdup("/var/log/speech-dispatcher/");
 	if (!SpeechdOptions.debug_destination){
-	  SpeechdOptions.debug_destination = strdup("/var/log/speech-dispatcher/debug");
+	  SpeechdOptions.debug_destination = g_strdup("/var/log/speech-dispatcher/debug");
 	  mkdir(SpeechdOptions.debug_destination, S_IRWXU);
 	}
       }
@@ -867,9 +867,9 @@ sigemptyset(&sig.sa_mask);
 	temp = g_path_get_dirname(SpeechdOptions.pid_file);
 	mkdir(temp, S_IRWXU);
       }else if (!strcmp(PIDPATH, ""))
-	SpeechdOptions.pid_file = strdup("/var/run/speech-dispatcher.pid");
+	SpeechdOptions.pid_file = g_strdup("/var/run/speech-dispatcher.pid");
       else
-	SpeechdOptions.pid_file = strdup(PIDPATH"speech-dispatcher.pid");
+	SpeechdOptions.pid_file = g_strdup(PIDPATH"speech-dispatcher.pid");
     }
     
     if (SpeechdOptions.conf_dir == NULL){
@@ -877,9 +877,9 @@ sigemptyset(&sig.sa_mask);
 	SpeechdOptions.conf_dir = g_strdup_printf("%sconf/",
 						  SpeechdOptions.home_speechd_dir);
       }else if (!strcmp(SYS_CONF, "")){
-	SpeechdOptions.conf_dir = strdup("/etc/speech-dispatcher/");
+	SpeechdOptions.conf_dir = g_strdup("/etc/speech-dispatcher/");
       }else{
-	SpeechdOptions.conf_dir = strdup(SYS_CONF);
+	SpeechdOptions.conf_dir = g_strdup(SYS_CONF);
       }
     }
     SpeechdOptions.conf_file = g_strdup_printf("%s/speechd.conf",

@@ -32,7 +32,6 @@
 #include "alloc.h"
 #include "msg.h"
 
-extern char *spd_strdup(char*);
 
 gint
 spd_str_compare(gconstpointer a, gconstpointer b)
@@ -159,7 +158,7 @@ set_voice_uid(int uid, char *voice)
     else return 1;
 
     if (settings->synthesis_voice != NULL){
-      free(settings->synthesis_voice);
+      g_free(settings->synthesis_voice);
       settings->synthesis_voice = NULL;
     }
     return 0;
@@ -258,8 +257,8 @@ set_synthesis_voice_uid(int uid, char *synthesis_voice)
             MSG(4,"parameter " #name " set to %d", cl_set->val.name); }
 #define CHECK_SET_PAR_STR(name) \
    if (cl_set->val.name != NULL){ \
-     spd_free(set->name); \
-     set->name = strdup(cl_set->val.name); \
+     g_free(set->name); \
+     set->name = g_strdup(cl_set->val.name); \
             MSG(4,"parameter " #name " set to %s", cl_set->val.name); \
    }
 
@@ -337,7 +336,7 @@ set_output_module_uid(int uid, char* output_module)
 
     /* Delete synth_voice since it is module specific */
     if (settings->synthesis_voice != NULL){
-      free(settings->synthesis_voice);
+      g_free(settings->synthesis_voice);
       settings->synthesis_voice = NULL;
     }
 
@@ -395,7 +394,7 @@ set_debug_uid(int uid, int debug)
     }
     SpeechdOptions.debug = debug;
     
-    spd_free(debug_logfile_path);
+    g_free(debug_logfile_path);
     
     /* Redirecting debugging for all output modules */
     speechd_modules_debug();
@@ -460,7 +459,7 @@ default_fd_set(void)
 {
 	TFDSetElement *new;
 
-	new = (TFDSetElement*) spd_malloc(sizeof(TFDSetElement));
+	new = (TFDSetElement*) g_malloc(sizeof(TFDSetElement));
    
 	new->paused = 0;
 
@@ -470,9 +469,9 @@ default_fd_set(void)
 	new->rate = GlobalFDSet.rate;
 	new->pitch = GlobalFDSet.pitch;
 	new->volume = GlobalFDSet.volume;
-	new->language = spd_strdup(GlobalFDSet.language);
-	new->output_module = spd_strdup(GlobalFDSet.output_module);
-	new->client_name = spd_strdup(GlobalFDSet.client_name); 
+	new->language = g_strdup(GlobalFDSet.language);
+	new->output_module = g_strdup(GlobalFDSet.output_module);
+	new->client_name = g_strdup(GlobalFDSet.client_name); 
 	new->voice = GlobalFDSet.voice;
 	new->synthesis_voice = NULL;
 	new->spelling_mode = GlobalFDSet.spelling_mode;         
@@ -541,7 +540,7 @@ set_param_str(char* parameter, char* value)
         return new;
     }
 
-    new = realloc(parameter, (strlen(value) + 1) * sizeof(char));
+    new = g_realloc(parameter, (strlen(value) + 1) * sizeof(char));
     strcpy(new, value);
 
     return new;
