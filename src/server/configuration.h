@@ -1,6 +1,6 @@
 
 /*
- * config.h - Configuration for OpenTTSd
+ * configuration.h - Configuration for OpenTTSd
  *
  * Copyright (C) 2010 OpenTTS developers
  * Copyright (C) 2001, 2002, 2003, 2006 Brailcom, o.p.s.
