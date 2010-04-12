@@ -38,6 +38,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include <glib.h>
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
@@ -88,7 +89,7 @@ static AudioID * pulse_open (void **pars)
 {
     spd_pulse_id_t * pulse_id;
 
-    pulse_id = (spd_pulse_id_t *) malloc(sizeof(spd_pulse_id_t));
+    pulse_id = (spd_pulse_id_t *) g_malloc(sizeof(spd_pulse_id_t));
 
     pulse_id->pa_simple = NULL;
     pulse_id->pa_server = (char *)pars[3];
@@ -198,7 +199,7 @@ static int pulse_close (AudioID * id)
         pulse_id->pa_simple = NULL;
     }
 
-    free (pulse_id);
+    g_free (pulse_id);
     id = NULL;
 
     return 0;

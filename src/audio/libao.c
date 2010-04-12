@@ -82,7 +82,7 @@ static AudioID * libao_open (void **pars)
 {
   AudioID * id;
 
-  id = (AudioID *) malloc(sizeof(AudioID));
+  id = (AudioID *) g_malloc(sizeof(AudioID));
 
   ao_initialize ();
   default_driver = ao_default_driver_id ();
@@ -176,7 +176,7 @@ static int libao_close (AudioID * id)
 
   ao_shutdown ();
 
-  free (id);
+  g_free (id);
   id = NULL;
 
   return 0;
