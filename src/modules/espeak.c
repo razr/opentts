@@ -267,7 +267,7 @@ module_init(char **status_info)
 #endif
 	if (espeak_sample_rate == EE_INTERNAL_ERROR) {
 		DBG("Espeak: Could not initialize engine.");
-		*status_info = strdup("Could not initialize engine. ");
+		*status_info = g_strdup("Could not initialize engine. ");
 		return FATAL_ERROR;
 	}
 
@@ -311,7 +311,7 @@ module_init(char **status_info)
 		ABORT("Failed to create playback thread.");
 	}
 
-	*status_info = strdup("Espeak: Initialized successfully.");
+	*status_info = g_strdup("Espeak: Initialized successfully.");
 
 	return OK;
 }
@@ -949,7 +949,7 @@ espeak_add_audio_to_playback_queue(short *audio_chunk, int num_samples)
 static gboolean
 espeak_add_mark_to_playback_queue(const char *markId)
 {
-	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) xmalloc (sizeof (TPlaybackQueueEntry));
+	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) g_malloc (sizeof (TPlaybackQueueEntry));
     
 	playback_queue_entry->type = ESPEAK_QET_INDEX_MARK;
 	playback_queue_entry->data.markId = g_strdup(markId);
@@ -960,7 +960,7 @@ espeak_add_mark_to_playback_queue(const char *markId)
 static gboolean
 espeak_add_flag_to_playback_queue(EPlaybackQueueEntryType type)
 {
-	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) xmalloc (sizeof (TPlaybackQueueEntry));
+	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) g_malloc (sizeof (TPlaybackQueueEntry));
     
 	playback_queue_entry->type = type;
 	return playback_queue_push(playback_queue_entry);
@@ -970,7 +970,7 @@ espeak_add_flag_to_playback_queue(EPlaybackQueueEntryType type)
 static gboolean
 espeak_add_sound_icon_to_playback_queue(const char* filename)
 {
-	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) xmalloc (sizeof (TPlaybackQueueEntry));
+	TPlaybackQueueEntry *playback_queue_entry = (TPlaybackQueueEntry *) g_malloc (sizeof (TPlaybackQueueEntry));
     
 	playback_queue_entry->type = ESPEAK_QET_SOUND_ICON;
 	playback_queue_entry->data.sound_icon_filename = g_strdup(filename);
@@ -983,18 +983,18 @@ espeak_delete_playback_queue_entry(TPlaybackQueueEntry *playback_queue_entry)
 {
 	switch (playback_queue_entry->type) {
 	case ESPEAK_QET_AUDIO:
-		xfree(playback_queue_entry->data.audio.audio_chunk);
+		g_free(playback_queue_entry->data.audio.audio_chunk);
 		break;
 	case ESPEAK_QET_INDEX_MARK:
-		xfree(playback_queue_entry->data.markId);
+		g_free(playback_queue_entry->data.markId);
 		break;
 	case ESPEAK_QET_SOUND_ICON:
-		xfree(playback_queue_entry->data.sound_icon_filename);
+		g_free(playback_queue_entry->data.sound_icon_filename);
 		break;
 	default:
 		break;
 	}
-	xfree(playback_queue_entry);
+	g_free(playback_queue_entry);
 }
 
 /* Erases the entire playback queue, freeing memory. */
@@ -1173,12 +1173,7 @@ espeak_play_file(char *filename)
 	track.num_channels = sfinfo.channels;
 	track.sample_rate = sfinfo.samplerate;
 	track.bits = 16;
-	track.samples = malloc(items * sizeof(short));
-	if (NULL == track.samples) {
-		DBG("Espeak: ERROR: Cannot allocate audio buffer.");
-		result = FALSE;
-		goto cleanup1;
-	}
+	track.samples = g_malloc(items * sizeof(short));
 	readcount = sf_read_short(sf, (short *) track.samples, items);
 	DBG("Espeak: read %Ld items from audio file.", (long long) readcount);
 
@@ -1196,7 +1191,7 @@ espeak_play_file(char *filename)
 		DBG("Espeak: Sent to audio.");
 	}
  cleanup2:
-	xfree(track.samples);
+	g_free(track.samples);
  cleanup1:
 	sf_close(sf);
 #endif

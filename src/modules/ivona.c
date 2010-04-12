@@ -129,7 +129,7 @@ module_init(char **status_info)
     /* Init Ivona */
     if (ivona_init_sock(IvonaServerHost, IvonaServerPort)) {
         DBG("Couldn't init socket parameters");
-	*status_info = strdup("Can't initialize socket. "
+	*status_info = g_strdup("Can't initialize socket. "
 		"Check server host/port.");
 	return -1;
     }
@@ -137,7 +137,7 @@ module_init(char **status_info)
 
     DBG("IvonaDelimiters = %s\n", IvonaDelimiters);
 
-    ivona_message = malloc (sizeof (char*));
+    ivona_message = g_malloc (sizeof (char*));
     *ivona_message = NULL;
 
     ivona_semaphore = module_semaphore_init();
@@ -147,7 +147,7 @@ module_init(char **status_info)
     ret = pthread_create(&ivona_speak_thread, NULL, _ivona_speak, NULL);
     if(ret != 0){
         DBG("Ivona: thread failed\n");
-	*status_info = strdup("The module couldn't initialize threads "
+	*status_info = g_strdup("The module couldn't initialize threads "
 			      "This could be either an internal problem or an "
 			      "architecture problem. If you are sure your architecture "
 			      "supports threads, please report a bug.");
@@ -156,7 +156,7 @@ module_init(char **status_info)
 
     module_audio_id = NULL;
 
-    *status_info = strdup("Ivona initialized successfully.");
+    *status_info = g_strdup("Ivona initialized successfully.");
 
     return 0;
 }
@@ -194,7 +194,7 @@ module_speak(gchar *data, size_t bytes, EMessageType msgtype)
     DBG("Requested data: |%s|\n", data);
 
     if (*ivona_message != NULL){
-	xfree(*ivona_message);
+	g_free(*ivona_message);
 	*ivona_message = NULL;
     }
     *ivona_message = module_strip_ssml(data);
@@ -398,7 +398,7 @@ _ivona_speak(void* nothing)
 		track.samples = ((short *)audio)+offset;
 		DBG("Got %d samples", track.num_samples);
 		spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
-		xfree(audio);
+		g_free(audio);
 		audio=NULL;
 	    }
 	    if (ivona_stop) {
@@ -408,9 +408,9 @@ _ivona_speak(void* nothing)
 	    }
 	}
 	ivona_stop=0;
-	xfree(buf);
-	xfree(audio);
-	xfree(next_audio);
+	g_free(buf);
+	g_free(audio);
+	g_free(next_audio);
 	if (fd>=0) close(fd);
 	fd=-1;
 	audio=NULL;

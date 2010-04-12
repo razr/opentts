@@ -248,7 +248,7 @@ socket_receive_file_to_buff(int fd,int *size)
     if (fd < 0) return NULL;
 
     bufflen = 1024;
-    buff = (char *)malloc(bufflen);
+    buff = (char *)g_malloc(bufflen);
     *size=0;
 
     for (k=0; file_stuff_key[k] != '\0';)
@@ -258,14 +258,14 @@ socket_receive_file_to_buff(int fd,int *size)
             DBG("ERROR: FESTIVAL CLOSED CONNECTION (1)");
 	    close(fd);
             festival_connection_crashed = 1;
-	    xfree(buff);
+	    g_free(buff);
 	    return NULL;  /* hit stream eof before end of file */
 	}
 
 	if ((*size)+k+1 >= bufflen)
 	{   /* +1 so you can add a NULL if you want */
 	    bufflen += bufflen/4;
-	    buff = (char *)realloc(buff,bufflen);
+	    buff = (char *)g_realloc(buff,bufflen);
 	}
 	if (file_stuff_key[k] == c)
 	    k++;
@@ -329,12 +329,12 @@ static FT_Wave *client_accept_waveform(int fd, int *stop_flag, int stop_by_close
 
             if ((num_samples*sizeof(short))+1024 == filesize)
                 {
-                    wave = (FT_Wave *)malloc(sizeof(FT_Wave));
+                    wave = (FT_Wave *)g_malloc(sizeof(FT_Wave));
 		    DBG("Number of samples from festival: %d", num_samples);
                     wave->num_samples = num_samples;
                     wave->sample_rate = sample_rate;
 		    if (num_samples != 0){
-			wave->samples = (short *) malloc(num_samples*sizeof(short));
+			wave->samples = (short *) g_malloc(num_samples*sizeof(short));
 			memmove(wave->samples, wavefile+1024, num_samples*sizeof(short));
 			if (nist_require_swap(wavefile))
 			    for (i=0; i < num_samples; i++)
@@ -694,7 +694,7 @@ lisp_list_get_vect(char* expr)
   int i,j;
 
   len = strlen(expr);
-  helper = malloc(sizeof(char) * (len+1));
+  helper = g_malloc(sizeof(char) * (len+1));
 
   //Remove parenthesis
   j=0;
@@ -758,7 +758,7 @@ VoiceDescription** festivalGetVoices(FT_Info *info)
   for (i=0; ; i++, num_voices++) if (voices[i] == NULL) break;
   num_voices /= 3;  
   
-  result = (VoiceDescription**) malloc((num_voices + 1)*sizeof(VoiceDescription*));
+  result = (VoiceDescription**) g_malloc((num_voices + 1)*sizeof(VoiceDescription*));
   
   for (i=0, j=0; ;j++){
     if (voices[i] == NULL)
@@ -767,16 +767,16 @@ VoiceDescription** festivalGetVoices(FT_Info *info)
       continue;
     else
       {
-	result[j] = (VoiceDescription*) malloc(sizeof(VoiceDescription));
+	result[j] = (VoiceDescription*) g_malloc(sizeof(VoiceDescription));
 	result[j]->name = voices[i];
 	lang = voices[i+1];
 	if ((lang != NULL) && (strcmp(lang, "nil")))
-	  result[j]->language = strdup(lang);
+	  result[j]->language = g_strdup(lang);
 	else
 	  result[j]->language = NULL;
 	dialect = voices[i+2];
 	if ((dialect != NULL) && (strcmp(dialect, "nil")))
-	  result[j]->dialect = strdup(dialect);
+	  result[j]->dialect = g_strdup(dialect);
 	else
 	  result[j]->dialect=NULL;
 	i+=3;
@@ -789,7 +789,7 @@ VoiceDescription** festivalGetVoices(FT_Info *info)
 FT_Info *festivalDefaultInfo()
 {
     FT_Info *info;
-    info = (FT_Info *) malloc(sizeof(FT_Info));
+    info = (FT_Info *) g_malloc(sizeof(FT_Info));
     
     info->server_host = FESTIVAL_DEFAULT_SERVER_HOST;
     info->server_port = FESTIVAL_DEFAULT_SERVER_PORT;

@@ -81,31 +81,6 @@ ssize_t getline (char **lineptr, size_t *n, FILE *f)
 }
 #endif /* __SUNPRO_C */
 
-void*
-xmalloc(size_t size)
-{
-    void *p;
-
-    p = malloc(size);
-    if (p == NULL) FATAL("Not enough memmory");
-    return p;
-}          
-
-void*
-xrealloc(void *data, size_t size)
-{
-    void *p;
-
-    if (data != NULL) 
-        p = realloc(data, size);
-    else 
-        p = malloc(size);
-
-    if (p == NULL) FATAL("Not enough memmory");
-
-    return p;
-}          
-
 void
 xfree(void *data)
 {
@@ -219,9 +194,9 @@ do_pause(void)
 
 #define SET_PARAM_STR(name) \
  if(!strcmp(cur_item, #name)){ \
-     xfree(msg_settings.name); \
+     g_free(msg_settings.name); \
      if(!strcmp(cur_value, "NULL")) msg_settings.name = NULL; \
-     else msg_settings.name = strdup(cur_value); \
+     else msg_settings.name = g_strdup(cur_value); \
  }
 
 #define SET_PARAM_STR_C(name, fconv) \
@@ -282,9 +257,9 @@ do_set(void)
 
 #define SET_AUDIO_STR(name,idx) \
  if(!strcmp(cur_item, #name)){ \
-     xfree(module_audio_pars[idx]); \
+     g_free(module_audio_pars[idx]); \
      if(!strcmp(cur_value, "NULL")) module_audio_pars[idx] = NULL; \
-     else module_audio_pars[idx] = strdup(cur_value); \
+     else module_audio_pars[idx] = g_strdup(cur_value); \
  }
 
 gchar*
@@ -592,7 +567,7 @@ module_strip_ssml(char *message)
     assert(message != NULL);
 
     len = strlen(message);
-    out = (char*) xmalloc(sizeof(char) * (len+1));
+    out = (char*) g_malloc(sizeof(char) * (len+1));
 
     for (i = 0, n = 0; i <= len; i++){
 
@@ -715,7 +690,7 @@ module_parent_wfork(TModuleDoublePipe dpipe, const char* message, EMessageType m
 
     DBG("Entering parent process, closing pipes");
 
-    buf = (char*) malloc((maxlen+1) * sizeof(char));
+    buf = (char*) g_malloc((maxlen+1) * sizeof(char));
 
     module_parent_dp_init(dpipe);
 
@@ -949,12 +924,11 @@ module_semaphore_init()
     sem_t *semaphore;
     int ret;
 
-    semaphore = (sem_t *) malloc(sizeof(sem_t));
-    if (semaphore == NULL) return NULL;
+    semaphore = (sem_t *) g_malloc(sizeof(sem_t));
     ret = sem_init(semaphore, 0, 0);
     if (ret != 0){
         DBG("Semaphore initialization failed");
-        xfree(semaphore);
+        g_free(semaphore);
         semaphore = NULL;
     }
     return semaphore;
@@ -965,7 +939,7 @@ module_recode_to_iso(char *data, int bytes, char *language, char *fallback)
 {
     char *recoded;
     
-    if (language == NULL) recoded = strdup(data);
+    if (language == NULL) recoded = g_strdup(data);
 
     if (!strcmp(language, "cs"))
         recoded = (char*) g_convert_with_fallback(data, bytes, "ISO8859-2", "UTF-8",
@@ -1014,7 +988,7 @@ module_report_index_mark(char *mark)
     
     module_send_asynchronous(reply);
  
-    xfree(reply);
+    g_free(reply);
 }
 
 void
@@ -1055,8 +1029,8 @@ module_add_config_option(configoption_t *options, int *num_options, char *name, 
     assert(name != NULL);
 
     num_config_options++;
-    opts = (configoption_t*) realloc(options, (num_config_options+1) * sizeof(configoption_t));
-    opts[num_config_options-1].name = (char*) strdup(name);
+    opts = (configoption_t*) g_realloc(options, (num_config_options+1) * sizeof(configoption_t));
+    opts[num_config_options-1].name = (char*) g_strdup(name);
     opts[num_config_options-1].type = type;
     opts[num_config_options-1].callback = callback;
     opts[num_config_options-1].info = info;
@@ -1087,8 +1061,8 @@ add_config_option(configoption_t *options, int *num_config_options, char *name, 
     configoption_t *opts;
 
     (*num_config_options)++;
-    opts = (configoption_t*) realloc(options, (*num_config_options) * sizeof(configoption_t));
-    opts[*num_config_options-1].name = strdup(name);
+    opts = (configoption_t*) g_realloc(options, (*num_config_options) * sizeof(configoption_t));
+    opts[*num_config_options-1].name = g_strdup(name);
     opts[*num_config_options-1].type = type;
     opts[*num_config_options-1].callback = callback;
     opts[*num_config_options-1].info = info;
