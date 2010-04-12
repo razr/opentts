@@ -749,7 +749,7 @@ festival_set_voice(EVoiceType voice)
 
     voice_name = EVoice2str(voice);
     FestivalSetVoice(festival_info, voice_name, NULL);
-    xfree(voice_name);
+    g_free(voice_name);
 }
 
 void
@@ -783,7 +783,7 @@ festival_set_punctuation_mode(EPunctMode punct)
     char *punct_mode;
     punct_mode = EPunctMode2str(punct);
     FestivalSetPunctuationMode(festival_info, punct_mode);
-    xfree(punct_mode);
+    g_free(punct_mode);
 }
 
 void
@@ -794,7 +794,7 @@ festival_set_cap_let_recogn(ECapLetRecogn recogn)
     if (recogn == RECOGN_NONE) recogn_mode = NULL;
     else recogn_mode = ECapLetRecogn2str(recogn);
     FestivalSetCapLetRecogn(festival_info, recogn_mode, NULL);
-    xfree(recogn_mode);
+    g_free(recogn_mode);
 }
 
 

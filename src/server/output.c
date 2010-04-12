@@ -399,7 +399,7 @@ output_list_voices(char* module_name)
     }else{ \
        g_string_append_printf(set_str, #name"=NULL\n"); \
     } \
-    spd_free(val);
+    g_free(val);
 
 int
 output_send_settings(TSpeechDMessage *msg, OutputModule *output)
