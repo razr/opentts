@@ -311,8 +311,8 @@ AC_SUBST(gthread_libs)
 AC_SUBST(datadir)
 
 AC_ARG_ENABLE([session-integration],
-		AS_HELP_STRING([--enable-session-integration], [build with user session integration support (default)]),
-		[], [enable_session_integration=yes])
+		AS_HELP_STRING([--enable-session-integration], [build with user session integration support]),
+		[], [enable_session_integration=no])
 
 AM_CONDITIONAL([ENABLE_SESSION], [test x$enable_session_integration = xyes])
 
