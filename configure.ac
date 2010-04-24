@@ -382,6 +382,7 @@ AC_SUBST(RPATH)
 AC_SUBST(RDYNAMIC)
 
 AC_CONFIG_FILES([Makefile
+                 opentts.pc
                  config/Makefile
                  config/clients/Makefile
                  config/modules/Makefile
