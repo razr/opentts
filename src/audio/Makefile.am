@@ -19,5 +19,3 @@ if libao_support
 libsdaudio_la_SOURCES += libao.c
 endif
 
-EXTRA_DIST = static_plugins.c.in
-
