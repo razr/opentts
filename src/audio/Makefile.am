@@ -1,7 +1,8 @@
 
 noinst_LTLIBRARIES = libsdaudio.la
-libsdaudio_la_CPPFLAGS = @glib_include@
+libsdaudio_la_CPPFLAGS = $(GLIB_CFLAGS)
 libsdaudio_la_SOURCES = spd_audio.c spd_audio.h spd_audio_plugin.h static_plugins.c oss.c
+libsdaudio_la_LIBADD = $(GLIB_LIBS)
 
 if nas_support
 libsdaudio_la_SOURCES += nas.c
