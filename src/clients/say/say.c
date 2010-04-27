@@ -32,7 +32,7 @@
 #include <assert.h>
 #include <semaphore.h>
 #include <errno.h>
-#include "libspeechd.h"
+#include <libopentts.h>
 #include "options.h"
 
 #define FATAL(msg) { perror("client: "msg); exit(1); }
