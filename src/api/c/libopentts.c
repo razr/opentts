@@ -44,7 +44,7 @@
 #include <assert.h>
 
 #include <def.h>
-#include "libspeechd.h"
+#include "libopentts.h"
 
 /* Comment/uncomment to switch debugging on/off */
 // #define LIBSPEECHD_DEBUG 1
