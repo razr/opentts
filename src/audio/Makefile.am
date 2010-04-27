@@ -1,3 +1,4 @@
+## Process this file with automake to produce Makefile.in
 
 noinst_LTLIBRARIES = libsdaudio.la
 libsdaudio_la_CPPFLAGS = $(GLIB_CFLAGS)
@@ -19,4 +20,6 @@ endif
 if libao_support
 libsdaudio_la_SOURCES += libao.c
 endif
+
+include_HEADERS = spd_audio_plugin.h
 
