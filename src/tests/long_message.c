@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libspeechd.h>
+#include <libopentts.h>
 #include <def.h>
 
 int main() {

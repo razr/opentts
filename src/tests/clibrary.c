@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <libspeechd.h>
+#include <libopentts.h>
 #include <def.h>
 
 int main() {

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <wchar.h>
 #include <wctype.h>
-#include <libspeechd.h>
+#include <libopentts.h>
 #include <signal.h>
 #include <unistd.h>
 
