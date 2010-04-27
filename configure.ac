@@ -11,25 +11,26 @@ AC_CONFIG_HEADERS([config.h])
 
 # libtool version numbers for the API:
 #
-# This is taken from the libtool manual.
+# The steps below come from the libtool manual and describe how to
+# change these numbers.
 # It is an algorithm, so follow all of the steps.
 #
-# 1. start with 0:0:0 for the first public release.
-# This will be set as soon as we rename the library.
-# 2. Only change these numbers as the last step before a release.
-# 3. If the library source has changed since the last release,
+# 1. Only change these numbers as the last step before a new public release.
+# 2. If the library source has changed since the last public release,
 # increment revision.
-# 4. If any interfaces have been added, removed or changed since the
-# last release, increment current and set revision to 0.
-# 5. If any interfaces have been added since the last release, increment age.
-# 6. If any interfaces have been removed since the last release, set age to 0.
+# 3. If any interfaces have been added, removed or changed since the
+# last public release, increment current and set revision to 0.
+# 4. If any interfaces have been added since the last public release,
+# increment age.
+# 5. If any interfaces have been removed since the last public release,
+# set age to 0.
 #
-LIB_SPD_CURRENT=3
-LIB_SPD_REVISION=1
-LIB_SPD_AGE=1
-AC_SUBST(LIB_SPD_CURRENT)
-AC_SUBST(LIB_SPD_REVISION)
-AC_SUBST(LIB_SPD_AGE)
+LIBOPENTTS_CURRENT=0
+LIBOPENTTS_REVISION=0
+LIBOPENTTS_AGE=0
+AC_SUBST(LIBOPENTTS_CURRENT)
+AC_SUBST(LIBOPENTTS_REVISION)
+AC_SUBST(LIBOPENTTS_AGE)
 
 # checks for programs.
 AC_PROG_AWK

@@ -7,5 +7,5 @@ Name: @PACKAGE_NAME@
 Description: @PACKAGE_NAME@ provides a device independent layer for speech synthesis
 Version: @VERSION@
 Requires: glib-2.0 dotconf
-Libs: -L${libdir} -lspeechd
+Libs: -L${libdir} -lopentts
 Cflags: -I${includedir}
