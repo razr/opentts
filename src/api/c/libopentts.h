@@ -1,8 +1,9 @@
 
 /*
- * libspeechd.h - Shared library for easy acces to Speech Dispatcher functions (header)
+ * libopentts.h - Shared library for easy access to OpenTTS functions (header)
  *
  * Copyright (C) 2001, 2002, 2003, 2004 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -18,8 +19,6 @@
  * along with this package; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
- *
- * $Id: libspeechd.h,v 1.29 2008-07-30 09:47:00 hanke Exp $
  */
 
 #ifndef _LIBSPEECHD_H
