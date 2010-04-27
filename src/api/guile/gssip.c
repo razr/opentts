@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include <libguile.h>
-#include <libspeechd.h>
+#include <libopentts.h>
 
 #include "gssip.h"
 
