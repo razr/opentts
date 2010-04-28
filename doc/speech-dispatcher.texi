@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename speech-dispatcher.info
-@settitle Speech Dispatcher
+@settitle OpenTTS 
 @finalout
 @c @setchapternewpage odd
 @c %**end of header
@@ -20,9 +20,9 @@
 @end direntry
 
 @titlepage
-@title Speech Dispatcher
+@title OpenTTS
 @subtitle Mastering the Babylon of TTS'
-@subtitle for Speech Dispatcher @value{VERSION}
+@subtitle for OpenTTS @value{VERSION}
 @author Tom@'a@v{s} Cerha <@email{cerha@@brailcom.org}>
 @author Hynek Hanke <@email{hanke@@volny.cz}>
 @author Milan Zamazal <@email{pdm@@brailcom.org}>
@@ -30,8 +30,9 @@
 @page
 @vskip 0pt plus 1filll
 
-This manual documents Speech Dispatcher, version @value{VERSION}.
+This manual documents OpenTTS, version @value{VERSION}.
 
+Copyright @copyright{} 2010 OpenTTS developers
 Copyright @copyright{} 2001, 2002, 2003, 2006, 2007, 2008 Brailcom, o.p.s.
 
 @quotation
@@ -61,8 +62,9 @@ General Public License''
 @ifnottex
 @node Top, Introduction, (dir), (dir)
 
-This manual documents Speech Dispatcher, version @value{VERSION}.
+This manual documents OpenTTS, version @value{VERSION}.
 
+Copyright @copyright{} 2010 OpenTTS developers
 Copyright @copyright{} 2001, 2002, 2003, 2006 Brailcom, o.p.s.
 
 @quotation
@@ -94,17 +96,17 @@ General Public License''
 @end ifhtml
 
 @menu
-* Introduction::                What is Speech Dispatcher.
+* Introduction::                What is OpenTTS.
 * User's Documentation::        Usage, Configuration...
 * Client Programming::          Documentation for application developers.
 * Server Programming::          Documentation for project contributors.
 
-* Download and Contact::        How to get Speech Dispatcher and how to contact us
+* Download and Contact::        How to get OpenTTS and how to contact us
 * Reporting Bugs::              How to report a bug
 * How You Can Help::            What is needed
 
 * Appendices::                  
-* GNU General Public License::  Copying conditions for Speech Dispatcher
+* GNU General Public License::  Copying conditions for OpenTTS
 * GNU Free Documentation License::  Copying conditions for this manual
 
 * Index of Concepts::           
@@ -114,7 +116,7 @@ General Public License''
 @chapter Introduction
 
 @menu
-* Motivation::                  Why Speech Dispatcher?
+* Motivation::                  Why OpenTTS?
 * Basic Design::                How does it work?
 * Features Overview::           What are the assets?
 * Current State::               What is done?
@@ -125,10 +127,9 @@ General Public License''
 @cindex Basic ideas, Motivation
 @cindex Philosophy
 
-The Speech Dispatcher project provides a device independent layer for
-speech synthesis. It provides a simple interface for client
-applications (applications, that want to speak) as well as for device
-driver modules (the different speech synthesizers).
+The OpenTTS project provides a device independent layer for
+speech synthesis on any POSIX operating system. It provides a simple interface for client
+applications (applications, that want to speak).
 
 High quality speech synthesis has been available for a long time and
 now it's usable even by ordinary users on their home PC's. It is a good
@@ -137,14 +138,16 @@ provide speech output.  There is a wide field of possible uses from
 educational software, to specialized systems (hospitals,
 laboratories).  For visually impaired users it is one of the two
 essential ways of getting output from a computer (the second one is
-a Braille display). This is also where Speech Dispatcher helps.
+a Braille display).
 
 There are different speech synthesizers with different capabilities.
 Some of them are hardware, some of them are software.  Some of them
 are Free Software and are are available on the Internet.  Programmers
-have really hard times when they want to make their program speak
-because they need to find a suitable synthesizer (long hours of
-experimentation and so on...) and then make it work with their program.
+have a really hard time when they want to make their program speak
+because they have to solve three problems.
+First most synthysizers have their own protocall or API.
+Second, various messages have to be scheduled, (should a given message be skipped, stopped, or paused to allow another to be spoken).
+Finaly, The programmer has to deal with other applications possibly wanting to share the synthysizer.
 They often need to write output device drivers for these programs or
 hardware devices and are doing it again and again.  You can imagine it
 all fails when an innocent user simultaneously executes two programs with
@@ -166,40 +169,19 @@ would be a speech synthesizer in each GNU/Linux distribution and some
 common interface taking care of all applications that want to speak,
 allowing users to configure speech parameters and providing a simple interface
 (as speech_printf()) through a shared library for programmers.  It will
-be a long way until we achieve this state of things, but with Speech
-Dispatcher, we are taking the first steps...
+be a long way until we achieve this state of things.
 
 @node Basic Design, Features Overview, Motivation, Introduction
 @section Design
 @cindex Design
 
 @heading Current Design        
-The communication between all applications and synthesizers, when
-implemented directly, is a mess. For this purpose, we wanted
-Speech Dispatcher to be a layer separating applications and
-synthesizers so that applications wouldn't have to care about
-synthesizers and synthesizers wouldn't have to care about interaction
-with applications.
-
-We decided we would implement Speech Dispatcher as a server receiving
-commands from applications over a protocol called @code{SSIP},
-parsing them if needed, and calling the appropriate functions
-of output modules communicating with the different synthesizers.
-These output modules are implemented as plug-ins, so that the user
-can just load a new module if he wants to use a new synthesizer.
-
-Each client (application that wants to speak) opens a socket
-connection to Speech Dispatcher and calls functions like say(),
-stop(), and pause() provided by a library implementing the protocol.
-This shared library is still on the client side and sends Speech
-Dispatcher SSIP commands over the socket. When the messages arrive
-at Speech Dispatcher, it parses them, reads the text that should
-be said and puts it in one of several queues according to the priority
-of the message and other criteria. It then decides when,
-with which parameters (set up by the client and the user),
-and on which synthesizer it will say the message. These requests
-are handled by the output plug-ins (output modules) for different
-hardware and software synthesizers and then said aloud.
+The goal of the OpenTTS project is that there will be a uniform interface to use any synthysizer on any POSIX operating system.
+We implement this with a library libopentts, which is used by an application that wants to provide speech.
+This library provides functions like say, stop, speak character, speak key etc.
+The libopentts library communicates with a server named openttsd, over TCP/IP using a protocall @code{SSIP}.
+The openttsd server enqueues the message, and then speaks it using a module for the current synthysizer with the settings and priority set by the client.
+The module for each synthysizer is a stand alone executable, so that multiple synthysizers can be available at the same time, and be switched on the fly.
 
 @image{figures/architecture,155mm,,Speech Dispatcher architecture}
 
@@ -233,7 +215,7 @@ See also the detailed description @ref{Client Programming} interfaces, and
 
 @node Features Overview, Current State, Basic Design, Introduction
 @section Features Overview
-Speech Dispatcher from user's point of view:
+openttsd from user's point of view:
 
 @itemize @bullet
 @item easy configuration of different speaking applications and central maintenance
@@ -242,7 +224,7 @@ Speech Dispatcher from user's point of view:
 @item history of said messages for visually impaired
 @end itemize
 
-Speech Dispatcher from application programmers's point of view:
+openttsd from application programmers's point of view:
 
 @itemize @bullet
 @item easy way to make your applications speak
@@ -256,7 +238,7 @@ Speech Dispatcher from application programmers's point of view:
 @cindex Synthesizers
 @cindex Other programs
 
-In this version, most of the features of Speech Dispatcher are
+In this version, most of the features of openttsd are
 implemented and we believe it is now useful for applications as a
 device independent Text-to-Speech layer and an accessibility message
 coordination layer.
@@ -271,22 +253,15 @@ speech output when using nearly any GNU/Linux text interface, like
 editing text, reading email, browsing the web, etc.
 
 It's possible to use Speakup, the kernel-based screen reader, with
-software speech using the @code{speechd-up} package and Speech
-Dispatcher.
+software speech using the @code{ospeakup} package and openttsd.
 
 Orca, the primary screen reader for the Gnome Desktop, supports Speech
 Dispatcher directly since its version 2.19.0.  See
 @uref{http://live.gnome.org/Orca/SpeechDispatcher} for more
 information.
 
-There is also a bridge for Gnome Speech, which makes Speech Dispatcher
-visible as one of the available synthesizers in the Gnome Speech
-subsystem, but this method is currently deprecated in favor of direct
-Speech Dispatcher backend in Orca (but may be still the only solution
-with older ATs, such as Gnopernicus).
-
 We also provide a shared C library, a Python library and a Common Lisp
-library that implement the SSIP functions of Speech Dispatcher in a
+library that implement the SSIP functions of openttsd in a
 higher level interface, so writing client applications in these
 languages should be quite easy. 
 
@@ -296,8 +271,8 @@ that is very flexible and extensible using the Scheme scripting
 language. Currently, it supports high quality synthesis for several
 languages (English, Czech, Italian, Spanish, Russian, Polish...), and
 on today's computers it runs reasonably fast.  See
-@uref{http://www.cstr.ed.ac.uk/projects/festival/}. The Speech
-Dispatcher output module for Festival is highly optimized for fast
+@uref{http://www.cstr.ed.ac.uk/projects/festival/}. The openttsd
+output module for Festival is highly optimized for fast
 responsivity.
 
 For simpler purposes, there is also support for Flite and eSpeak which
@@ -311,59 +286,41 @@ faster than Flite in many situations.  See
 lightweight free software engine with a good quality of voice at high
 rates. See @uref{http://espeak.sourceforge.net/}.
 
-Speech Dispatcher also offers support for the non-free Cicero and IBM
+OpenTTS also offers support for the non-free Cicero and IBM
 TTS. Also generic output devices are supported, which means that
 basically any Text-to-Speech program that provides a simple command
-line interface can be used with Speech Dispatcher after a little bit
+line interface can be used with OpenTTS after a little bit
 of tuning in the configuration file. This kind of output module
 provides only limited functionality, but it can be useful if there are
 no other choices for your language. Configuration files for
 Espeak+MBROLA, Epos, Dectalk software, Cepstral Swift and
-(experimental) LiaPhon are shipped with Speech Dispatcher.
+(experimental) LiaPhon are shipped with OpenTTS.
 
-We decided not to support the simple hardware devices ourselves,
-because they don't support synchronization and therefore have serious
-problems when handling multiple messages.  Also they are not extensible,
-they are usually expensive and often hard to support. Today's computers
-are fast enough to perform software speech synthesis and Festival is a
-great example. It seems the public still percieves software synthesis
-as slow, therefore inferior to hardware synthesis. Even Festival is
-often cited as slow. According to our experience, this is mostly due
-to inappropriate interfacing and processing of the results. Festival
-itself doesn't consume more than about 30% CPU (in peaks) on a 1500MHz
-machine. This shows that CPU power is no longer the limiting factor for
-speech synthesis.
-
-Currently, there is no application that would serve as a configuration 
-manager for Speech Dispatcher. We think of this application as a client
-of Speech Dispatcher, where a user can modify all the parameters of
-connections, browse history, modify settings in a permanent
-text file configuration and so on. We welcome anyone who would like to
-help us with such a client.
+openttsd does not yet support hardware synthysizers, however there are plans to implement modules for these synthysizers.
 
 @node User's Documentation, Client Programming, Introduction, Top
 @chapter User's Documentation
 
 @menu
-* Features::                    Description of some fetures in more detail.
+* Features::                    Description of some features in more detail.
 
-* Installation::                How to get it running in the best way.
-* Running::                     
+* Installation::                How to get it running
+* Running::                     How to use it
 * Troubleshooting::             What to do if something doesn't work...
 
-* Configuration::               How to configure Speech Dispatcher.
+* Configuration::               How to configure OpenTTS.
 
-* Tools::                       What tools come with Speech Dispatcher.
+* Tools::                       What tools come with OpenTTS.
 @end menu
 
 @node Features, Installation, User's Documentation, User's Documentation
 @section Features
 
 In this section, there is a more detailed description of the main
-features of Speech Dispatcher. These features are only the ones
+features of openttsd. These features are only the ones
 specific to this implementation of SSIP. For the general overview of
-the features included in SSIP, and therefore also supported by Speech
-Dispatcher, please @xref{Top,,,ssip, SSIP Documentation}.
+the features included in SSIP, and therefore also supported by openttsd,
+please @xref{Top,,,ssip, SSIP Documentation}.
 
 @menu
 * Multiple Output Modules::     Using various speech synthesizers on one system.
@@ -376,14 +333,14 @@ Dispatcher, please @xref{Top,,,ssip, SSIP Documentation}.
 @cindex output module
 @cindex different synthesizers
 
-Speech Dispatcher supports concurrent use of multiple output modules.  If the
+Openttsd supports concurrent use of multiple output modules.  If the
 output modules provide good synchronization, you can combine them when
 reading messages.  For example if module1 can speak English and Czech while
 module2 speaks only German, the idea is that if there is some message in
 German, module2 is used, while module1 is used for the other languages.
 However the language is not the only criteria for the decision.  The rules for
 selection of an output module can be influenced through the configuration file
-@file{speech-dispatcher/speechd.conf}.
+@file{opentts/openttsd.conf}.
 
 @menu
 * Provided Functionality::      Some synthesizers don't support the full set of SSIP features.
@@ -394,19 +351,19 @@ selection of an output module can be influenced through the configuration file
 @node Provided Functionality, Supported Modules, Multiple Output Modules, Multiple Output Modules
 @subsubsection Provided functionality
 
-Please note that some output modules don't support the full Speech
-Dispatcher functionality (e.g. spelling mode, sound icons). If there
+Please note that some output modules don't support the full SSIP
+functionality (e.g. spelling mode, sound icons). If there
 is no easy way around the missing functionality, we don't try to
 emulate it in some complicated way and rather try to encourage the
 developers of that particular synthesizer to add that
 functionality. We are actively working on adding the missing parts to
-Festival, so Festival supports nearly all of the features of Speech
-Dispatcher and we encourage you to use it.
+Festival, so Festival supports nearly all of the features of opentts
+and we encourage you to use it.
 
 @node Supported Modules, Compiling a New Module , Provided Functionality, Multiple Output Modules
 @subsubsection Supported Modules
 
-Currently, these output modules are supported: Festival, Flite, Epos
+Currently, these output modules are supported: Espeak Festival, Flite, Epos
 and Generic.
 
 @itemize
@@ -424,8 +381,8 @@ language is supported by Festival, we advise you to use it. See
 Flite (Festival Light) is a lightweight free software TTS synthesizer
 intended to run on systems with limited resources. At this time, it
 has only one English voice and porting voices from Festival looks
-rather difficult.  With the caching mechanism provided by Speech
-Dispatcher, Festival is faster than Flite in most situations.  See
+rather difficult.  With the caching mechanism provided by openttsd,
+Festival is faster than Flite in most situations.  See
 @uref{http://www.speech.cs.cmu.edu/flite/}.
 
 @item Generic
@@ -440,12 +397,12 @@ However, it provides only very rudimentary support of speaking.
 @subsubsection Compiling a New Module 
 
 If you want to compile and use a new output module, you should place
-it in @file{src/modules} in your source directory for Speech Dispatcher
+it in @file{src/modules} in your source directory for OpenTTS
 and add it to @file{src/modules/Makefile.am}. You can compile and
 install it by typing: @code{make; su root; make install}. The last
-step is to let Speech Dispatcher know that you want to
+step is to let openttsd know that you want to
 use this new module by adding at least these two lines to
-@file{speech-dispatcher/speechd.conf} in your configuration
+@file{opentts/openttsd.conf} in your configuration
 directory. @xref{AddModule}.
 
 @example
@@ -469,7 +426,7 @@ to make it the default for some language.
 @node Client Specific Default Configuration, Security, Multiple Output Modules, Features
 @subsection Client Specific Default Configuration
 
-In Speech Dispatcher's configuration, it is possible to specify
+In OpenTTS's configuration, it is possible to specify
 default values for message parameters from different applications/users
 that connect to it. For example, you can modify the configuration so
 that your instant messenger always speaks notifications louder
@@ -494,8 +451,8 @@ For more details, @xref{Client Specific Configuration}.
 NOTE: This feature is being implemented, however the current version
 does not support it.
 
-Speech Dispatcher does not provide any explicit authentication mechanism.  To
-check the identity of users, Speech Dispatcher uses the Identification Protocol
+Openttsd does not provide any explicit authentication mechanism.  To
+check the identity of users, openttsd uses the Identification Protocol
 mechanism defined by RFC 1413 to get the user's identity. 
 
 @cindex user mapping
@@ -509,9 +466,9 @@ their message history)  See @ref{Top,,Message History,ssip, SSIP Documentation}.
 
 NOTE: This feature is being implemented, however the current version
 does not support it. For security reasons, history was turned off in
-this release of Speech Dispatcher.
+this release of OpenTTS.
 
-To protect privacy of users, Speech Dispatcher restricts history access to a
+To protect privacy of users, OpenTTS restricts history access to a
 certain subset of all the received messages.  The following rules apply:
 
 @itemize @bullet
@@ -544,13 +501,13 @@ previously connected users.
 @section Installation
 
 This part only deals with the general aspects of installing
-Speech Dispatcher. If you are compiling from source code (distribution
+OpenTTS. If you are compiling from source code (distribution
 tarball or CVS), please refer to the file @file{INSTALL} in your
 source tree.
 
 @subsection The requirements 
 
-You will need these components to run Speech Dispatcher:
+You will need these components to run OpenTTS:
 @itemize
 @item glib 2.0  (@uref{http://www.gtk.org})
 @item libdotconf 1.0 (@uref{http://www.azzit.de/dotconf/})
@@ -572,7 +529,7 @@ We recommend to also install these packages:
 
 Although we highly recommend to use Festival for its excellent
 extensibility, good quality voices, good responsiveness and best
-support in Speech Dispatcher, you might want to start with eSpeak, a
+support in OpenTTS , you might want to start with eSpeak, a
 lightweight multi-lingual feature-complete synthesizer, to get all the
 key components working and perhaps only then switch to
 Festival. Installation of eSpeak should be easier and the default
@@ -593,16 +550,16 @@ synthesizer works. For eSpeak run @code{espeak "test"}, for Flite run
 (quit)
 @end example
 
-@item Install Speech Dispatcher
+@item Install OpenTTS
 
-Install the packages for Speech Dispatcher from your distribution or
-download the source tarball (or CVS) from
-@url{http://www.freebsoft.org/speechd} and follow the instructions in
+Install the packages for opentts from your distribution or
+download the source tarball or clone the git repository from
+@url{http://www.opentts.org/} or @url{git://git.opentts.org/opentts.git} respecitely,and follow the instructions in
 the file @code{INSTALL} in the source tree.
 
-@item Configure Speech Dispatcher
+@item Configure OpenTTS
 
-The easiest way to configure and test your Speech Dispatcher is
+The easiest way to configure and test OpenTTS is
 through the @code{spd-conf} configuration script. It will guide you
 through the basic configuration. It will also subsequently perform
 some diagnostics test and offer some limited help with
@@ -613,7 +570,7 @@ spd-conf
 @end example
 
 under an ordinary user or system user like 'speech-dispatcher'
-depending on whether you like to setup Speech Dispatcher as user or
+depending on whether you'd like to setup openttsd as a user or
 system service respectively. You might also want to explore the
 offered options or run some of its subsystems manually, type
 @code{spd-conf -h} for help.
@@ -622,8 +579,8 @@ If you do not want to use this script, it doesn't work in your case
 or it doesn't provide enough configuration flexibility, please
 continue as described bellow and/or in @xref{Running Under Ordinary Users}.
 
-Go to @file{/etc/speech-dispatcher/speechd.conf} or similar (it might
-be @file{/usr/local/etc/speech-dispatcher/speechd.conf} if you install
+Go to @file{/etc/opentts/openttsd.conf} or similar (it might
+be @file{/usr/local/etc/opentts/openttsd.conf} if you install
 from sources) and edit the lines @code{AddModule},
 @code{DefaultModule} and @code{LanguageDefaultModule} for your chosen
 synthesizer. If you want to run Festival, just substitute 'espeak' for
@@ -641,9 +598,9 @@ detailed audio configuration. If there is a '#' sign before the
 option, it means it doesn't have any effect and its argument is its
 default value.
 
-@item Test Speech Dispatcher
+@item Test openttsd 
 
-The simplest way to test Speech Dispatcher is through 
+The simplest way to test openttsd is through 
 @code{spd-conf -d} or through the @code{spd-say} tool.
 
 Example:
@@ -672,9 +629,9 @@ correct name of your mbrola binary and correct path to its voice
 database.
 
 Uncomment the @code{AddModule} line for @code{espeak-mbrola-generic}
-in @file{speechd.conf} in your configuration for Speech Dispatcher.
+in @file{openttsd.conf} in your configuration for opentts.
 
-Restart speech-dispatcher and in your client, select
+Restart openttsd and in your client, select
 @code{espeak-mbrola-generic} as your output module, or
 test it with the following command
 
@@ -685,7 +642,7 @@ spd-say -o espeak-mbrola-generic -l cs Testing
 @node Running, Troubleshooting, Installation, User's Documentation
 @section Running
 
-Speech Dispatcher can be executed either as a system-wide system service
+Openttsd can be executed either as a system-wide system service
 or on a per-user basis. While the first way allows speech output in early
 boot stages and congregation of speech comming from applications running
 under different system users, the second way provides more flexibility
@@ -702,24 +659,24 @@ people use the computer at the same time.
 @node Runnning as System Wide Service, Running Under Ordinary Users, Running, Running
 @subsection Running as System Wide Service
 
-To run Speech Dispatcher as a system wide service, if your
-distribution supports Speech Dispatcher, most likely you will
+To run openttsd as a system wide service, if your
+distribution supports openttsd , most likely you will
 only have to do:
 
 @example
-/etc/init.d/speech-dispatcher start
+/etc/init.d/openttsdstart
 @end example
 
 or it will even already be started automatically. Bellow follos a more
 technical description.
 
-When running Speech Dispatcher as a system wide service, it is
+When running openttsd as a system wide service, it is
 recommended to start it using an /etc/init.d/ script under a special
-user and group, like 'speech-dispatcher'. This user must have read/write
+user and group, like 'opentts'. This user must have read/write
 permissions to access the PID directory (typically
 /var/run/speech-dispatcher/), read permissions to the configuration
-directory (typically /etc/speech-dispatcher/) and read/write permissions
-to the logfile directory (typically /var/log/speech-dispatcher/).  The
+directory (typically /etc/opentts/) and read/write permissions
+to the logfile directory (typically /var/log/opentts/).  The
 listed typical path are prefixed with /usr/local/ when compiling the
 package from source code and can be overridden using compilation flags.
 
@@ -730,10 +687,10 @@ values.
 @node Running Under Ordinary Users, Running in a Custom Setup, Runnning as System Wide Service, Running
 @subsection Running Under Ordinary Users
 
-Before running Speech Dispatcher under an ordinary user account, a
+Before running openttsd under an ordinary user account, a
 directory @file{.opentts/conf/} should be created in the users
-home folder and all the configuration files and directories should be
-put here. If Speech Dispatcher is already installed, this
+home directory and all the configuration files and directories should be
+put here. If OpenTTS is already installed, this
 is most easily done with the @code{spd-conf} configuration utility
 under the appropriate user and answer some basic questions.
 
@@ -753,10 +710,10 @@ you can achieve the same result manually as described bellow:
 @example
 # mkdir ~/.opentts
 # mkdir ~/.opentts/conf/
-# cp -r /usr/share/speech-dispatcher/conf/* ~/.opentts/conf/
+# cp -r /usr/share/opentts/conf/* ~/.opentts/conf/
 @end example
 
-If @file{~/.opentts/} is found by Speech Dispatcher on
+If @file{~/.opentts/} is found by openttsd on
 startup, it will use the configuration placed here and ignore the
 system-wide configuration. Also, it will create the @file{log/} and
 @file{pid/} subdirectories in @file{~/.opentts/} and use them
@@ -764,13 +721,13 @@ for its log files and pid files respectively. This behavior can only
 be overriden directly by the command line options.
 
 It is also necessary to change the communication port, since the default
-6560 will most likely be used by a system-wide Speech Dispatcher. Please
+6560 will most likely be used by a system-wide openttsd. Please
 read @xref{Setting Communication Port}.
 
 @node Running in a Custom Setup, Setting Communication Port, Running Under Ordinary Users, Running
 @subsection Running in a Custom Setup
 
-Speech Dispatcher can be run in any other setup of executing users, port
+openttsd can be run in any other setup of executing users, port
 numbers and system paths as well. The path to configuration, pidfile and
 logfiles can be specified separately via compilation flags,
 configuration file options or command line options in this ascending
@@ -779,13 +736,13 @@ order of their priority.
 @node Setting Communication Port,  , Running in a Custom Setup, Running
 @subsection Setting Communication Port
 
-The default communication port between Speech Dispatcher and user
+The default communication port between openttsd and user
 applications is 6560 and all applications know this port number as the
 default to contact Speech Dispatcher. If you want to change it
 however, you can do it in the configuration file speechd.conf or
-through a command line option when executing the Speech Dispatcher
+through a command line option when executing the openttsd
 binary. In such a case, it will also be necessary to influence the
-port used by the client applications (speechd-up, Orca, speechd-el,
+port used by the client applications (ospeakup, Orca, speechd-el,
 ...]. The most easy way to do so is via the @var{SPEECHD_PORT}
 environment variable, which should be set to the value of the port in
 use (e.g. as 'export SPEECHD_PORT=6561') before starting the client
@@ -794,7 +751,7 @@ program, although some programs offer another mechanism as well.
 @node Troubleshooting, Configuration, Running, User's Documentation
 @section Troubleshooting
 
-If you are experiencing problems when running Speech Dispatcher, please:
+If you are experiencing problems when running opentsd, please:
 
 @itemize
 
@@ -807,10 +764,10 @@ spd-conf -d
 
 @item
 Check the appropriate logfile in
-@file{~/.opentts/logs/speechd.log} for user Speech
-Dispatcher or in @file{/var/log/speech-dispatcher/speechd.log}. Look
+@file{~/.opentts/logs/speechd.log} for user openttsd
+or in @file{/var/log/opentts/speechd.log}. Look
 for lines containing the string 'ERROR' and their surrounding
-contents. If you hear no speech, restart Speech Dispatcher and look
+contents. If you hear no speech, restart openttsd and look
 near the end of the log file -- before any attempts for synthesis of
 any message. Usually, if something goes wrong with the initialization
 of the output modules, a textual description of the problem and a
@@ -837,7 +794,7 @@ Example:
 @end example
 
 @item
-Check if your configuration files (speechd.conf, modules/*.conf) 
+Check if your configuration files (openttsd.conf, modules/*.conf) 
 are correct (some uninstalled synthesizer specified as the default,
 wrong values for default voice parameters etc.)
 
@@ -858,13 +815,10 @@ localhost 1314}). If you are not rejected, it works.
 @cindex configuration
 @cindex default values
 
-Speech Dispatcher can be configured on several different levels.  You
+openttsd can be configured on several different levels.  You
 can configure the global settings through the server configuration file,
-which can be placed either in the Speech Dispatcher default
-configuration system path like /etc/speech-dispatcher/ or in your home
-in ~/.opentts, if you are running Dispatcher under an ordinary
-user.  There is also support for per-client configuration, this is,
-specifying different default values for different client applications.
+which can be placed either in the opentts global configuration directory, or in a users .opentts directory.
+There is also support for per-client configuration, this allows you specify different configurations for eahc client application you use with OpenTTS.
 
 Furthermore, applications often come with their own means of configuring
 speech related settings.  Please see the documentation of your
@@ -900,7 +854,7 @@ character and set it to the desired value.
 
 Strings are enclosed in doublequotes.
 @example
-LogFile  "/var/log/speech-dispatcher.log"
+LogFile  "/var/log/opentts.log"
 @end example
 
 Numbers are written without any quotes.
@@ -942,7 +896,7 @@ error message.
 
 It is possible to automatically set different default values of speech
 parameters (e.g.  rate, volume, punctuation, default voice...) for
-different applications that connect to Speech Dispatcher. This is
+different applications that connect to openttsd. This is
 especially useful for simple applications that have no parameter
 setting capabilities themselves or they don't support a parameter
 setting you wish to change (e.g. language).
@@ -950,7 +904,7 @@ setting you wish to change (e.g. language).
 Using the commands @code{BeginClient "IDENTIFICATION"} and
 @code{EndClient} it is possible to open and close a section of
 parameter settings that only affects those client applications that
-identify themselves to Speech Dispatcher under the specific
+identify themselves to openttsd under the specific
 identification code which is matched against the string
 @code{IDENTIFICATION}.  It is possible to use wildcards ('*' matches
 any number of characters and '?' matches exactly one character) in the
@@ -963,27 +917,27 @@ application (usually the name of the binary for it) and
 @code{connection} is a name for the connection (one application might
 use more connections for different purposes).
 
-An example is provided in @code{/etc/speech-dispatcher/speechd.conf}
+An example is provided in @code{/etc/opentts/openttsd.conf}
 (see the line @code{Include "clients/emacs.conf"} and
-@code{/etc/speech-dispatcher/clients/emacs.conf}.
+@code{/etc/opentts/clients/emacs.conf}.
 
 @node Output Modules Configuration, Log Levels, Client Specific Configuration, Configuration
 @subsection Output Modules Configuration
 
 Each user should turn on at least one output module in his
-configuration, if he wants Speech Dispatcher to produce
-any sound output. If no output module is loaded, Speech Dispatcher
+configuration, if he wants openttsd to produce
+any sound output. If no output module is loaded, openttsd
 will start, log messages into history and communicate with clients,
 but no sound is produced.
 
 Each output module has an
 ``AddModule'' line in
-@file{speech-dispatcher/speechd.conf}. Additionally, each output
+@file{opentts/opentsd.conf}. Additionally, each output
 module can have its own configuration file.
 
 The audio output is handled by the output modules themselves, so this
 can be switched in their own configuration files under
-@code{etc/speech-dispatcher/modules/}.
+@code{etc/opentts/modules/}.
 
 @menu
 * Loading Modules in speechd.conf::  
@@ -995,7 +949,7 @@ can be switched in their own configuration files under
 @subsubsection Loading Modules in speechd.conf
 
 @anchor{AddModule}
-Each module that should be run when Speech Dispatcher starts must be loaded
+Each module that should be run when openttsd starts must be loaded
 by the @code{AddModule} command in the configuration. Note that you can load
 one binary module multiple times under different names with different
 configurations. This is especially useful for loading the generic output
@@ -1009,11 +963,11 @@ AddModule "@var{module_name}" "@var{module_binary}" "@var{module_config}"
 
 @var{module_binary} is the name of the binary executable
 of this output module. It can be either absolute or relative
-to @file{bin/speechd-modules/}.
+to @file{bin/opentts-modules/}.
 
 @var{module_config} is the file where the configuration for
 this output module is stored. It can be either absolute or relative
-to @file{etc/speech-dispatcher/modules/}. This parameter is optional.
+to @file{etc/opentts/modules/}. This parameter is optional.
 
 @node Configuration files of output modules, Configuration of the Generic Output Module, Loading Modules in speechd.conf, Output Modules Configuration
 @subsubsection Configuration Files of Output Modules
@@ -1023,7 +977,6 @@ configuration options. Please look at the comments in its
 configuration file for a detailed description. However, there
 are several options which are common for some
 output modules. Here is a short overview of them.
-
 @table @code
 @item AudioOutputMethod
 @anchor{AudioOutputMethod method}
@@ -1159,7 +1112,7 @@ The desired pitch (a float number defined in GenericPitchAdd and GenericPitchMul
 The desired rate or speed (a float number defined in GenericRateAdd and GenericRateMultiply)
 @end itemize
 
-Here is an example from @file{etc/speech-dispatcher/modules/epos-generic.conf}
+Here is an example from @file{etc/opentts/modules/epos-generic.conf}
 @example
 GenericExecuteSynth \
 "epos-say -o --language $LANG --voice $VOICE --init_f $PITCH --init_t $RATE \
@@ -1308,7 +1261,7 @@ Run debugging and offer to send a request for help to the developers.
 @subsection spd-send
 
 spd-send is a small client/server application that allows you to
-establish a connection to Speech Dispatcher and then use a simple
+establish a connection to openttsd and then use a simple
 command line tool to send and receive SSIP protocol communication.
 
 Please see @file{src/c/clients/spd-say/README} in the Speech
@@ -1317,7 +1270,7 @@ Dispatcher's source tree for more information.
 @node Client Programming, Server Programming, User's Documentation, Top
 @chapter Client Programming
 
-Clients communicate with Speech Dispatcher via the Speech Synthesis
+Clients communicate with openttsd via the Speech Synthesis
 Internet Protocol (SSIP) @xref{Top, , , ssip, Speech Synthesis
 Internet Protocol documentation}.  The protocol is the actual
 interface to Speech Dispatcher.
@@ -1326,7 +1279,7 @@ Usually you don't need to use SSIP directly.  You can use one of the supplied
 libraries, which wrap the SSIP interface.  This is the
 recommended way of communicating with Speech Dispatcher.  We try so support as
 many programming environments as possible.  This manual (except SSIP) contains
-documentation for the C and Python libraries, however there are also other
+documentation for the C, Python and Guile  libraries, however there are also other
 libraries developed as external projects.  Please contact us for information
 about current external client libraries.
 
@@ -1360,10 +1313,10 @@ about current external client libraries.
 @deffn {C API function} SPDConnection* spd_open(char* client_name, char* connection_name, char* user_name, SPDConnectionMode connection_mode)
 @findex spd_open()
 
-Opens a new connection to Speech Dispatcher and returns a socket file
+Opens a new connection to openttsd and returns a socket file
 descriptor you will use to communicate with Speech Dispatcher. The
 socket file descriptor is a parameter used in all the other
-functions. It reads Speech Dispatcher's port number from the
+functions. It reads openttsd's port number from the
 environment variable @var{SPEECHD_PORT}.
 
 The three parameters @code{client_name}, @code{connection_name} and
@@ -1415,7 +1368,7 @@ closed, threads are terminated and memory is freed.
 @deffn {C API function}  void spd_close(SPDConnection *connection)
 @findex spd_close()
 
-Closes a Speech Dispatcher socket connection, terminates associated
+Closes a openttsd socket connection, terminates associated
 threads (if necessary) and frees the memory allocated by
 spd_open(). You should close every connection before the end of your
 program.
@@ -1449,7 +1402,7 @@ typedef enum@{
 @deffn {C API function}  int spd_say(SPDConnection* connection, SPDPriority priority, char* text);
 @findex spd_say()
 
-Sends a message to Speech Dispatcher. If this message isn't blocked by
+Sends a message to openttsd. If this message isn't blocked by
 some message of higher priority and this CONNECTION isn't paused, it
 will be synthesized directly on one of the output devices. Otherwise,
 the message will be discarded or delayed according to its priority.
@@ -1719,7 +1672,7 @@ It returns 0 on success, -1 otherwise.
 
 Sends a sound icon ICON_NAME. These are symbolic names that are mapped
 to a sound or to a text string (in the particular language) according to
-Speech Dispatcher tables and user settings. Each program can also
+OpenTTS  tables and user settings. Each program can also
 define its own icons.
 
 @code{connection} is the SPDConnection* connection created by spd_open().
@@ -1745,7 +1698,7 @@ Documentation} for a general description of what they mean.
 @deffn {C API function} int spd_set_data_mode(SPDConnection *connection, SPDDataMode mode)
 @findex spd_set_data_mode()
 
-Set Speech Dispatcher data mode. Currently, plain text and SSML are
+Set SSIP data mode. Currently, plain text and SSML are
 supported. SSML is especially useful if you want to use index marks
 or include changes of voice parameters in the text.
 
@@ -1778,7 +1731,7 @@ and their registration names may vary from machine to machine.
 @code{connection} is the SPDConnection* connection created by spd_open().
 
 @code{output_module} is the output module name under which the module
-was loaded into Speech Dispatcher in its configuration (``flite'',
+was loaded into openttsd in its configuration (``flite'',
 ``festival'', ``epos-generic''... )
 
 @end deffn
@@ -1867,7 +1820,7 @@ lowest and the highest pitch respectively.
 @deffn {C API function}  int spd_set_volume(SPDConnection* connection, int volume);
 @findex spd_set_volume()
 
-Set the volume of the voice and sounds produced by Speech Dispatcher's output
+Set the volume of the voice and sounds produced by openttsd's output
 modules.
 
 @code{connection} is the SPDConnection* connection created by spd_open().
@@ -2026,7 +1979,7 @@ members:
 
 There are three settings commands which will turn notifications on and
 off for the current SSIP connection and cause the callbacks to be called
-when the event is registered by Speech Dispatcher.
+when the event is registered by openttsd.
 
 @deffn {C API function} int spd_set_notification_on(SPDConnection* connection, SPDNotification notification);
 @findex spd_set_notification_on
@@ -2066,7 +2019,7 @@ of clarity.)
 
 sem_t semaphore;
 
-/* Callback for Speech Dispatcher notifications */
+/* Callback for opentsd notifications */
 void end_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 @{
    /* We don't check msg_id here since we will only send one
@@ -2084,13 +2037,13 @@ main(int argc, char **argv)
 
    sem_init(&semaphore, 0, 0);
 
-   /* Open Speech Dispatcher connection in THREADED mode. */ 
+   /* Open a connection to openttsd in THREADED mode. */ 
    conn = spd_open("say","main", NULL, SPD_MODE_THREADED);
 
    /* Set callback handler for 'end' and 'cancel' events. */ 
    conn->callback_end = con->callback_cancel = end_of_speech;
 
-   /* Ask Speech Dispatcher to notify us about these events. */ 
+   /* Ask openttsd to notify us about these events. */ 
    spd_set_notification_on(conn, SPD_END);
    spd_set_notification_on(conn, SPD_CANCEL);
 
@@ -2291,8 +2244,8 @@ at the experimental stage. Please read @file{src/cl/README}.
 The main documentation for the server core is the code itself. This section
 is only a general introduction intended to give you some basic information
 and hints where to look for things. If you are going to make some modifications
-in the server core, we will be happy if you get in touch with us on
-@email{speechd@@lists.freebsoft.org}.
+in the server core, we would like you to contact us at
+@email{opentts-dev@@lists.opentts.org}.
 
 The server core is composed of two main parts, each of them implemented
 in a separate thread. The @emph{server part} handles the communication
@@ -2742,6 +2695,7 @@ On module_close(), all lateral threads and processes should be terminated,
 all memory freed. Don't assume module_close() is always called before exit()
 and the sources will be freed automatically.
 @item
+%!!!change 
 We will be happy if all the copyrights are assigned to Brailcom, o.p.s.
 in order for us to be in a better legal position against possible intruders.
 @end itemize
@@ -3602,33 +3556,27 @@ information instead, please do so.
 @node How You Can Help, Appendices, Reporting Bugs, Top
 @chapter How You Can Help
 
-If you want to contribute to the development of Speech Dispatcher,
+If you want to contribute to the development of OpenTTS,
 we will be very happy if you do so. Please contact us on 
-@email{users@@lists.freebsoft.org}.
+@email{opentts-dev@@lists.opentts.org}.
 
 Here is a short, definitively not exhaustive, list of how you can
 help us and other users.
 
 @itemize
 @item
-@emph{Donate money:} We are a non-profit organization and we can't work without
-funding. Brailcom, o.p.s. created Speech Dispatcher, speechd-el and also works
-on other projects to help blind and visually impaired users of computers. We build
-on Free Software and GNU/Linux, because we believe this is the right way. But it
-won't be possible when we have no money. @uref{http://www.freebsoft.org/}
-
-@item
 @emph{Report bugs:} Every user, even if he can't give us money and he is not
 a programmer, can help us very much by just using our software and telling
 us about the bugs and inconveniences he encounters. A good user community that
 reports bugs is a crucial part of development of a good Free Software package.
 We can't test our software under all circumstances and on all platforms, so each
-constructive bug report is highly appreciated. You can report bugs in Speech
-Dispatcher on @email{speechd@@bugs.freebsoft.org}.
+constructive bug report is highly appreciated. You can report bugs related to anything OpenTTS on 
+ @url{opentts.org}
+under issues.
 
 @item
 @emph{Write or modify an application to support synthesis:} With
-Speech Dispatcher, we have provided an interface that allows
+OpenTTS, we have provided an interface that allows
 applications easy access to speech synthesis. However powerful, it's
 no more than an interface, and it's useless on its own. Now it's time
 to write the particular client applications, or modify existing
@@ -3657,18 +3605,18 @@ alternatives as soon as possible.
 See @uref{http://www.cstr.ed.ac.uk/projects/festival/}.
 
 @item
-@emph{Help us with this or other Free-b-Soft projects:} Please look at
-@uref{http://www.freebsoft.org} to find information about our
-projects. There is a plenty of work to be done for the blind and
+@emph{Help us with this or other OpenTTS projects:} Please look at
+@uref{http://www.opentts.org} to find information about our
+projects. There is plenty of work to be done for the blind and
 visually impaired people to make their work with computers easier.
 
 @item
-@emph{Spread the word about Speech Dispatcher and Free Software:} You can
+@emph{Spread the word about OpenTTS and Free Software:} You can
 help us, and the whole community around Free Software, just by telling
 your friends about the amazing world of Free Software. It doesn't
-have to be just about Speech Dispatcher; you can tell them about
+have to be just about OpenTTS; you can tell them about
 other projects or about Free Software in general. Remember that
-Speech Dispatcher could only arise out of understanding of some people
+OpenTTS could only arise out of understanding of some people
 of the principles and ideas behind Free Software. And this is mostly
 the same for the rest of the Free Software world.
 See @uref{http://www.gnu.org/} for more information about GNU/Linux
