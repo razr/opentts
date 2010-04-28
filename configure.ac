@@ -336,14 +336,14 @@ AC_ARG_WITH([system-speechd-start-cmd],
 SPEECHD_SYSTEM_START_CMD=$with_system_speechd_start_cmd
 AC_SUBST(SPEECHD_SYSTEM_START_CMD)
 
-spdconfdir='${sysconfdir}/speech-dispatcher'
+spdconfdir='${sysconfdir}/opentts'
 AC_SUBST(spdconfdir)
 moduleconfdir='${spdconfdir}/modules' 
 AC_SUBST(moduleconfdir)
 clientconfdir='${spdconfdir}/clients'
 AC_SUBST(clientconfdir)
 
-spdconforigdir='${datadir}/speech-dispatcher/conf'
+spdconforigdir='${datadir}/opentts/conf'
 AC_SUBST(spdconforigdir)
 moduleconforigdir='${spdconforigdir}/modules'
 AC_SUBST(moduleconforigdir)
@@ -353,15 +353,10 @@ spddesktopconforigdir='${spdconforigdir}/desktop'
 AC_SUBST(spddesktopconforigdir)
 
 
-snddatadir='${datadir}/sounds/speech-dispatcher'
+snddatadir='${datadir}/sounds/opentts'
 AC_SUBST(snddatadir)
-modulebindir='${libdir}/speech-dispatcher-modules'
+modulebindir='${libdir}/opentts-modules'
 AC_SUBST(modulebindir)
-spdlibdir='${libdir}/speech-dispatcher' 
-AC_SUBST(spdlibdir)
-spdlib2dir='${libdir}/speech-dispatcher' 
-AC_SUBST(spdlib2dir)
-
 
 AC_ARG_VAR(pidpath, Absolute path to a pid file)
 
