@@ -142,10 +142,14 @@ module_init(char **status_info)
 {
   int ret;
   int stderr_redirect;
+struct sigaction ignore;
+ignore.sa_flags = SA_RESTART;
+sigemptyset(&ignore.sa_mask);
+ignore.sa_handler = SIG_IGN;
 
   DBG("Module init\n");
 
-  (void) signal(SIGPIPE, SIG_IGN);
+sigaction(SIGPIPE, &ignore, NULL);
 
   DBG("call the pipe system call\n");
   if(pipe(fd1) < 0
@@ -188,7 +192,7 @@ module_init(char **status_info)
       int i = 0;
       for (i = 3; i < 256; i++)
 	close(i);
-      (void) signal(SIGPIPE, SIG_IGN);
+sigaction(SIGPIPE, &ignore, NULL);
       execl(CiceroExecutable, CiceroExecutable, (void*) NULL);
       DBG("Error execl()\n");
       exit(1);

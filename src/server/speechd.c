@@ -790,6 +790,9 @@ main(int argc, char *argv[])
     fd_set testfds;
     int fd;
     int ret;
+struct sigaction sig;
+sig.sa_flags = SA_RESTART;
+sigemptyset(&sig.sa_mask);
 
     /* Initialize threading and thread safety in Glib */
     g_thread_init(NULL);
@@ -886,10 +889,14 @@ main(int argc, char *argv[])
     if (create_pid_file() != 0) exit(1);
 
     /* Register signals */
-    (void) signal(SIGINT, speechd_quit);	
-    (void) signal(SIGHUP, speechd_load_configuration);
-    (void) signal(SIGPIPE, SIG_IGN);
-    (void) signal(SIGUSR1, speechd_reload_dead_modules);
+sig.sa_handler = speechd_quit;
+sigaction(SIGINT, &sig, NULL);
+sig.sa_handler = speechd_load_configuration;
+ sigaction(SIGHUP, &sig, NULL);
+sig.sa_handler = SIG_IGN;
+sigaction(SIGPIPE, &sig, NULL);
+sig.sa_handler = speechd_reload_dead_modules;
+sigaction(SIGUSR1, &sig, NULL);
 
     speechd_init();
 

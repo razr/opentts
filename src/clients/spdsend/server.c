@@ -396,10 +396,14 @@ static void serve ()
 
 static void daemonize ()
 {
+	struct sigaction ignore;
+	ignore.sa_flags = SA_RESTART;
+	ignore.sa_handler = SIG_IGN;
+	sigemptyset(&ignore.sa_mask);
   if (fork () != 0)
     exit (0);
   setsid ();
-  signal (SIGHUP, SIG_IGN);
+  sigaction (SIGHUP, &ignore, NULL);
   if (fork () != 0)
     exit (0);
   chdir ("/");
