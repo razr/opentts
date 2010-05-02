@@ -1,71 +1,77 @@
 ## Process this file with automake to produce Makefile.in
 
-ottslib_LTLIBRARIES = libottsalsa.la libottslibao.la libottsnas.la libottsoss.la libottspulse.la libsdaudio.la
 AM_CPPFLAGS = $(GLIB_CFLAGS)
+lib_LTLIBRARIES = libsdaudio.la
 libsdaudio_la_CPPFLAGS = $(AM_CPPFLAGS)  -DPLUGIN_DIR="\"@ottslibdir@\""
 libsdaudio_la_LDFLAGS = -version-info @LIB_SDAUDIO_CURRENT@:@LIB_SDAUDIO_REVISION@:@LIB_SDAUDIO_AGE@
 libsdaudio_la_LIBADD = $(GLIB_LIBS) -lltdl -lpthread
 libsdaudio_la_SOURCES = spd_audio.c spd_audio.h spd_audio_plugin.h static_plugins.c
 
+ottslib_LTLIBRARIES = 
 if oss_support
-libottsoss_la_SOURCES = oss.c spd_audio_plugin.h
-libottsoss_la_LIBADD = $(GLIB_LIBS)
+ottslib_LTLIBRARIES += otts_oss.la
+otts_oss_la_SOURCES = oss.c spd_audio_plugin.h
+otts_oss_la_LIBADD = $(GLIB_LIBS)
 
 if audio_static
-libottsoss_la_LDFLAGS = -static
-libsdaudio_la_LIBADD += libottsoss.la
+otts_oss_la_LDFLAGS = -static
+libsdaudio_la_LIBADD += otts_oss.la
 else
-libottsoss_la_LDFLAGS = -module
+otts_oss_la_LDFLAGS = -module -avoid-version
 endif
 endif
 
 if nas_support
-libottsnas_la_SOURCES = nas.c spd_audio_plugin.h
-libottsnas_la_LIBADD = $(NAS_LIBS) $(GLIB_LIBS)
+ottslib_LTLIBRARIES += otts_nas.la
+otts_nas_la_SOURCES = nas.c spd_audio_plugin.h
+otts_nas_la_LIBADD = $(NAS_LIBS) $(GLIB_LIBS)
 
 if audio_static
-libottsnas_la_LDFLAGS = -static
-libsdaudio_la_LIBADD += libottsnas.la
+otts_nas_la_LDFLAGS = -static
+libsdaudio_la_LIBADD += otts_nas.la
 else
-libottsnas_la_LDFLAGS = -module
+otts_nas_la_LDFLAGS = -module -avoid-version
 endif
 endif
 
 if pulse_support
-libottspulse_la_SOURCES = pulse.c spd_audio_plugin.h
-libottspulse_la_CFLAGS = $(PULSE_CFLAGS)
-libottspulse_la_LIBADD = $(PULSE_LIBS) $(GLIB_LIBS)
+ottslib_LTLIBRARIES += otts_pulse.la
+otts_pulse_la_SOURCES = pulse.c spd_audio_plugin.h
+otts_pulse_la_CFLAGS = $(PULSE_CFLAGS)
+otts_pulse_la_LIBADD = $(PULSE_LIBS) $(GLIB_LIBS)
 
 if audio_static
-libottspulse_la_LDFLAGS = -static
-libsdaudio_la_LIBADD += libottspulse.la
+otts_pulse_la_LDFLAGS = -static
+libsdaudio_la_LIBADD += otts_pulse.la
 else
-libottspulse_la_LDFLAGS = -module
+otts_pulse_la_LDFLAGS = -module -avoid-version
 endif
 endif
 
 if alsa_support
-libottsalsa_la_SOURCES = alsa.c spd_audio_plugin.h
-libottsalsa_la_CFLAGS = $(ALSA_CFLAGS)
-libottsalsa_la_LIBADD = $(ALSA_LIBS) $(GLIB_LIBS)
+ottslib_LTLIBRARIES += otts_alsa.la
+otts_alsa_la_SOURCES = alsa.c spd_audio_plugin.h
+otts_alsa_la_CFLAGS = $(ALSA_CFLAGS)
+otts_alsa_la_LIBADD = $(ALSA_LIBS) $(GLIB_LIBS)
 
 if audio_static
-libottsalsa_la_LDFLAGS = -static
-libsdaudio_la_LIBADD += libottsalsa.la
+otts_alsa_la_LDFLAGS = -static
+libsdaudio_la_LIBADD += otts_alsa.la
 else
-libottsalsa_la_LDFLAGS = -module
+otts_alsa_la_LDFLAGS = -module -avoid-version
 endif
 endif
 
 if libao_support
-libottslibao_la_SOURCES = libao.c spd_audio_plugin.h
-libottslibao_la_LIBADD = $(LIBAO_LIBS) $(GLIB_LIBS)
+ottslib_LTLIBRARIES += otts_libao.la
+otts_libao_la_SOURCES = libao.c spd_audio_plugin.h
+otts_libao_la_LIBADD = $(LIBAO_LIBS) $(GLIB_LIBS)
 
 if audio_static
-libottslibao_la_LDFLAGS = -static
-libsdaudio_la_LIBADD += libottslibao.la
+otts_libao_la_LDFLAGS = -static
+libsdaudio_la_LIBADD += otts_libao.la
 else
-libottslibao_la_LDFLAGS = -module
+otts_libao_la_LDFLAGS = -module -avoid-version
 endif
 endif
 
