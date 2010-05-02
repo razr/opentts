@@ -383,8 +383,8 @@ snddatadir='${datadir}/sounds/opentts'
 AC_SUBST(snddatadir)
 modulebindir='${libdir}/opentts/modules'
 AC_SUBST(modulebindir)
-ottslibdir='${libdir}/opentts/audio'
-AC_SUBST(ottslibdir)
+audiodir='${libdir}/opentts/audio'
+AC_SUBST(audiodir)
 
 AC_ARG_VAR(pidpath, Absolute path to a pid file)
 
