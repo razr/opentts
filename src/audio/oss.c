@@ -40,6 +40,7 @@
 #include <sys/soundcard.h>
 #include <glib.h>
 
+#define SPD_AUDIO_PLUGIN_ENTRY otts_oss_LTX_spd_audio_plugin_get
 #include "spd_audio_plugin.h"
 
 typedef struct {

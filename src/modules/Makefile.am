@@ -1,7 +1,7 @@
 inc_local = "-I$(top_srcdir)/src/common" "-I$(top_srcdir)/src/audio"
 common_sources = module_main.c module_utils.c module_utils.h 
 local_libs = $(top_srcdir)/src/common/libcommon.la $(top_srcdir)/src/audio/libsdaudio.la
-common_libs = $(local_libs) -lsdaudio
+common_libs = $(local_libs) -lsdaudio @AUDIO_DLOPEN_MODULES@
 
 SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
 SNDFILE_LIBS = @SNDFILE_LIBS@

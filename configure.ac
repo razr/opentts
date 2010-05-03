@@ -101,22 +101,15 @@ AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
 AC_SUBST(SNDFILE_CFLAGS)
 AC_SUBST(SNDFILE_LIBS)
 
-AC_ARG_WITH(audio-static-plugins, AS_HELP_STRING(--with-audio-static-plugins, [Compile audio plugins statically (default=no)]),
-        AS_IF([test "x$with_audio_static_plugins" = xyes], AC_MSG_NOTICE(Forced compilation audio plugins statically)),
-        [with_audio_static_plugins=no])
-
-AM_CONDITIONAL(audio_static, test x$with_audio_static_plugins = xyes)
-
 # Audio subsystem part
-STATIC_AUDIO_PLUGINS_LIST=
+AUDIO_DLOPEN_MODULES=
 AC_ARG_WITH(oss, AS_HELP_STRING(--with-oss, [Compile with OSS support (default)]),
         AS_IF([test "x$with_oss" = xno], AC_MSG_WARN(Forced compilation without OSS support.)),
         [with_oss=yes])
 
 AM_CONDITIONAL(oss_support, test $with_oss = "yes")
 if test $with_oss = "yes"; then
-        AS_IF([test "x$with_audio_static_plugins" = xyes],
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST oss")
+        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_oss.la"
 fi
 
 AC_CHECK_LIB(audio,
@@ -140,8 +133,7 @@ AM_CONDITIONAL(nas_support, test $nas_aud = "true")
 if test $nas_aud = "true"; then
         NAS_LIBS="-L/usr/X11R6/lib -lXau -laudio"
         AC_SUBST(NAS_LIBS)
-        AS_IF([test "x$with_audio_static_plugins" = xyes],
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST nas")
+        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_nas.la"
 fi
 
 AC_CHECK_LIB(ao,
@@ -164,8 +156,7 @@ AM_CONDITIONAL(libao_support, test $libao_aud = "true")
 if test $libao_aud = "true"; then
         LIBAO_LIBS="-lao"
         AC_SUBST(LIBAO_LIBS)
-        AS_IF([test "x$with_audio_static_plugins" = xyes],
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST libao")
+        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la"
 fi
 
         PKG_CHECK_MODULES(ALSA,alsa,
@@ -187,8 +178,7 @@ AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
 if test $alsa_aud = "true"; then
         AC_SUBST(ALSA_CFLAGS)
         AC_SUBST(ALSA_LIBS)
-        AS_IF([test "x$with_audio_static_plugins" = xyes],
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST alsa")
+        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_alsa.la"
 fi
 
 PKG_CHECK_MODULES(PULSE,libpulse-simple,
@@ -210,18 +200,10 @@ AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
 if test $pulse_aud = "true"; then
         AC_SUBST(PULSE_CFLAGS)
         AC_SUBST(PULSE_LIBS)
-        AS_IF([test "x$with_audio_static_plugins" = xyes],
-        STATIC_AUDIO_PLUGINS_LIST="$STATIC_AUDIO_PLUGINS_LIST pulse")
+        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_pulse.la"
 fi
 
-for name in $STATIC_AUDIO_PLUGINS_LIST; do
-        STATIC_AUDIO_PLUGINS_GET="$STATIC_AUDIO_PLUGINS_GET${name}_plugin_get,";
-        STATIC_AUDIO_PLUGINS_EXTERN="${STATIC_AUDIO_PLUGINS_EXTERN} extern spd_audio_plugin_t const * ${name}_plugin_get (void); "
-done
-
-# used in src/audio/static_plugins.c.in
-AC_SUBST(STATIC_AUDIO_PLUGINS_EXTERN)
-AC_SUBST(STATIC_AUDIO_PLUGINS_GET)
+AC_SUBST(AUDIO_DLOPEN_MODULES)
 
 # Check for Flite (currently required)
 AC_CHECK_LIB(flite,
@@ -419,7 +401,6 @@ AC_CONFIG_FILES([Makefile
                  src/api/c/Makefile
                  src/api/python/Makefile
                  src/audio/Makefile
-                 src/audio/static_plugins.c
                  src/clients/Makefile
                  src/clients/say/Makefile
                  src/clients/spdsend/Makefile
