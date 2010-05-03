@@ -34,6 +34,7 @@
 #include <config.h>
 #endif
  
+#include "spd_audio_plugin.h"
 #include "spd_audio.h"
 
 #include <stdio.h>
