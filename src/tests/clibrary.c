@@ -25,7 +25,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,58 +33,57 @@
 #include <libopentts.h>
 #include <def.h>
 
-int main() {
-   SPDConnection* conn;
-   int i;   
-   
-   printf("Start of the test of the test.\n");
-   
-   printf("Trying to initialize Speech Deamon...");
-   conn = spd_open("say", NULL, NULL, SPD_MODE_SINGLE);
-   if (conn == 0){
-	  printf("Speech Deamon failed");
-	  exit(1);
-   }
-   printf("OK\n");
+int main()
+{
+	SPDConnection *conn;
+	int i;
 
+	printf("Start of the test of the test.\n");
 
-   printf("Say inviting message\n");
-   spd_say(conn, SPD_MESSAGE, "Hello, how are you? I'm Speech Deamon");
-   
-   sleep(4);
+	printf("Trying to initialize Speech Deamon...");
+	conn = spd_open("say", NULL, NULL, SPD_MODE_SINGLE);
+	if (conn == 0) {
+		printf("Speech Deamon failed");
+		exit(1);
+	}
+	printf("OK\n");
 
-   printf("\n");
-   printf("Try to lower pitch and higher rate...\n");
-   spd_set_voice_pitch(conn, -20);
-   spd_set_voice_rate(conn, +20);
-   printf("...and say something\n");
-   spd_say(conn, SPD_MESSAGE, "Do you like this voice more?");
-   
-   sleep(4);
+	printf("Say inviting message\n");
+	spd_say(conn, SPD_MESSAGE, "Hello, how are you? I'm Speech Deamon");
 
-   printf("Switch punctuation mode to `all'.");
-   printf("\n");
+	sleep(4);
 
-   printf("\n");
-   printf("Keep this pitch, set higher rate and let's test priorities.\n"
-          "Priority progress should choose some messages\n"
-          "to report the progrees and it should allways say\n"
-          "the last message.\n");
+	printf("\n");
+	printf("Try to lower pitch and higher rate...\n");
+	spd_set_voice_pitch(conn, -20);
+	spd_set_voice_rate(conn, +20);
+	printf("...and say something\n");
+	spd_say(conn, SPD_MESSAGE, "Do you like this voice more?");
 
-   sleep(10);
+	sleep(4);
 
-   spd_set_voice_rate(conn, +90);
+	printf("Switch punctuation mode to `all'.");
+	printf("\n");
 
-   for (i = 0; i<= 100; i++){
-       printf("%d%% completed\n", i);
-       spd_sayf(conn, SPD_PROGRESS, "%d%% completed", i);
-   }
+	printf("\n");
+	printf("Keep this pitch, set higher rate and let's test priorities.\n"
+	       "Priority progress should choose some messages\n"
+	       "to report the progrees and it should allways say\n"
+	       "the last message.\n");
 
-   printf("Trying to close Speech Dispatcher connection...");
-   spd_close(conn);
-   printf("OK\n");
+	sleep(10);
 
-   printf("End of the test.\n");
-   exit(0);
+	spd_set_voice_rate(conn, +90);
+
+	for (i = 0; i <= 100; i++) {
+		printf("%d%% completed\n", i);
+		spd_sayf(conn, SPD_PROGRESS, "%d%% completed", i);
+	}
+
+	printf("Trying to close Speech Dispatcher connection...");
+	spd_close(conn);
+	printf("OK\n");
+
+	printf("End of the test.\n");
+	exit(0);
 }
-

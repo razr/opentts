@@ -49,25 +49,23 @@
 
 int festival_connection_crashed;
 
-typedef struct FT_Info
-{
-    int encoding;
-    char *server_host;
-    int server_port;
-    char *text_mode;
-    
-    int server_fd;
+typedef struct FT_Info {
+	int encoding;
+	char *server_host;
+	int server_port;
+	char *text_mode;
+
+	int server_fd;
 } FT_Info;
 
-typedef struct FT_Wave
-{
-    int num_samples;
-    int sample_rate;
-    short *samples;
+typedef struct FT_Wave {
+	int num_samples;
+	int sample_rate;
+	short *samples;
 } FT_Wave;
 
-void delete_FT_Wave(FT_Wave *wave);
-void delete_FT_Info(FT_Info *info);
+void delete_FT_Wave(FT_Wave * wave);
+void delete_FT_Info(FT_Info * info);
 
 #define SWAPSHORT(x) ((((unsigned)x) & 0xff) << 8 | \
                       (((unsigned)x) & 0xff00) >> 8)
@@ -80,7 +78,6 @@ void delete_FT_Info(FT_Info *info);
 #define FAPI_BIG_ENDIAN (((char *)&fapi_endian_loc)[0] == 0)
 /* Intel, Alpha, DEC Mips, Vax */
 #define FAPI_LITTLE_ENDIAN (((char *)&fapi_endian_loc)[0] != 0)
-
 
 #define FEST_SEND_CMD(format) \
     { \
@@ -119,23 +116,24 @@ void delete_FT_Info(FT_Info *info);
 /*****************************************************************/
 
 /* If called with NULL will attempt to access using defaults */
-FT_Info *festivalOpen(FT_Info *info);
-int festivalClose(FT_Info *info);
+FT_Info *festivalOpen(FT_Info * info);
+int festivalClose(FT_Info * info);
 
-int festivalStringToWaveRequest(FT_Info *info, const char *text);
-int festivalSoundIcon(FT_Info *info, const char *text);
-int festivalCharacter(FT_Info *info, const char *text);
-int festivalKey(FT_Info *info, const char *text);
-int festivalSpell(FT_Info *info, const char *text);
+int festivalStringToWaveRequest(FT_Info * info, const char *text);
+int festivalSoundIcon(FT_Info * info, const char *text);
+int festivalCharacter(FT_Info * info, const char *text);
+int festivalKey(FT_Info * info, const char *text);
+int festivalSpell(FT_Info * info, const char *text);
 
-FT_Wave* festivalStringToWaveGetData(FT_Info *info);
-VoiceDescription** festivalGetVoices(FT_Info *info);
+FT_Wave *festivalStringToWaveGetData(FT_Info * info);
+VoiceDescription **festivalGetVoices(FT_Info * info);
 
 FT_Info *festivalDefaultInfo();
-void festivalEmptySocket(FT_Info *info);
-int save_FT_Wave_snd(FT_Wave *wave, const char *filename);
-FT_Wave* festivalGetDataMulti(FT_Info *info, char **callback, int *stop_flag, int stop_by_close);
+void festivalEmptySocket(FT_Info * info);
+int save_FT_Wave_snd(FT_Wave * wave, const char *filename);
+FT_Wave *festivalGetDataMulti(FT_Info * info, char **callback, int *stop_flag,
+			      int stop_by_close);
 
-int festival_check_info(FT_Info *info, char *fnname);
-int festival_read_response(FT_Info *info, char **expr);
+int festival_check_info(FT_Info * info, char *fnname);
+int festival_read_response(FT_Info * info, char **expr);
 #endif

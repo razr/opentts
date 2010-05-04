@@ -29,18 +29,18 @@
 
 #define OTTS_AUDIO_LIB_PREFIX "otts_"
 
-AudioID* spd_audio_open(char *name, void **pars, char **error);
+AudioID *spd_audio_open(char *name, void **pars, char **error);
 
-int spd_audio_play(AudioID *id, AudioTrack track, AudioFormat format);
+int spd_audio_play(AudioID * id, AudioTrack track, AudioFormat format);
 
-int spd_audio_stop(AudioID *id);
+int spd_audio_stop(AudioID * id);
 
-int spd_audio_close(AudioID *id);
+int spd_audio_close(AudioID * id);
 
-int spd_audio_set_volume(AudioID *id, int volume);
+int spd_audio_set_volume(AudioID * id, int volume);
 
-void spd_audio_set_loglevel(AudioID *id, int level);
+void spd_audio_set_loglevel(AudioID * id, int level);
 
-char const *  spd_audio_get_playcmd (AudioID *id);
+char const *spd_audio_get_playcmd(AudioID * id);
 
 #endif /* ifndef #__SPD_AUDIO_H */

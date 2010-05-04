@@ -24,7 +24,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,157 +37,163 @@
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - getline is a gcc-ism */
-ssize_t getline (char **lineptr, size_t *n, FILE *f);
+ssize_t getline(char **lineptr, size_t * n, FILE * f);
 #endif
 
 int dispatch_cmd(char *cmd_line);
 
-int 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    char *cmd_buf;
-    int ret;
-    int ret_init;
-    size_t n;
-    char *configfilename;
-    char *status_info;        
+	char *cmd_buf;
+	int ret;
+	int ret_init;
+	size_t n;
+	char *configfilename;
+	char *status_info;
 
-    g_thread_init(NULL);
+	g_thread_init(NULL);
 
-    /* Initialize ltdl's list of preloaded audio backends. */
-    LTDL_SET_PRELOADED_SYMBOLS();
-    module_num_dc_options = 0;
-    module_audio_id = 0;
+	/* Initialize ltdl's list of preloaded audio backends. */
+	LTDL_SET_PRELOADED_SYMBOLS();
+	module_num_dc_options = 0;
+	module_audio_id = 0;
 
-    if (argc >= 2){
-        configfilename = g_strdup(argv[1]);
-    }else{
-        configfilename = NULL;
-    }
-
-    ret = module_load();
-    if (ret == -1) module_close(1);
-
-    if (configfilename != NULL){
-        /* Add the LAST option */
-        module_dc_options = add_config_option(module_dc_options,
-                                              &module_num_dc_options, "", 0, NULL, NULL, 0);
-
-        configfile = dotconf_create(configfilename, module_dc_options, 0, CASE_INSENSITIVE);
-        if (configfile){
-            if (dotconf_command_loop(configfile) == 0){
-                DBG("Error reading config file\n");
-                module_close(1);
-            }
-	    dotconf_cleanup(configfile);
-	    DBG("Configuration (pre) has been read from \"%s\"\n", configfilename);    
-	    
-	    g_free(configfilename);
-        }else{
-            DBG("Can't read specified config file!\n");        
-        }
-    }else{
-        DBG("No config file specified, using defaults...\n");        
-    }
-    
-    ret_init = module_init(&status_info);
-
-    cmd_buf = NULL;  n=0;
-    ret = getline(&cmd_buf, &n, stdin);
-    if (ret == -1){
-	DBG("Broken pipe when reading INIT, exiting... \n");
-	module_close(2); 
-    }
-
-    if (!strcmp(cmd_buf, "INIT\n")){
-	if (ret_init == 0){
-	    printf("299-%s\n", status_info);
-	    ret = printf("%s\n", "299 OK LOADED SUCCESSFULLY");
-	}else{
-	    printf("399-%s\n", status_info);
-	    ret = printf("%s\n", "399 ERR CANT INIT MODULE");
-	    return -1;
+	if (argc >= 2) {
+		configfilename = g_strdup(argv[1]);
+	} else {
+		configfilename = NULL;
 	}
-	      g_free(status_info);
 
-	if (ret < 0){ 
-	    DBG("Broken pipe, exiting...\n");
-            module_close(2); 
+	ret = module_load();
+	if (ret == -1)
+		module_close(1);
+
+	if (configfilename != NULL) {
+		/* Add the LAST option */
+		module_dc_options = add_config_option(module_dc_options,
+						      &module_num_dc_options,
+						      "", 0, NULL, NULL, 0);
+
+		configfile =
+		    dotconf_create(configfilename, module_dc_options, 0,
+				   CASE_INSENSITIVE);
+		if (configfile) {
+			if (dotconf_command_loop(configfile) == 0) {
+				DBG("Error reading config file\n");
+				module_close(1);
+			}
+			dotconf_cleanup(configfile);
+			DBG("Configuration (pre) has been read from \"%s\"\n",
+			    configfilename);
+
+			g_free(configfilename);
+		} else {
+			DBG("Can't read specified config file!\n");
+		}
+	} else {
+		DBG("No config file specified, using defaults...\n");
 	}
-	fflush(stdout);
-    }else{
-	DBG("ERROR: Wrong communication from module client: didn't call INIT\n");
-	module_close(3);
-    }
-    xfree(cmd_buf);
 
-    while(1){
-        cmd_buf = NULL;  n=0;
-        ret = getline(&cmd_buf, &n, stdin);
-        if (ret == -1){
-            DBG("Broken pipe, exiting... \n");
-            module_close(2); 
-        }
+	ret_init = module_init(&status_info);
 
-	DBG("CMD: <%s>", cmd_buf);
+	cmd_buf = NULL;
+	n = 0;
+	ret = getline(&cmd_buf, &n, stdin);
+	if (ret == -1) {
+		DBG("Broken pipe when reading INIT, exiting... \n");
+		module_close(2);
+	}
 
-dispatch_cmd(cmd_buf);
-	
+	if (!strcmp(cmd_buf, "INIT\n")) {
+		if (ret_init == 0) {
+			printf("299-%s\n", status_info);
+			ret = printf("%s\n", "299 OK LOADED SUCCESSFULLY");
+		} else {
+			printf("399-%s\n", status_info);
+			ret = printf("%s\n", "399 ERR CANT INIT MODULE");
+			return -1;
+		}
+		g_free(status_info);
+
+		if (ret < 0) {
+			DBG("Broken pipe, exiting...\n");
+			module_close(2);
+		}
+		fflush(stdout);
+	} else {
+		DBG("ERROR: Wrong communication from module client: didn't call INIT\n");
+		module_close(3);
+	}
 	xfree(cmd_buf);
-    } 
+
+	while (1) {
+		cmd_buf = NULL;
+		n = 0;
+		ret = getline(&cmd_buf, &n, stdin);
+		if (ret == -1) {
+			DBG("Broken pipe, exiting... \n");
+			module_close(2);
+		}
+
+		DBG("CMD: <%s>", cmd_buf);
+
+		dispatch_cmd(cmd_buf);
+
+		xfree(cmd_buf);
+	}
 }
 
-int dispatch_cmd(char *cmd_line){
-char *cmd = NULL;
-size_t cmd_len;
-char *msg = NULL;
+int dispatch_cmd(char *cmd_line)
+{
+	char *cmd = NULL;
+	size_t cmd_len;
+	char *msg = NULL;
 
-cmd_len = strcspn(cmd_line, " \t\n\r\f");
-cmd = g_strndup(cmd_line, cmd_len);
-pthread_mutex_lock(&module_stdout_mutex);
+	cmd_len = strcspn(cmd_line, " \t\n\r\f");
+	cmd = g_strndup(cmd_line, cmd_len);
+	pthread_mutex_lock(&module_stdout_mutex);
 
-if( ! strcasecmp("audio", cmd)){
-msg = do_audio();
-} else if( ! strcasecmp("set", cmd)){
-msg = do_set();
-} else if( ! strcasecmp("speak", cmd)){
-msg = do_speak();
-} else if( ! strcasecmp("key", cmd)){
-msg = do_key();
-} else if(! strcasecmp("sound_icon", cmd)){
-msg = do_sound_icon();
-} else if(! strcasecmp("char", cmd)){
-msg = do_char();
-} else if(! strcasecmp("pause", cmd)){
-do_pause();
-} else if( ! strcasecmp("stop", cmd)){
-do_stop();
-} else if( ! strcasecmp("list_voices", cmd)){
-msg = do_list_voices();
-} else if( ! strcasecmp("loglevel", cmd)){
-msg = do_loglevel();
-} else if( ! strcasecmp("debug", cmd)){
-msg = do_debug(cmd_line);
-} else if( ! strcasecmp("quit", cmd)){
-do_quit();
-} else {
+	if (!strcasecmp("audio", cmd)) {
+		msg = do_audio();
+	} else if (!strcasecmp("set", cmd)) {
+		msg = do_set();
+	} else if (!strcasecmp("speak", cmd)) {
+		msg = do_speak();
+	} else if (!strcasecmp("key", cmd)) {
+		msg = do_key();
+	} else if (!strcasecmp("sound_icon", cmd)) {
+		msg = do_sound_icon();
+	} else if (!strcasecmp("char", cmd)) {
+		msg = do_char();
+	} else if (!strcasecmp("pause", cmd)) {
+		do_pause();
+	} else if (!strcasecmp("stop", cmd)) {
+		do_stop();
+	} else if (!strcasecmp("list_voices", cmd)) {
+		msg = do_list_voices();
+	} else if (!strcasecmp("loglevel", cmd)) {
+		msg = do_loglevel();
+	} else if (!strcasecmp("debug", cmd)) {
+		msg = do_debug(cmd_line);
+	} else if (!strcasecmp("quit", cmd)) {
+		do_quit();
+	} else {
 /*should we log?*/
-          printf("300 ERR UNKNOWN COMMAND\n");
-fflush(stdout);
+		printf("300 ERR UNKNOWN COMMAND\n");
+		fflush(stdout);
+	}
+
+	if (msg != NULL) {
+		if (0 > printf("%s\n", msg)) {
+			DBG("Broken pipe, exiting...\n");
+			module_close(2);
+		}
+		fflush(stdout);
+		g_free(msg);
+	}
+
+	pthread_mutex_unlock(&module_stdout_mutex);
+	g_free(cmd);
+
+	return (0);
 }
-
-if(msg != NULL ){
- if ( 0 > printf("%s\n", msg)){
-     DBG("Broken pipe, exiting...\n");
-     module_close(2);
- }
- fflush(stdout);
-g_free(msg);
-}
-
-pthread_mutex_unlock(&module_stdout_mutex);
-g_free(cmd);
-
-return(0);
-}
-

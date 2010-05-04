@@ -25,7 +25,7 @@
 /* some constants common for speech server and client part */
 
 #ifndef SPEECHD_DEF_I
-	#define SPEECHD_DEF_I
+#define SPEECHD_DEF_I
 
 #define SPEECHD_DEFAULT_PORT 6560
 

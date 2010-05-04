@@ -25,8 +25,7 @@
 #ifndef FDSET_H
 #define FDSET_H
 
-typedef enum 
-    {                  /* Type of voice */
+typedef enum {			/* Type of voice */
 	NO_VOICE = 0,
 	MALE1 = 1,
 	MALE2 = 2,
@@ -36,45 +35,39 @@ typedef enum
 	FEMALE3 = 6,
 	CHILD_MALE = 7,
 	CHILD_FEMALE = 8
-    }EVoiceType;
+} EVoiceType;
 
-typedef enum
-    {
+typedef enum {
 	SORT_BY_TIME = 0,
 	SORT_BY_ALPHABET = 1
-    }ESort;
+} ESort;
 
-typedef enum
-    {
+typedef enum {
 	MSGTYPE_TEXT = 0,
 	MSGTYPE_SOUND_ICON = 1,
 	MSGTYPE_CHAR = 2,
 	MSGTYPE_KEY = 3,
 	MSGTYPE_SPELL = 99
-    }EMessageType;
+} EMessageType;
 
-typedef enum
-    {
+typedef enum {
 	RECOGN_NONE = 0,
 	RECOGN_SPELL = 1,
 	RECOGN_ICON = 2
-    }ECapLetRecogn;
+} ECapLetRecogn;
 
-typedef enum
-    {
+typedef enum {
 	PUNCT_NONE = 0,
 	PUNCT_ALL = 1,
 	PUNCT_SOME = 2
-    }EPunctMode;
+} EPunctMode;
 
-typedef enum
-    {
+typedef enum {
 	SPELLING_OFF = 0,
 	SPELLING_ON = 1
-    }ESpellMode;
+} ESpellMode;
 
-typedef enum
-    {
+typedef enum {
 	NOTIFY_NOTHING = 0,
 	NOTIFY_BEGIN = 1,
 	NOTIFY_END = 2,
@@ -82,80 +75,79 @@ typedef enum
 	NOTIFY_CANCEL = 8,
 	NOTIFY_PAUSE = 16,
 	NOTIFY_RESUME = 32
-    }ENotification;
+} ENotification;
 
 typedef struct {
-  char* name;
-  char* language;
-  char* dialect;
-}VoiceDescription;
+	char *name;
+	char *language;
+	char *dialect;
+} VoiceDescription;
 
+typedef struct {
+	unsigned int uid;	/* Unique ID of the client */
+	int fd;			/* File descriptor the client is on. */
+	int active;		/* Is this client still active on socket or gone? */
+	int paused;		/* Internal flag, 1 for paused client or 0 for normal. */
+	int paused_while_speaking;
+	EMessageType type;	/* Type of the message (1=text, 2=icon, 3=char, 4=key) */
+	int ssml_mode;		/* SSML mode on (1)/off (0) */
+	int priority;		/* Priority between 1 and 3 (1 - highest, 3 - lowest) */
+	signed int rate;	/* Speed of voice from <-100;+100>, 0 is the default */
+	signed int pitch;	/* Pitch of voice from <-100;+100>, 0 is the default */
+	signed int volume;	/* Volume of voice from <-100;+100), 0 is the default */
+	EPunctMode punctuation_mode;	/* Punctuation mode: 0, 1 or 2
+					   0    -       no punctuation
+					   1    -       all punctuation
+					   2    -       only user-selected punctuation */
+	ESpellMode spelling_mode;	/* Spelling mode: 0 or 1 (0 - off, 1 - on) */
+	char *client_name;	/* Name of the client. */
+	char *language;		/* Selected language name. (e.g. "en", "cz", "fr", ...) */
+	char *output_module;	/* Output module name. (e.g. "festival", "flite", "apollo", ...) */
+	EVoiceType voice;	/* see EVoiceType definition above */
+	char *synthesis_voice;
+	ECapLetRecogn cap_let_recogn;	/* Capital letters recognition: (0 - off, 1 - on) */
 
-typedef struct{
-    unsigned int uid;		/* Unique ID of the client */
-    int fd;                     /* File descriptor the client is on. */
-    int active;                 /* Is this client still active on socket or gone?*/
-    int paused;                 /* Internal flag, 1 for paused client or 0 for normal. */
-    int paused_while_speaking;  
-    EMessageType type;          /* Type of the message (1=text, 2=icon, 3=char, 4=key) */
-    int ssml_mode;		/* SSML mode on (1)/off (0) */
-    int priority;               /* Priority between 1 and 3 (1 - highest, 3 - lowest) */
-    signed int rate; 		/* Speed of voice from <-100;+100>, 0 is the default */
-    signed int pitch;		/* Pitch of voice from <-100;+100>, 0 is the default */
-    signed int volume;		/* Volume of voice from <-100;+100), 0 is the default */
-    EPunctMode punctuation_mode;	/* Punctuation mode: 0, 1 or 2
-                                   0	-	no punctuation
-                                   1 	-	all punctuation
-                                   2	-	only user-selected punctuation */
-    ESpellMode spelling_mode;   /* Spelling mode: 0 or 1 (0 - off, 1 - on) */
-    char *client_name;		/* Name of the client. */
-    char *language;             /* Selected language name. (e.g. "en", "cz", "fr", ...) */
-    char *output_module;        /* Output module name. (e.g. "festival", "flite", "apollo", ...) */
-    EVoiceType voice;           /* see EVoiceType definition above */
-    char *synthesis_voice;
-    ECapLetRecogn cap_let_recogn;         /* Capital letters recognition: (0 - off, 1 - on) */
+	ENotification notification;	/* Notification about start and stop of messages, about reached 
+					   index marks and state (canceled, paused, resumed). */
 
-    ENotification notification;	/* Notification about start and stop of messages, about reached 
-				   index marks and state (canceled, paused, resumed). */
+	int reparted;
+	unsigned int min_delay_progress;
+	int pause_context;	/* Number of words that should be repeated after a pause */
+	char *index_mark;	/* Current index mark for the message (only if paused) */
 
-    int reparted;
-    unsigned int min_delay_progress;
-    int pause_context;          /* Number of words that should be repeated after a pause */
-    char* index_mark;           /* Current index mark for the message (only if paused) */
+	char *audio_output_method;
+	char *audio_oss_device;
+	char *audio_alsa_device;
+	char *audio_nas_server;
+	char *audio_pulse_server;
+	int audio_pulse_min_length;
+	int log_level;
 
-    char* audio_output_method;
-    char* audio_oss_device;
-    char* audio_alsa_device;
-    char* audio_nas_server;
-    char* audio_pulse_server;
-    int audio_pulse_min_length;
-    int log_level;
+	/* TODO: Should be moved out */
+	unsigned int hist_cur_uid;
+	int hist_cur_pos;
+	ESort hist_sorted;
 
-    /* TODO: Should be moved out */
-    unsigned int hist_cur_uid;
-    int hist_cur_pos;
-    ESort hist_sorted;
+} TFDSetElement;
 
-}TFDSetElement;
+typedef struct {
+	char *pattern;
+	TFDSetElement val;
+} TFDSetClientSpecific;
 
-typedef struct{
-    char *pattern;
-    TFDSetElement val;
-}TFDSetClientSpecific;
+typedef struct {
+	signed int rate;
+	signed int pitch;
+	signed int volume;
 
-typedef struct{
-    signed int rate;
-    signed int pitch;
-    signed int volume;
-    
-    EPunctMode punctuation_mode;
-    ESpellMode spelling_mode;
-    ECapLetRecogn cap_let_recogn;
+	EPunctMode punctuation_mode;
+	ESpellMode spelling_mode;
+	ECapLetRecogn cap_let_recogn;
 
-    char* language;
+	char *language;
 
-    EVoiceType voice;
-    char *synthesis_voice;
-}SPDMsgSettings;
+	EVoiceType voice;
+	char *synthesis_voice;
+} SPDMsgSettings;
 
 #endif /* not ifndef FDSET */

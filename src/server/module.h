@@ -28,27 +28,26 @@
 #include <stdlib.h>
 #include <glib.h>
 
-typedef struct{
-    char* name;
-    char* filename;
-    char* configfilename;
-    char* debugfilename;
-    int pipe_in[2];
-    int pipe_out[2];    
-    FILE *stream_out;
-    int stderr_redirect;
-    pid_t pid;
-    int working;
-    VoiceDescription **voices;
-}OutputModule;
+typedef struct {
+	char *name;
+	char *filename;
+	char *configfilename;
+	char *debugfilename;
+	int pipe_in[2];
+	int pipe_out[2];
+	FILE *stream_out;
+	int stderr_redirect;
+	pid_t pid;
+	int working;
+	VoiceDescription **voices;
+} OutputModule;
 
-OutputModule* load_output_module(char* mod_name, char* mod_prog,
-                                 char* mod_cfgfile, char * mod_dbgfile);
-int unload_output_module(OutputModule *module);
-int reload_output_module(OutputModule *old_module);
-int output_module_debug(OutputModule *module);		       
-int output_module_nodebug(OutputModule *module);		       
-void destroy_module(OutputModule *module);
+OutputModule *load_output_module(char *mod_name, char *mod_prog,
+				 char *mod_cfgfile, char *mod_dbgfile);
+int unload_output_module(OutputModule * module);
+int reload_output_module(OutputModule * old_module);
+int output_module_debug(OutputModule * module);
+int output_module_nodebug(OutputModule * module);
+void destroy_module(OutputModule * module);
 
 #endif
-

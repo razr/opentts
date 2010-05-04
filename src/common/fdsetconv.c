@@ -30,142 +30,190 @@
 #include <glib.h>
 #include "fdsetconv.h"
 
-char*
-EVoice2str(EVoiceType voice)
+char *EVoice2str(EVoiceType voice)
 {
-    char *str;
+	char *str;
 
-    switch (voice)
-        {
-        case MALE1: str = g_strdup("male1"); break;
-        case MALE2: str = g_strdup("male2"); break;
-        case MALE3: str = g_strdup("male3"); break;
-        case FEMALE1: str = g_strdup("female1"); break;
-        case FEMALE2: str = g_strdup("female2"); break;
-        case FEMALE3: str = g_strdup("female3"); break;
-        case CHILD_MALE: str = g_strdup("child_male"); break;
-        case CHILD_FEMALE: str = g_strdup("child_female"); break;
-        default: str = NULL;
-        }
+	switch (voice) {
+	case MALE1:
+		str = g_strdup("male1");
+		break;
+	case MALE2:
+		str = g_strdup("male2");
+		break;
+	case MALE3:
+		str = g_strdup("male3");
+		break;
+	case FEMALE1:
+		str = g_strdup("female1");
+		break;
+	case FEMALE2:
+		str = g_strdup("female2");
+		break;
+	case FEMALE3:
+		str = g_strdup("female3");
+		break;
+	case CHILD_MALE:
+		str = g_strdup("child_male");
+		break;
+	case CHILD_FEMALE:
+		str = g_strdup("child_female");
+		break;
+	default:
+		str = NULL;
+	}
 
-    return str;
+	return str;
 }
 
-EVoiceType
-str2EVoice(char* str)
+EVoiceType str2EVoice(char *str)
 {
-    EVoiceType voice;
+	EVoiceType voice;
 
-    if (!strcmp(str, "male1")) voice = MALE1;
-    else if (!strcmp(str, "male2")) voice = MALE2;
-    else if (!strcmp(str, "male3")) voice = MALE3;
-    else if (!strcmp(str, "female1")) voice = FEMALE1;
-    else if (!strcmp(str, "female2")) voice = FEMALE2;
-    else if (!strcmp(str, "female3")) voice = FEMALE3;
-    else if (!strcmp(str, "child_male")) voice = CHILD_MALE;
-    else if (!strcmp(str, "child_female")) voice = CHILD_FEMALE;
-    else voice = NO_VOICE;
+	if (!strcmp(str, "male1"))
+		voice = MALE1;
+	else if (!strcmp(str, "male2"))
+		voice = MALE2;
+	else if (!strcmp(str, "male3"))
+		voice = MALE3;
+	else if (!strcmp(str, "female1"))
+		voice = FEMALE1;
+	else if (!strcmp(str, "female2"))
+		voice = FEMALE2;
+	else if (!strcmp(str, "female3"))
+		voice = FEMALE3;
+	else if (!strcmp(str, "child_male"))
+		voice = CHILD_MALE;
+	else if (!strcmp(str, "child_female"))
+		voice = CHILD_FEMALE;
+	else
+		voice = NO_VOICE;
 
-    return voice;
+	return voice;
 }
 
-char*
-EPunctMode2str(EPunctMode punct)
+char *EPunctMode2str(EPunctMode punct)
 {
-    char *str;
+	char *str;
 
-    switch (punct)
-        {
-        case PUNCT_NONE: str = g_strdup("none"); break;
-        case PUNCT_ALL: str = g_strdup("all"); break;
-        case PUNCT_SOME: str = g_strdup("some"); break;
-        default: str = NULL;
-        }
+	switch (punct) {
+	case PUNCT_NONE:
+		str = g_strdup("none");
+		break;
+	case PUNCT_ALL:
+		str = g_strdup("all");
+		break;
+	case PUNCT_SOME:
+		str = g_strdup("some");
+		break;
+	default:
+		str = NULL;
+	}
 
-    return str;
+	return str;
 }
 
-EPunctMode
-str2EPunctMode(char* str)
+EPunctMode str2EPunctMode(char *str)
 {
-    EPunctMode punct;
+	EPunctMode punct;
 
-    if (!strcmp(str, "none")) punct = PUNCT_NONE;
-    else if (!strcmp(str, "all")) punct = PUNCT_ALL;
-    else if (!strcmp(str, "some")) punct = PUNCT_SOME;
-    else punct = -1;
+	if (!strcmp(str, "none"))
+		punct = PUNCT_NONE;
+	else if (!strcmp(str, "all"))
+		punct = PUNCT_ALL;
+	else if (!strcmp(str, "some"))
+		punct = PUNCT_SOME;
+	else
+		punct = -1;
 
-    return punct;
+	return punct;
 }
 
-char*
-ESpellMode2str(ESpellMode spell)
+char *ESpellMode2str(ESpellMode spell)
 {
-    char *str;
+	char *str;
 
-    switch (spell)
-        {
-        case SPELLING_ON: str = g_strdup("on"); break;
-        case SPELLING_OFF: str = g_strdup("off"); break;
-        default: str = NULL;
-        }
+	switch (spell) {
+	case SPELLING_ON:
+		str = g_strdup("on");
+		break;
+	case SPELLING_OFF:
+		str = g_strdup("off");
+		break;
+	default:
+		str = NULL;
+	}
 
-    return str;
+	return str;
 }
 
-ESpellMode
-str2ESpellMode(char* str)
+ESpellMode str2ESpellMode(char *str)
 {
-    ESpellMode spell;
+	ESpellMode spell;
 
-    if (!strcmp(str, "on")) spell = SPELLING_ON;
-    else if (!strcmp(str, "off")) spell = SPELLING_OFF;
-    else spell = -1;
+	if (!strcmp(str, "on"))
+		spell = SPELLING_ON;
+	else if (!strcmp(str, "off"))
+		spell = SPELLING_OFF;
+	else
+		spell = -1;
 
-    return spell;
+	return spell;
 }
 
-char*
-ECapLetRecogn2str(ECapLetRecogn recogn)
+char *ECapLetRecogn2str(ECapLetRecogn recogn)
 {
-    char *str;
+	char *str;
 
-    switch (recogn)
-        {
-        case RECOGN_NONE: str = g_strdup("none"); break;
-        case RECOGN_SPELL: str = g_strdup("spell"); break;
-        case RECOGN_ICON: str = g_strdup("icon"); break;
-        default: str = NULL;
-        }
+	switch (recogn) {
+	case RECOGN_NONE:
+		str = g_strdup("none");
+		break;
+	case RECOGN_SPELL:
+		str = g_strdup("spell");
+		break;
+	case RECOGN_ICON:
+		str = g_strdup("icon");
+		break;
+	default:
+		str = NULL;
+	}
 
-    return str;
+	return str;
 }
 
-ECapLetRecogn
-str2ECapLetRecogn(char* str)
+ECapLetRecogn str2ECapLetRecogn(char *str)
 {
-    ECapLetRecogn recogn;
+	ECapLetRecogn recogn;
 
-    if (!strcmp(str, "none")) recogn = RECOGN_NONE;
-    else if (!strcmp(str, "spell")) recogn = RECOGN_SPELL;
-    else if (!strcmp(str, "icon")) recogn = RECOGN_ICON;
-    else recogn = -1;
+	if (!strcmp(str, "none"))
+		recogn = RECOGN_NONE;
+	else if (!strcmp(str, "spell"))
+		recogn = RECOGN_SPELL;
+	else if (!strcmp(str, "icon"))
+		recogn = RECOGN_ICON;
+	else
+		recogn = -1;
 
-    return recogn;
+	return recogn;
 }
 
-
-EVoiceType
-str2intpriority(char* str)
+EVoiceType str2intpriority(char *str)
 {
-    int priority;
+	int priority;
 
-    if (!strcmp(str, "important"))  priority = 1;
-    else if (!strcmp(str, "text")) priority = 2;
-    else if (!strcmp(str, "message")) priority = 3;
-    else if (!strcmp(str, "notification")) priority = 4;
-    else if (!strcmp(str, "progress")) priority = 5;
-    else priority = -1;
+	if (!strcmp(str, "important"))
+		priority = 1;
+	else if (!strcmp(str, "text"))
+		priority = 2;
+	else if (!strcmp(str, "message"))
+		priority = 3;
+	else if (!strcmp(str, "notification"))
+		priority = 4;
+	else if (!strcmp(str, "progress"))
+		priority = 5;
+	else
+		priority = -1;
 
-    return priority;
+	return priority;
 }

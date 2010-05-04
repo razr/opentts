@@ -25,14 +25,13 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
- 
+
 #include "speechd.h"
 #include "sem_functions.h"
 
-void
-speaking_semaphore_post(void)
+void speaking_semaphore_post(void)
 {
-    char buf[1];
-    buf[0] = 42;
-    write(speaking_pipe[1], buf, 1);
+	char buf[1];
+	buf[0] = 42;
+	write(speaking_pipe[1], buf, 1);
 }

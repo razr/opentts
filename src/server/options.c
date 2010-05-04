@@ -33,56 +33,55 @@
 #include "options.h"
 
 static struct option spd_long_options[] = {
-    {"run-daemon", 0, 0, 'd'},
-    {"run-single", 0, 0, 's'},
-    {"log-level", 1, 0, 'l'},
-    {"port", 1, 0, 'p'},
-    {"pid-file", 1, 0, 'P'},
-    {"config-file", 1, 0, 'C'},
-    {"version", 0, 0, 'v'},
-    {"debug", 0, 0, 'D'},
-    {"help", 0, 0, 'h'},
-    {0, 0, 0, 0}
+	{"run-daemon", 0, 0, 'd'},
+	{"run-single", 0, 0, 's'},
+	{"log-level", 1, 0, 'l'},
+	{"port", 1, 0, 'p'},
+	{"pid-file", 1, 0, 'P'},
+	{"config-file", 1, 0, 'C'},
+	{"version", 0, 0, 'v'},
+	{"debug", 0, 0, 'D'},
+	{"help", 0, 0, 'h'},
+	{0, 0, 0, 0}
 };
 
-static char* spd_short_options = "dsl:p:P:C:vDh";
+static char *spd_short_options = "dsl:p:P:C:vDh";
 
-void
-options_print_help(char *argv[])
+void options_print_help(char *argv[])
 {
-    assert(argv);
-    assert(argv[0]);
+	assert(argv);
+	assert(argv[0]);
 
-    printf("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-p=port] | [-v] | [-h]\n", argv[0]);
-    printf("Speech Dispatcher -- Common interface for Speech Synthesis (GNU GPL)\n\n");
-    printf("-d, --run-daemon     -      Run as a daemon\n"
-    "-s, --run-single     -      Run as single application\n"
-    "-l, --log-level      -      Set log level (1..5)\n"
-    "-p, --port           -      Specify a port number\n"
-    "-P, --pid-file       -      Set path to pid file\n"
-    "-C, --config-dir     -      Set path to configuration\n"
-    "-v, --version        -      Report version of this program\n"
-    "-D, --debug          -      Output debugging information into /tmp/.speech-dispatcher\n"
-    "-h, --help           -      Print this info\n\n"
-    "Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
-    "This is free software; you can redistribute it and/or modify it\n"
-    "under the terms of the GNU General Public License as published by\n"
-    "the Free Software Foundation; either version 2, or (at your option)\n"
-    "any later version. Please see COPYING for more details.\n\n"
-    "Please report bugs to <speechd-bugs@freebsoft.org>\n\n");
+	printf("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-p=port] | [-v] | [-h]\n",
+	       argv[0]);
+	printf
+	    ("Speech Dispatcher -- Common interface for Speech Synthesis (GNU GPL)\n\n");
+	printf("-d, --run-daemon     -      Run as a daemon\n"
+	       "-s, --run-single     -      Run as single application\n"
+	       "-l, --log-level      -      Set log level (1..5)\n"
+	       "-p, --port           -      Specify a port number\n"
+	       "-P, --pid-file       -      Set path to pid file\n"
+	       "-C, --config-dir     -      Set path to configuration\n"
+	       "-v, --version        -      Report version of this program\n"
+	       "-D, --debug          -      Output debugging information into /tmp/.speech-dispatcher\n"
+	       "-h, --help           -      Print this info\n\n"
+	       "Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
+	       "This is free software; you can redistribute it and/or modify it\n"
+	       "under the terms of the GNU General Public License as published by\n"
+	       "the Free Software Foundation; either version 2, or (at your option)\n"
+	       "any later version. Please see COPYING for more details.\n\n"
+	       "Please report bugs to <speechd-bugs@freebsoft.org>\n\n");
 
 }
 
-void
-options_print_version(void)
+void options_print_version(void)
 {
-    printf("%s %s\n", PACKAGE, VERSION);
-    printf("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
-           "Speech Dispatcher comes with ABSOLUTELY NO WARRANTY.\n"
-           "You may redistribute copies of Speech Dispatcher\n"
-           "under the terms of the GNU General Public License.\n"
-           "For more information about these matters, see the file named COPYING.\n"
-           );
+	printf("%s %s\n", PACKAGE, VERSION);
+	printf("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
+	       "Speech Dispatcher comes with ABSOLUTELY NO WARRANTY.\n"
+	       "You may redistribute copies of Speech Dispatcher\n"
+	       "under the terms of the GNU General Public License.\n"
+	       "For more information about these matters, see the file named COPYING.\n");
 }
 
 #define SPD_OPTION_SET_INT(param) \
@@ -95,90 +94,97 @@ options_print_version(void)
 #define SPD_OPTION_SET_STR(param) \
     SpeechdOptions.param = optarg
 
-void
-options_parse(int argc, char *argv[])
+void options_parse(int argc, char *argv[])
 {
-    char* tail_ptr;
-    int c_opt;
-    int option_index;
-    int val;
-    int ret;
+	char *tail_ptr;
+	int c_opt;
+	int option_index;
+	int val;
+	int ret;
 
-    char *tmpdir;
-    char *debug_logfile_path;
-	  
+	char *tmpdir;
+	char *debug_logfile_path;
 
-    assert (argc>0);
-    assert(argv);
+	assert(argc > 0);
+	assert(argv);
 
-    while(1){
-        option_index = 0;
-    
-        c_opt = getopt_long(argc, argv, spd_short_options, spd_long_options,
-                            &option_index);
-        if (c_opt == -1) break;
-        switch(c_opt){
-        case 'd': 
-            spd_mode = SPD_MODE_DAEMON;
-            break;
-        case 's':
-            spd_mode = SPD_MODE_SINGLE;
-            break;
-        case 'l':
-            SPD_OPTION_SET_INT(log_level);	   
-            break;
-        case 'p':
-            SPD_OPTION_SET_INT(port);
-            break;
-	case 'P':
-	    SPD_OPTION_SET_STR(pid_file);
-	    break;
-	case 'C':
-	    SPD_OPTION_SET_STR(conf_dir);
-	    break;
-        case 'v':
-            options_print_version();
-            exit(0);
-            break;
-        case 'D':
-	  tmpdir = g_strdup(getenv("TMPDIR"));
-	  if (!tmpdir)
-	    tmpdir = g_strdup("/tmp");
-	  SpeechdOptions.debug_destination=g_strdup_printf("%s/speechd-debug", tmpdir);
-	  g_free(tmpdir);
+	while (1) {
+		option_index = 0;
 
-	  ret = mkdir(SpeechdOptions.debug_destination, S_IRWXU);
-	  if (ret){
-	    MSG(1, "Can't create additional debug destination in %s, reason %d-%s",
-		SpeechdOptions.debug_destination, errno, strerror(errno));
-	    if (errno == EEXIST){
-	      MSG(1, "Debugging directory %s already exists, please delete it first",
-		  SpeechdOptions.debug_destination);
-	    }
-	    exit(1);
-	  }
-	    
-	  debug_logfile_path = g_strdup_printf("%s/speechd.log",
-					       SpeechdOptions.debug_destination);
-	  /* Open logfile for writing */
-	  debug_logfile = fopen(debug_logfile_path, "wx");
-	  g_free(debug_logfile_path);
-	  if (debug_logfile == NULL){
-	    MSG(1, "Error: can't open additional debug logging file %s [%d-%s]!\n",
-		debug_logfile_path, errno, strerror(errno));
-	    exit(1);
-	  }
-	  SpeechdOptions.debug = 1;
-	  break;
-        case 'h':
-            options_print_help(argv);
-            exit(0);
-            break;
-        default:
-            MSG(2, "Unrecognized option\n");
-            options_print_help(argv);
-            exit(1);
-        }
-    }
+		c_opt =
+		    getopt_long(argc, argv, spd_short_options, spd_long_options,
+				&option_index);
+		if (c_opt == -1)
+			break;
+		switch (c_opt) {
+		case 'd':
+			spd_mode = SPD_MODE_DAEMON;
+			break;
+		case 's':
+			spd_mode = SPD_MODE_SINGLE;
+			break;
+		case 'l':
+			SPD_OPTION_SET_INT(log_level);
+			break;
+		case 'p':
+			SPD_OPTION_SET_INT(port);
+			break;
+		case 'P':
+			SPD_OPTION_SET_STR(pid_file);
+			break;
+		case 'C':
+			SPD_OPTION_SET_STR(conf_dir);
+			break;
+		case 'v':
+			options_print_version();
+			exit(0);
+			break;
+		case 'D':
+			tmpdir = g_strdup(getenv("TMPDIR"));
+			if (!tmpdir)
+				tmpdir = g_strdup("/tmp");
+			SpeechdOptions.debug_destination =
+			    g_strdup_printf("%s/speechd-debug", tmpdir);
+			g_free(tmpdir);
+
+			ret = mkdir(SpeechdOptions.debug_destination, S_IRWXU);
+			if (ret) {
+				MSG(1,
+				    "Can't create additional debug destination in %s, reason %d-%s",
+				    SpeechdOptions.debug_destination, errno,
+				    strerror(errno));
+				if (errno == EEXIST) {
+					MSG(1,
+					    "Debugging directory %s already exists, please delete it first",
+					    SpeechdOptions.debug_destination);
+				}
+				exit(1);
+			}
+
+			debug_logfile_path = g_strdup_printf("%s/speechd.log",
+							     SpeechdOptions.
+							     debug_destination);
+			/* Open logfile for writing */
+			debug_logfile = fopen(debug_logfile_path, "wx");
+			g_free(debug_logfile_path);
+			if (debug_logfile == NULL) {
+				MSG(1,
+				    "Error: can't open additional debug logging file %s [%d-%s]!\n",
+				    debug_logfile_path, errno, strerror(errno));
+				exit(1);
+			}
+			SpeechdOptions.debug = 1;
+			break;
+		case 'h':
+			options_print_help(argv);
+			exit(0);
+			break;
+		default:
+			MSG(2, "Unrecognized option\n");
+			options_print_help(argv);
+			exit(1);
+		}
+	}
 }
+
 #undef SPD_OPTION_SET_INT

@@ -58,10 +58,10 @@
 #else
 /* according to X/OPEN we have to define it ourselves */
 union semun {
-    int val;                    /* value for SETVAL */
-    struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
-    unsigned short int *array;  /* array for GETALL, SETALL */
-    struct seminfo *__buf;      /* buffer for IPC_INFO */
+	int val;		/* value for SETVAL */
+	struct semid_ds *buf;	/* buffer for IPC_STAT, IPC_SET */
+	unsigned short int *array;	/* array for GETALL, SETALL */
+	struct seminfo *__buf;	/* buffer for IPC_INFO */
 };
 #endif
 
@@ -75,57 +75,57 @@ union semun {
 #define BUF_SIZE 128
 
 /* Mode of speechd execution */
-typedef enum{
-    SPD_MODE_DAEMON,            /* Run as daemon (background, ...) */
-    SPD_MODE_SINGLE             /*  */
-}TSpeechDMode;
+typedef enum {
+	SPD_MODE_DAEMON,	/* Run as daemon (background, ...) */
+	SPD_MODE_SINGLE		/*  */
+} TSpeechDMode;
 
 TSpeechDMode spd_mode;
 
 /*  TSpeechDQueue is a queue for messages. */
-typedef struct{
-    GList *p1;			/* important */
-    GList *p2;			/* text */
-    GList *p3;			/* message */
-    GList *p4;                  /* notification */
-    GList *p5;                  /* progress */
-}TSpeechDQueue;
+typedef struct {
+	GList *p1;		/* important */
+	GList *p2;		/* text */
+	GList *p3;		/* message */
+	GList *p4;		/* notification */
+	GList *p5;		/* progress */
+} TSpeechDQueue;
 
 /*  TSpeechDMessage is an element of TSpeechDQueue,
     that is, some text with or without index marks
     inside  and it's configuration. */
-typedef struct{
-    guint id;			/* unique id */
-    time_t time;                /* when was this message received */
-    char *buf;			/* the actual text */
-    int bytes;			/* number of bytes in buf */
-    TFDSetElement settings;	/* settings of the client when queueing this message */
-}TSpeechDMessage;
+typedef struct {
+	guint id;		/* unique id */
+	time_t time;		/* when was this message received */
+	char *buf;		/* the actual text */
+	int bytes;		/* number of bytes in buf */
+	TFDSetElement settings;	/* settings of the client when queueing this message */
+} TSpeechDMessage;
 
 #include "alloc.h"
 #include "speaking.h"
 
-struct{
-    int port, port_set;
-    int localhost_access_only, localhost_access_only_set;
-    int log_level, log_level_set;
-    char *pid_file;
-    char *conf_file;
-    char *conf_dir;
-    char *home_speechd_dir;
-    char *log_dir;
-    int debug;
-    char *debug_destination;
-    char *debug_logfile;
-    int max_history_messages;	/* Maximum of messages in history before they expire */
-}SpeechdOptions;
+struct {
+	int port, port_set;
+	int localhost_access_only, localhost_access_only_set;
+	int log_level, log_level_set;
+	char *pid_file;
+	char *conf_file;
+	char *conf_dir;
+	char *home_speechd_dir;
+	char *log_dir;
+	int debug;
+	char *debug_destination;
+	char *debug_logfile;
+	int max_history_messages;	/* Maximum of messages in history before they expire */
+} SpeechdOptions;
 
-struct{
-    int max_uid;		/* The largest assigned uid + 1 */
-    int max_gid;		/* The largest assigned gid + 1 */
-    int max_fd;
-    int num_fds;		/* Number of available allocated sockets */
-}SpeechdStatus;
+struct {
+	int max_uid;		/* The largest assigned uid + 1 */
+	int max_gid;		/* The largest assigned gid + 1 */
+	int max_fd;
+	int num_fds;		/* Number of available allocated sockets */
+} SpeechdStatus;
 
 /* speak() thread defined in speaking.c */
 pthread_t speak_thread;
@@ -140,10 +140,10 @@ key_t speaking_sem_key;
 int speaking_sem_id;
 
 /* Table of all configured (and succesfully loaded) output modules */
-GHashTable *output_modules;	
+GHashTable *output_modules;
 GList *output_modules_list;
 /* Table of settings for each active client (=each active socket)*/
-GHashTable *fd_settings;	
+GHashTable *fd_settings;
 /* Table of default output modules for different languages */
 GHashTable *language_default_modules;
 /* Table of relations between client file descriptors and their uids */
@@ -174,18 +174,18 @@ fd_set readfds;
 int speaking_pipe[2];
 
 /* Arrays needed for receiving data over socket */
-typedef struct{
-    int awaiting_data;
-    int inside_block;
-    size_t o_bytes;
-    GString *o_buf;
-}TSpeechdSock;
+typedef struct {
+	int awaiting_data;
+	int inside_block;
+	size_t o_bytes;
+	GString *o_buf;
+} TSpeechdSock;
 
 TSpeechdSock *SpeechdSocket;
 
 /* Debugging */
 void MSG(int level, char *format, ...);
-void MSG2(int level, char* kind, char *format, ...);
+void MSG2(int level, char *kind, char *format, ...);
 #define FATAL(msg) { fatal_error(); MSG(0,"Fatal error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 #define DIE(msg) { MSG(0,"Error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 
@@ -204,8 +204,7 @@ int isanum(const char *str);
 /* Construct a path given a filename and the directory
  where to refer relative paths. filename can be either
  absolute (starting with slash) or relative. */
-char* spd_get_path(char *filename, char* startdir);
-
+char *spd_get_path(char *filename, char *startdir);
 
 /* Functions used in speechd.c only */
 int speechd_connection_new(int server_socket);
@@ -226,7 +225,6 @@ void destroy_pid_file(void);
 
 void logging_init(void);
 
-void check_locked(pthread_mutex_t *lock);
-
+void check_locked(pthread_mutex_t * lock);
 
 #endif

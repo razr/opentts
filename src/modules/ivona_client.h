@@ -25,12 +25,14 @@
 #define IVONA_CACHE_MAX_STRLEN 11
 
 int ivona_init_sock(char *host, int port);
-int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,char *icon,char **buf,int *len, int cap_mode, char *delimeters, int punct_mode, char * punct_some);
+int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
+		      char *icon, char **buf, int *len, int cap_mode,
+		      char *delimeters, int punct_mode, char *punct_some);
 int ivona_send_string(char *to_say);
-char *ivona_get_wave_fd(int fd,int *nsamples,int *offset);
-char *ivona_get_wave(char *to_say,int *nsamples,int *offset);
-void play_icon(char* path, char *name);
+char *ivona_get_wave_fd(int fd, int *nsamples, int *offset);
+char *ivona_get_wave(char *to_say, int *nsamples, int *offset);
+void play_icon(char *path, char *name);
 void ivona_init_cache(void);
-void ivona_store_wave_in_cache(char *to_say,char *wave,int nsamples);
-char *ivona_get_wave_from_cache(char *to_say,int *nsamples);
+void ivona_store_wave_in_cache(char *to_say, char *wave, int nsamples);
+char *ivona_get_wave_from_cache(char *to_say, int *nsamples);
 #endif
