@@ -184,27 +184,33 @@ do_pause(void)
     return;
 }
 
-#define SET_PARAM_NUM(name, cond) \
- if(!strcmp(cur_item, #name)){ \
-     number = strtol(cur_value, &tptr, 10); \
-     if(!(cond)){ err = 2; continue; } \
-     if (tptr == cur_value){ err = 2; continue; } \
-     msg_settings.name = number; \
- }
+#define SETTINGS_OK 0
+#define SETTINGS_BAD_SYNTAX 1
+#define SETTINGS_BAD_ITEM 2
 
-#define SET_PARAM_STR(name) \
- if(!strcmp(cur_item, #name)){ \
-     g_free(msg_settings.name); \
-     if(!strcmp(cur_value, "NULL")) msg_settings.name = NULL; \
-     else msg_settings.name = g_strdup(cur_value); \
- }
+/*
+ * set_numeric_parameter handles settings such as pitch, rate, and volume.
+ * It converts its num_text argument to an integer.  If that integer is
+ * in the range [min_val, max_val], then the number is stored in *target.
+ * It returns SETTINGS_OK (which is 0) on success, and it returns
+ * SETTINGS_BAD_ITEM on failure.
+ */
 
-#define SET_PARAM_STR_C(name, fconv) \
- if(!strcmp(cur_item, #name)){ \
-     ret = fconv(cur_value); \
-     if (ret != -1) msg_settings.name = ret; \
-     else err = 2; \
- }
+static int set_numeric_parameter(char *num_text, int *target,
+					int min_val, int max_val)
+{
+	int err = SETTINGS_OK;
+	char *tptr = NULL;
+	int number = strtol(num_text, &tptr, 10);
+	if (tptr == num_text)
+		err = SETTINGS_BAD_ITEM;
+	else if ((number < min_val) || (number > max_val))
+		err = SETTINGS_BAD_ITEM;
+	else {
+		*target = number;
+	}
+	return err;
+}
 
 gchar*
 do_set(void)
@@ -214,7 +220,6 @@ do_set(void)
     char *line = NULL;
     int ret;
     size_t n;
-    int number; char *tptr;
     int err = 0;                /* Error status */
 
     printf("203 OK RECEIVING SETTINGS\n");
@@ -234,15 +239,45 @@ do_set(void)
             cur_value = strtok(NULL, "\n");
             if (cur_value == NULL){ err=1; continue; }
             
-            SET_PARAM_NUM(rate, ((number>=-100) && (number<=100)))
-            else SET_PARAM_NUM(pitch, ((number>=-100) && (number<=100)))
-	    else SET_PARAM_NUM(volume, ((number>=-100) && (number<=100)))
-            else SET_PARAM_STR_C(punctuation_mode, str2EPunctMode)
-            else SET_PARAM_STR_C(spelling_mode, str2ESpellMode)
-            else SET_PARAM_STR_C(cap_let_recogn, str2ECapLetRecogn)
-            else SET_PARAM_STR_C(voice, str2EVoice)
-            else SET_PARAM_STR(synthesis_voice)
-            else SET_PARAM_STR(language)
+ if(!strcmp(cur_item, "rate")){
+  err = set_numeric_parameter(cur_value, &msg_settings.rate, -100, 100);
+ }
+ else if(!strcmp(cur_item, "pitch")){
+  err = set_numeric_parameter(cur_value, &msg_settings.pitch, -100, 100);
+}
+ else if(!strcmp(cur_item, "volume")){
+  err = set_numeric_parameter(cur_value, &msg_settings.volume, -100, 100);
+}
+ else if(!strcmp(cur_item, "punctuation_mode")){
+     ret = str2EPunctMode(cur_value);
+     if (ret != -1) msg_settings.punctuation_mode = ret;
+     else err = 2;
+ }
+ else if(!strcmp(cur_item, "spelling_mode")){
+     ret = str2ESpellMode(cur_value);
+     if (ret != -1) msg_settings.spelling_mode = ret;
+     else err = 2;
+ }
+ else if(!strcmp(cur_item, "cap_let_recogn")){
+     ret = str2ECapLetRecogn(cur_value);
+     if (ret != -1) msg_settings.cap_let_recogn = ret;
+     else err = 2;
+ }
+ else if(!strcmp(cur_item, "voice")){
+     ret = str2EVoice(cur_value);
+     if (ret != -1) msg_settings.voice = ret;
+     else err = 2;
+ }
+ else if(!strcmp(cur_item, "synthesis_voice")){
+     g_free(msg_settings.synthesis_voice);
+     if(!strcmp(cur_value, "NULL")) msg_settings.synthesis_voice = NULL;
+     else msg_settings.synthesis_voice = g_strdup(cur_value);
+ }
+ else if(!strcmp(cur_item, "language")){
+     g_free(msg_settings.language);
+     if(!strcmp(cur_value, "NULL")) msg_settings.language = NULL;
+     else msg_settings.language = g_strdup(cur_value);
+ }
             else err=2;             /* Unknown parameter */
         }
         xfree(line);
@@ -255,12 +290,19 @@ do_set(void)
     return g_strdup("401 ERROR INTERNAL"); /* Can't be reached */
 }
 
-#define SET_AUDIO_STR(name,idx) \
- if(!strcmp(cur_item, #name)){ \
-     g_free(module_audio_pars[idx]); \
-     if(!strcmp(cur_value, "NULL")) module_audio_pars[idx] = NULL; \
-     else module_audio_pars[idx] = g_strdup(cur_value); \
- }
+/*
+ * set_audio_parameter: sets module_audio_pars[parameter_index] to
+ * current_value.
+ */
+
+static void set_audio_parameter(char *cur_value, int parameter_index)
+{
+	g_free(module_audio_pars[parameter_index]);
+	if (!strcmp(cur_value, "NULL"))
+		module_audio_pars[parameter_index] = NULL;
+	else
+		module_audio_pars[parameter_index] = g_strdup(cur_value);
+}
 
 gchar*
 do_audio(void)
@@ -292,12 +334,18 @@ do_audio(void)
             cur_value = strtok(NULL, "\n");
             if (cur_value == NULL){ err=1; continue; }
             
-            SET_AUDIO_STR(audio_output_method, 0)
-            else SET_AUDIO_STR(audio_oss_device, 1)
-            else SET_AUDIO_STR(audio_alsa_device, 2)
-            else SET_AUDIO_STR(audio_nas_server, 3)
-            else SET_AUDIO_STR(audio_pulse_server, 4)
-            else SET_AUDIO_STR(audio_pulse_min_length, 5)
+            if(!strcmp(cur_item, "audio_output_method"))
+              set_audio_parameter(cur_value, 0);
+            else if(!strcmp(cur_item, "audio_oss_device"))
+            set_audio_parameter(cur_value, 1);
+            else if(!strcmp(cur_item, "audio_alsa_device"))
+              set_audio_parameter(cur_value, 2);
+            else if(!strcmp(cur_item, "audio_nas_server"))
+              set_audio_parameter(cur_value, 3);
+            else if(!strcmp(cur_item, "audio_pulse_server"))
+              set_audio_parameter(cur_value, 4);
+            else if(!strcmp(cur_item, "audio_pulse_min_length"))
+              set_audio_parameter(cur_value, 5);
             else err=2;             /* Unknown parameter */
         }
         xfree(line);
@@ -315,15 +363,6 @@ do_audio(void)
     
     return msg;
 }
-
-#define SET_LOGLEVEL_NUM(name, cond) \
- if(!strcmp(cur_item, #name)){ \
-     number = strtol(cur_value, &tptr, 10); \
-     if(!(cond)){ err = 2; continue; } \
-     if (tptr == cur_value){ err = 2; continue; } \
-     log_level = number; \
-     spd_audio_set_loglevel(module_audio_id, number); \
- }
 
 gchar*
 do_loglevel(void)
@@ -355,7 +394,12 @@ do_loglevel(void)
             cur_value = strtok(NULL, "\n");
             if (cur_value == NULL){ err=1; continue; }
 
-            SET_LOGLEVEL_NUM(log_level, 1)
+ if(!strcmp(cur_item, "log_level")){
+     number = strtol(cur_value, &tptr, 10);
+     if (tptr == cur_value){ err = 2; continue; }
+     log_level = number;
+     spd_audio_set_loglevel(module_audio_id, number);
+ }
             else err=2;             /* Unknown parameter */
         }
         xfree(line);
@@ -457,8 +501,6 @@ do_list_voices(void)
   return voice_list->str;
 }
 
-#undef SET_PARAM_NUM
-#undef SET_PARAM_STR
 
 /* This has to return int (although it doesn't return at all) so that we could
  * call it from PROCESS_CMD() macro like the other commands that return
