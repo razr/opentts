@@ -568,8 +568,11 @@ output_stop()
 
     output_lock();
 
-    if (speaking_module == NULL) OL_RET(0)
-    else output = speaking_module;
+    if (speaking_module == NULL) {
+OL_RET(0);
+    } else {
+output = speaking_module;
+}
 
     MSG(4, "Module stop!");     
     SEND_DATA("STOP\n");
@@ -585,8 +588,11 @@ output_pause()
 
     output_lock();
 
-    if (speaking_module == NULL) OL_RET(0)
-    else output = speaking_module;
+    if (speaking_module == NULL) {
+ OL_RET(0);
+    } else {
+output = speaking_module;
+}
 
     MSG(4, "Module pause!");
     SEND_DATA("PAUSE\n");
