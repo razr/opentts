@@ -358,7 +358,7 @@ parse_history(const char *buf, const int bytes, const int fd)
         else if (who == 2) ret = set_ ## param ## _all(param); \
 
 #define SSIP_ON_OFF_PARAM(param, ok_message, err_message, inside_block) \
-    if (!strcmp(set_sub, #param)){ \
+    { \
 	char *helper_s; \
 	int param; \
 \
@@ -561,16 +561,20 @@ parse_set(const char *buf, const int bytes, const int fd)
         SSIP_SET_COMMAND(pause_context);
         if (ret) return g_strdup(ERR_COULDNT_SET_PAUSE_CONTEXT);
         return g_strdup(OK_PAUSE_CONTEXT_SET);
-    }
-    else SSIP_ON_OFF_PARAM(spelling,
+    } else  if (TEST_CMD(set_sub, "spelling")) {
+SSIP_ON_OFF_PARAM(spelling,
 	    OK_SPELLING_SET, ERR_COULDNT_SET_SPELLING,
-	    NOT_ALLOWED_INSIDE_BLOCK())
-    else SSIP_ON_OFF_PARAM(ssml_mode,
+	    NOT_ALLOWED_INSIDE_BLOCK());
+    } else if (TEST_CMD(set_sub, "ssml_mode")) {
+	SSIP_ON_OFF_PARAM(ssml_mode,
 	    OK_SSML_MODE_SET, ERR_COULDNT_SET_SSML_MODE,
-	    ALLOWED_INSIDE_BLOCK())
-      else SSIP_ON_OFF_PARAM(debug, g_strdup_printf("262-%s\r\n"OK_DEBUGGING, SpeechdOptions.debug_destination),
-            ERR_COULDNT_SET_DEBUGGING, ;)
-    else if (TEST_CMD(set_sub, "notification")){
+	    ALLOWED_INSIDE_BLOCK());
+    } else if (TEST_CMD(set_sub, "debug")) {
+	SSIP_ON_OFF_PARAM(debug,
+	    g_strdup_printf("262-%s\r\n"OK_DEBUGGING, SpeechdOptions.debug_destination),
+            ERR_COULDNT_SET_DEBUGGING,
+	    ALLOWED_INSIDE_BLOCK());
+    } else if (TEST_CMD(set_sub, "notification")){
 	char *scope;
         char *par_s;
 	int par;
