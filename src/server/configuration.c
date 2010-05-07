@@ -171,25 +171,25 @@ void free_config_options(configoption_t * opts, int *num)
 
 /* == CALLBACK DEFINITIONS == */
 GLOBAL_FDSET_OPTION_CB_STR(DefaultModule, output_module)
-    GLOBAL_FDSET_OPTION_CB_STR(DefaultLanguage, language)
-    GLOBAL_FDSET_OPTION_CB_STR(DefaultClientName, client_name)
+GLOBAL_FDSET_OPTION_CB_STR(DefaultLanguage, language)
+GLOBAL_FDSET_OPTION_CB_STR(DefaultClientName, client_name)
 
-    GLOBAL_FDSET_OPTION_CB_STR(AudioOutputMethod, audio_output_method)
-    GLOBAL_FDSET_OPTION_CB_STR(AudioOSSDevice, audio_oss_device)
-    GLOBAL_FDSET_OPTION_CB_STR(AudioALSADevice, audio_alsa_device)
-    GLOBAL_FDSET_OPTION_CB_STR(AudioNASServer, audio_nas_server)
-    GLOBAL_FDSET_OPTION_CB_STR(AudioPulseServer, audio_pulse_server)
-    GLOBAL_FDSET_OPTION_CB_INT(AudioPulseMinLength, audio_pulse_min_length, 1, "")
+GLOBAL_FDSET_OPTION_CB_STR(AudioOutputMethod, audio_output_method)
+GLOBAL_FDSET_OPTION_CB_STR(AudioOSSDevice, audio_oss_device)
+GLOBAL_FDSET_OPTION_CB_STR(AudioALSADevice, audio_alsa_device)
+GLOBAL_FDSET_OPTION_CB_STR(AudioNASServer, audio_nas_server)
+GLOBAL_FDSET_OPTION_CB_STR(AudioPulseServer, audio_pulse_server)
+GLOBAL_FDSET_OPTION_CB_INT(AudioPulseMinLength, audio_pulse_min_length, 1, "")
 
-    GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, rate, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, rate, (val >= -100)
 			   && (val <= +100), "Rate out of range.")
-    GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, pitch, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, pitch, (val >= -100)
 			   && (val <= +100), "Pitch out of range.")
-    GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, volume, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, volume, (val >= -100)
 			   && (val <= +100), "Volume out of range.")
-    GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
+GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
 			   "Invalid spelling mode")
-    GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
+GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, int,
 			       str2intpriority)
@@ -202,7 +202,7 @@ GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultCapLetRecognition, cap_let_recogn,
 			       SPDCapitalLetters, str2recogn)
 SPEECHD_OPTION_CB_STR(CommunicationMethod, communication_method)
 SPEECHD_OPTION_CB_STR(SocketName, socket_name)
- SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
+SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
 			 "Invalid access controll mode!")
 SPEECHD_OPTION_CB_INT_M(Port, port, val >= 0,
 			"Invalid port number!")
@@ -214,7 +214,7 @@ GLOBAL_SET_LOGLEVEL(LogLevel,
 								    "Invalid log (verbosity) level!")
 SPEECHD_OPTION_CB_INT(MaxHistoryMessages, max_history_messages, val >= 0,
 		      "Invalid parameter!")
- DOTCONF_CB(cb_LanguageDefaultModule)
+DOTCONF_CB(cb_LanguageDefaultModule)
 {
 	char *key;
 	char *value;
@@ -473,7 +473,7 @@ void load_default_global_set_options()
 	GlobalFDSet.min_delay_progress = 2000;
 	GlobalFDSet.pause_context = 0;
 	GlobalFDSet.ssml_mode = 0;
-	GlobalFDSet.notification = NOTIFY_NOTHING;
+	GlobalFDSet.notification = SPD_NOTHING;
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - default to OSS for Solaris */

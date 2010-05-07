@@ -57,4 +57,23 @@ typedef struct {
 	char *variant;	/* a not-well defined string describing dialect etc. */
 } SPDVoice;
 
+typedef enum {
+	SPD_NOTHING = 0,
+	SPD_BEGIN = 1,
+	SPD_END = 2,
+	SPD_INDEX_MARKS = 4,
+	SPD_CANCEL = 8,
+	SPD_PAUSE = 16,
+	SPD_RESUME = 32
+} SPDNotification;
+
+typedef enum {
+	SPD_EVENT_BEGIN,
+	SPD_EVENT_END,
+	SPD_EVENT_CANCEL,
+	SPD_EVENT_PAUSE,
+	SPD_EVENT_RESUME,
+	SPD_EVENT_INDEX_MARK
+} SPDNotificationType;
+
 #endif /* ifndef _OPENTTS_TYPES_H */

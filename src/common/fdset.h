@@ -40,16 +40,6 @@ typedef enum {
 	MSGTYPE_SPELL = 99
 } EMessageType;
 
-typedef enum {
-	NOTIFY_NOTHING = 0,
-	NOTIFY_BEGIN = 1,
-	NOTIFY_END = 2,
-	NOTIFY_IM = 4,
-	NOTIFY_CANCEL = 8,
-	NOTIFY_PAUSE = 16,
-	NOTIFY_RESUME = 32
-} ENotification;
-
 typedef struct {
 	unsigned int uid;	/* Unique ID of the client */
 	int fd;			/* File descriptor the client is on. */
@@ -74,7 +64,7 @@ typedef struct {
 	char *synthesis_voice;
 	SPDCapitalLetters cap_let_recogn;	/* Capital letters recognition: (0 - off, 1 - on) */
 
-	ENotification notification;	/* Notification about start and stop of messages, about reached 
+	SPDNotification notification;	/* Notification about start and stop of messages, about reached
 					   index marks and state (canceled, paused, resumed). */
 
 	int reparted;
