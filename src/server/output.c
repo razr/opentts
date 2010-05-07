@@ -391,7 +391,7 @@ int output_send_settings(TSpeechDMessage * msg, OutputModule * output)
 	ADD_SET_STR_C(spelling_mode, spell2str);
 	ADD_SET_STR_C(cap_let_recogn, recogn2str);
 	ADD_SET_STR(language);
-	ADD_SET_STR_C(voice, EVoice2str);
+	ADD_SET_STR_C(voice, voice2str);
 	ADD_SET_STR(synthesis_voice)
 
 	    SEND_CMD_N("SET");

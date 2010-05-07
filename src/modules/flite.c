@@ -58,7 +58,7 @@ signed int flite_volume = 0;
 static void flite_set_rate(signed int rate);
 static void flite_set_pitch(signed int pitch);
 static void flite_set_volume(signed int pitch);
-static void flite_set_voice(EVoiceType voice);
+static void flite_set_voice(SPDVoiceType voice);
 
 static void flite_strip_silence(AudioTrack *);
 static void *_flite_speak(void *);
@@ -432,9 +432,9 @@ static void flite_set_pitch(signed int pitch)
 	feat_set_float(flite_voice->features, "int_f0_target_mean", f0);
 }
 
-static void flite_set_voice(EVoiceType voice)
+static void flite_set_voice(SPDVoiceType voice)
 {
-	if (voice == MALE1) {
+	if (voice == SPD_MALE1) {
 		g_free(flite_voice);
 		flite_voice = (cst_voice *) register_cmu_us_kal();
 	}

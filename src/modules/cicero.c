@@ -58,7 +58,7 @@ static unsigned int CiceroMaxChunkLength = 500;
 static void cicero_set_rate(signed int rate);
 static void cicero_set_pitch(signed int pitch);
 static void cicero_set_volume(signed int pitch);
-static void cicero_set_voice(EVoiceType voice);
+static void cicero_set_voice(SPDVoiceType voice);
 
 static void *_cicero_speak(void *);
 
@@ -471,6 +471,6 @@ static void cicero_set_pitch(signed int pitch)
 {
 }
 
-static void cicero_set_voice(EVoiceType voice)
+static void cicero_set_voice(SPDVoiceType voice)
 {
 }

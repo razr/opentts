@@ -350,6 +350,6 @@ int module_audio_init(char **status_info);
 
 /* Prototypes from module_utils_addvoice.c */
 void module_register_settings_voices(void);
-char *module_getvoice(char *language, EVoiceType voice);
+char *module_getvoice(char *language, SPDVoiceType voice);
 
 #endif /* #ifndef __MODULE_UTILS_H */

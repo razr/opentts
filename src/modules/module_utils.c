@@ -227,7 +227,7 @@ gchar *do_set(void)
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "voice")) {
-				ret = str2EVoice(cur_value);
+				ret = str2voice(cur_value);
 				if (ret != -1)
 					msg_settings.voice = ret;
 				else

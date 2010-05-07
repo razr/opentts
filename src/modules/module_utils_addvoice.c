@@ -128,7 +128,7 @@ void module_register_settings_voices(void)
 						     AddVoice_cb, NULL, 0);
 }
 
-char *module_getvoice(char *language, EVoiceType voice)
+char *module_getvoice(char *language, SPDVoiceType voice)
 {
 	SPDVoiceDef *voices;
 	char *ret;
@@ -146,28 +146,28 @@ char *module_getvoice(char *language, EVoiceType voice)
 	}
 
 	switch (voice) {
-	case MALE1:
+	case SPD_MALE1:
 		ret = voices->male1;
 		break;
-	case MALE2:
+	case SPD_MALE2:
 		ret = voices->male2;
 		break;
-	case MALE3:
+	case SPD_MALE3:
 		ret = voices->male3;
 		break;
-	case FEMALE1:
+	case SPD_FEMALE1:
 		ret = voices->female1;
 		break;
-	case FEMALE2:
+	case SPD_FEMALE2:
 		ret = voices->female2;
 		break;
-	case FEMALE3:
+	case SPD_FEMALE3:
 		ret = voices->female3;
 		break;
-	case CHILD_MALE:
+	case SPD_CHILD_MALE:
 		ret = voices->child_male;
 		break;
-	case CHILD_FEMALE:
+	case SPD_CHILD_FEMALE:
 		ret = voices->child_female;
 		break;
 	default:

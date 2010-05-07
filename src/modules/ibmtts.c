@@ -248,9 +248,9 @@ static int *ibmtts_voice_index = NULL;
 
 /* Internal function prototypes for main thread. */
 static void ibmtts_set_language(char *lang);
-static void ibmtts_set_voice(EVoiceType voice);
-static char *ibmtts_voice_enum_to_str(EVoiceType voice);
-static void ibmtts_set_language_and_voice(char *lang, EVoiceType voice,
+static void ibmtts_set_voice(SPDVoiceType voice);
+static char *ibmtts_voice_enum_to_str(SPDVoiceType voice);
+static void ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice,
 					  char *dialect);
 static void ibmtts_set_synthesis_voice(char *);
 static void ibmtts_set_rate(signed int rate);
@@ -1122,36 +1122,36 @@ static void ibmtts_set_pitch(signed int pitch)
 		dbg("Ibmtts: Pitch set to %i.", pitchBaseline);
 }
 
-static char *ibmtts_voice_enum_to_str(EVoiceType voice)
+static char *ibmtts_voice_enum_to_str(SPDVoiceType voice)
 {
 	/* TODO: Would be better to move this to module_utils.c. */
 	char *voicename;
 	switch (voice) {
-	case NO_VOICE:
+	case SPD_NO_VOICE:
 		voicename = g_strdup("no voice");
 		break;
-	case MALE1:
+	case SPD_MALE1:
 		voicename = g_strdup("male1");
 		break;
-	case MALE2:
+	case SPD_MALE2:
 		voicename = g_strdup("male2");
 		break;
-	case MALE3:
+	case SPD_MALE3:
 		voicename = g_strdup("male3");
 		break;
-	case FEMALE1:
+	case SPD_FEMALE1:
 		voicename = g_strdup("female1");
 		break;
-	case FEMALE2:
+	case SPD_FEMALE2:
 		voicename = g_strdup("female2");
 		break;
-	case FEMALE3:
+	case SPD_FEMALE3:
 		voicename = g_strdup("female3");
 		break;
-	case CHILD_MALE:
+	case SPD_CHILD_MALE:
 		voicename = g_strdup("child_male");
 		break;
-	case CHILD_FEMALE:
+	case SPD_CHILD_FEMALE:
 		voicename = g_strdup("child_female");
 		break;
 	default:
@@ -1163,7 +1163,7 @@ static char *ibmtts_voice_enum_to_str(EVoiceType voice)
 
 /* Given a language, dialect and SD voice codes sets the IBM voice */
 static void
-ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
+ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice, char *dialect)
 {
 	char *dialect_name = dialect;
 	char *voicename = ibmtts_voice_enum_to_str(voice);
@@ -1220,28 +1220,28 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 		dbg("Ibmtts: Setting default VoiceParameters for voice %s",
 		    voicename);
 		switch (voice) {
-		case MALE1:
+		case SPD_MALE1:
 			eciVoice = 1;
 			break;	/* Adult Male 1 */
-		case MALE2:
+		case SPD_MALE2:
 			eciVoice = 4;
 			break;	/* Adult Male 2 */
-		case MALE3:
+		case SPD_MALE3:
 			eciVoice = 5;
 			break;	/* Adult Male 3 */
-		case FEMALE1:
+		case SPD_FEMALE1:
 			eciVoice = 2;
 			break;	/* Adult Female 1 */
-		case FEMALE2:
+		case SPD_FEMALE2:
 			eciVoice = 6;
 			break;	/* Adult Female 2 */
-		case FEMALE3:
+		case SPD_FEMALE3:
 			eciVoice = 7;
 			break;	/* Elderly Female 1 */
-		case CHILD_MALE:
+		case SPD_CHILD_MALE:
 			eciVoice = 3;
 			break;	/* Child */
-		case CHILD_FEMALE:
+		case SPD_CHILD_FEMALE:
 			eciVoice = 3;
 			break;	/* Child */
 		default:
@@ -1302,7 +1302,7 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 		dbg("Ibmtts: Cannot get speed of voice.");
 }
 
-static void ibmtts_set_voice(EVoiceType voice)
+static void ibmtts_set_voice(SPDVoiceType voice)
 {
 	if (msg_settings.language) {
 		ibmtts_set_language_and_voice(msg_settings.language, voice,

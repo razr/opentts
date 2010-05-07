@@ -27,18 +27,6 @@
 
 #include "opentts/opentts_types.h"
 
-typedef enum {			/* Type of voice */
-	NO_VOICE = 0,
-	MALE1 = 1,
-	MALE2 = 2,
-	MALE3 = 3,
-	FEMALE1 = 4,
-	FEMALE2 = 5,
-	FEMALE3 = 6,
-	CHILD_MALE = 7,
-	CHILD_FEMALE = 8
-} EVoiceType;
-
 typedef enum {
 	SORT_BY_TIME = 0,
 	SORT_BY_ALPHABET = 1
@@ -88,7 +76,7 @@ typedef struct {
 	char *client_name;	/* Name of the client. */
 	char *language;		/* Selected language name. (e.g. "en", "cz", "fr", ...) */
 	char *output_module;	/* Output module name. (e.g. "festival", "flite", "apollo", ...) */
-	EVoiceType voice;	/* see EVoiceType definition above */
+	SPDVoiceType voice;
 	char *synthesis_voice;
 	SPDCapitalLetters cap_let_recogn;	/* Capital letters recognition: (0 - off, 1 - on) */
 
@@ -131,7 +119,7 @@ typedef struct {
 
 	char *language;
 
-	EVoiceType voice;
+	SPDVoiceType voice;
 	char *synthesis_voice;
 } SPDMsgSettings;
 

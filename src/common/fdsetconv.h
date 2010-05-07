@@ -7,9 +7,9 @@
 #include "opentts/opentts_types.h"
 #include "fdset.h"
 
-char *EVoice2str(EVoiceType voice);
+char *voice2str(SPDVoiceType voice);
 
-EVoiceType str2EVoice(char *str);
+SPDVoiceType str2voice(char *str);
 
 char *punct2str(SPDPunctuation punct);
 
@@ -23,6 +23,6 @@ char *recogn2str(SPDCapitalLetters recogn);
 
 SPDCapitalLetters str2recogn(char *str);
 
-EVoiceType str2intpriority(char *str);
+int str2intpriority(char *str);
 
 #endif

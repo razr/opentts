@@ -32,33 +32,33 @@
 #include "opentts/opentts_types.h"
 #include "fdsetconv.h"
 
-char *EVoice2str(EVoiceType voice)
+char *voice2str(SPDVoiceType voice)
 {
 	char *str;
 
 	switch (voice) {
-	case MALE1:
+	case SPD_MALE1:
 		str = g_strdup("male1");
 		break;
-	case MALE2:
+	case SPD_MALE2:
 		str = g_strdup("male2");
 		break;
-	case MALE3:
+	case SPD_MALE3:
 		str = g_strdup("male3");
 		break;
-	case FEMALE1:
+	case SPD_FEMALE1:
 		str = g_strdup("female1");
 		break;
-	case FEMALE2:
+	case SPD_FEMALE2:
 		str = g_strdup("female2");
 		break;
-	case FEMALE3:
+	case SPD_FEMALE3:
 		str = g_strdup("female3");
 		break;
-	case CHILD_MALE:
+	case SPD_CHILD_MALE:
 		str = g_strdup("child_male");
 		break;
-	case CHILD_FEMALE:
+	case SPD_CHILD_FEMALE:
 		str = g_strdup("child_female");
 		break;
 	default:
@@ -68,28 +68,26 @@ char *EVoice2str(EVoiceType voice)
 	return str;
 }
 
-EVoiceType str2EVoice(char *str)
+SPDVoiceType str2voice(char *str)
 {
-	EVoiceType voice;
+	SPDVoiceType voice = SPD_NO_VOICE;
 
 	if (!strcmp(str, "male1"))
-		voice = MALE1;
+		voice = SPD_MALE1;
 	else if (!strcmp(str, "male2"))
-		voice = MALE2;
+		voice = SPD_MALE2;
 	else if (!strcmp(str, "male3"))
-		voice = MALE3;
+		voice = SPD_MALE3;
 	else if (!strcmp(str, "female1"))
-		voice = FEMALE1;
+		voice = SPD_FEMALE1;
 	else if (!strcmp(str, "female2"))
-		voice = FEMALE2;
+		voice = SPD_FEMALE2;
 	else if (!strcmp(str, "female3"))
-		voice = FEMALE3;
+		voice = SPD_FEMALE3;
 	else if (!strcmp(str, "child_male"))
-		voice = CHILD_MALE;
+		voice = SPD_CHILD_MALE;
 	else if (!strcmp(str, "child_female"))
-		voice = CHILD_FEMALE;
-	else
-		voice = NO_VOICE;
+		voice = SPD_CHILD_FEMALE;
 
 	return voice;
 }
@@ -194,7 +192,7 @@ SPDCapitalLetters str2recogn(char *str)
 	return recogn;
 }
 
-EVoiceType str2intpriority(char *str)
+int str2intpriority(char *str)
 {
 	int priority;
 

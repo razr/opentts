@@ -193,8 +193,8 @@ GLOBAL_FDSET_OPTION_CB_STR(DefaultModule, output_module)
 
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, int,
 			       str2intpriority)
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultVoiceType, voice, EVoiceType,
-			       str2EVoice)
+GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultVoiceType, voice, SPDVoiceType,
+			       str2voice)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPunctuationMode, punctuation_mode,
 			       SPDPunctuation,
 			       str2punct)
@@ -468,7 +468,7 @@ void load_default_global_set_options()
 	GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");
 	GlobalFDSet.language = g_strdup("en");
 	GlobalFDSet.output_module = NULL;
-	GlobalFDSet.voice = MALE1;
+	GlobalFDSet.voice = SPD_MALE1;
 	GlobalFDSet.cap_let_recogn = SPD_CAP_NONE;
 	GlobalFDSet.min_delay_progress = 2000;
 	GlobalFDSet.pause_context = 0;

@@ -145,21 +145,21 @@ int set_voice_uid(int uid, char *voice)
 		return 1;
 
 	if (!strcmp(voice, "male1"))
-		settings->voice = MALE1;
+		settings->voice = SPD_MALE1;
 	else if (!strcmp(voice, "male2"))
-		settings->voice = MALE2;
+		settings->voice = SPD_MALE2;
 	else if (!strcmp(voice, "male3"))
-		settings->voice = MALE3;
+		settings->voice = SPD_MALE3;
 	else if (!strcmp(voice, "female1"))
-		settings->voice = FEMALE1;
+		settings->voice = SPD_FEMALE1;
 	else if (!strcmp(voice, "female2"))
-		settings->voice = FEMALE2;
+		settings->voice = SPD_FEMALE2;
 	else if (!strcmp(voice, "female3"))
-		settings->voice = FEMALE3;
+		settings->voice = SPD_FEMALE3;
 	else if (!strcmp(voice, "child_male"))
-		settings->voice = CHILD_MALE;
+		settings->voice = SPD_CHILD_MALE;
 	else if (!strcmp(voice, "child_female"))
-		settings->voice = CHILD_FEMALE;
+		settings->voice = SPD_CHILD_FEMALE;
 	else
 		return 1;
 
@@ -251,7 +251,7 @@ int set_synthesis_voice_uid(int uid, char *synthesis_voice)
 	SET_PARAM_STR(synthesis_voice);
 
 	/* Delete ordinary voice settings so that we don't mix */
-	settings->voice = NO_VOICE;
+	settings->voice = SPD_NO_VOICE;
 
 	return 0;
 }

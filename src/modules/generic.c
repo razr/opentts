@@ -60,7 +60,7 @@ static void generic_child_close(TModuleDoublePipe dpipe);
 
 void generic_set_rate(signed int rate);
 void generic_set_pitch(signed int pitch);
-void generic_set_voice(EVoiceType voice);
+void generic_set_voice(SPDVoiceType voice);
 void generic_set_language(char *language);
 void generic_set_volume(signed int volume);
 void generic_set_punct(SPDPunctuation punct);
@@ -632,7 +632,7 @@ void generic_set_language(char *lang)
 	generic_set_voice(msg_settings.voice);
 }
 
-void generic_set_voice(EVoiceType voice)
+void generic_set_voice(SPDVoiceType voice)
 {
 	assert(generic_msg_language);
 	generic_msg_voice_str =
