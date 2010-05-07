@@ -61,7 +61,7 @@ int ivona_punct_mode = 0;
 /* Internal functions prototypes */
 static void ivona_set_volume(signed int volume);
 static void ivona_set_punctuation_mode(SPDPunctuation punct_mode);
-static void ivona_set_cap_let_recogn(ECapLetRecogn cap_mode);
+static void ivona_set_cap_let_recogn(SPDCapitalLetters cap_mode);
 
 static void *_ivona_speak(void *);
 
@@ -449,18 +449,18 @@ static void ivona_set_volume(signed int volume)
 	ivona_volume = volume;
 }
 
-static void ivona_set_cap_let_recogn(ECapLetRecogn cap_mode)
+static void ivona_set_cap_let_recogn(SPDCapitalLetters cap_mode)
 {
 	ivona_cap_mode = 0;
 	switch (cap_mode) {
-	case RECOGN_SPELL:
-		ivona_cap_mode = 2;
+	case SPD_CAP_NONE:
+		ivona_cap_mode = 0;
 		break;
-	case RECOGN_ICON:
+	case SPD_CAP_ICON:
 		ivona_cap_mode = 1;
 		break;
-	case RECOGN_NONE:
-		ivona_cap_mode = 0;
+	case SPD_CAP_SPELL:
+		ivona_cap_mode = 2;
 		break;
 	}
 	if (ivona_cap_mode < IvonaMinCapLet) {

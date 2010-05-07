@@ -562,17 +562,17 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 			return g_strdup(ERR_COULDNT_SET_OUTPUT_MODULE);
 		return g_strdup(OK_OUTPUT_MODULE_SET);
 	} else if (TEST_CMD(set_sub, "cap_let_recogn")) {
-		int capital_letter_recognition;
+		SPDCapitalLetters capital_letter_recognition;
 		char *recognition;
 		NOT_ALLOWED_INSIDE_BLOCK();
 		GET_PARAM_STR(recognition, 3, CONV_DOWN);
 
 		if (TEST_CMD(recognition, "none"))
-			capital_letter_recognition = RECOGN_NONE;
+			capital_letter_recognition = SPD_CAP_NONE;
 		else if (TEST_CMD(recognition, "spell"))
-			capital_letter_recognition = RECOGN_SPELL;
+			capital_letter_recognition = SPD_CAP_SPELL;
 		else if (TEST_CMD(recognition, "icon"))
-			capital_letter_recognition = RECOGN_ICON;
+			capital_letter_recognition = SPD_CAP_ICON;
 		else {
 			g_free(recognition);
 			return g_strdup(ERR_PARAMETER_INVALID);

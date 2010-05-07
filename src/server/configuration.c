@@ -199,11 +199,13 @@ GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPunctuationMode, punctuation_mode,
 			       SPDPunctuation,
 			       str2punct)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultCapLetRecognition, cap_let_recogn,
-			       ECapLetRecogn, str2ECapLetRecogn)
+			       SPDCapitalLetters, str2recogn)
 SPEECHD_OPTION_CB_STR(CommunicationMethod, communication_method)
 SPEECHD_OPTION_CB_STR(SocketName, socket_name)
-SPEECHD_OPTION_CB_INT_M(Port, port, val>=0, "Invalid port number!")
-SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val>=0, "Invalid access controll mode!")
+ SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
+			 "Invalid access controll mode!")
+SPEECHD_OPTION_CB_INT_M(Port, port, val >= 0,
+			"Invalid port number!")
 GLOBAL_SET_LOGLEVEL(LogLevel,
 								    log_level,
 								    (val >= 0)
@@ -467,7 +469,7 @@ void load_default_global_set_options()
 	GlobalFDSet.language = g_strdup("en");
 	GlobalFDSet.output_module = NULL;
 	GlobalFDSet.voice = MALE1;
-	GlobalFDSet.cap_let_recogn = 0;
+	GlobalFDSet.cap_let_recogn = SPD_CAP_NONE;
 	GlobalFDSet.min_delay_progress = 2000;
 	GlobalFDSet.pause_context = 0;
 	GlobalFDSet.ssml_mode = 0;

@@ -221,7 +221,7 @@ gchar *do_set(void)
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "cap_let_recogn")) {
-				ret = str2ECapLetRecogn(cur_value);
+				ret = str2recogn(cur_value);
 				if (ret != -1)
 					msg_settings.cap_let_recogn = ret;
 				else

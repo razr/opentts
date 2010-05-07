@@ -161,18 +161,18 @@ ESpellMode str2ESpellMode(char *str)
 	return spell;
 }
 
-char *ECapLetRecogn2str(ECapLetRecogn recogn)
+char *recogn2str(SPDCapitalLetters recogn)
 {
 	char *str;
 
 	switch (recogn) {
-	case RECOGN_NONE:
+	case SPD_CAP_NONE:
 		str = g_strdup("none");
 		break;
-	case RECOGN_SPELL:
+	case SPD_CAP_SPELL:
 		str = g_strdup("spell");
 		break;
-	case RECOGN_ICON:
+	case SPD_CAP_ICON:
 		str = g_strdup("icon");
 		break;
 	default:
@@ -182,18 +182,16 @@ char *ECapLetRecogn2str(ECapLetRecogn recogn)
 	return str;
 }
 
-ECapLetRecogn str2ECapLetRecogn(char *str)
+SPDCapitalLetters str2recogn(char *str)
 {
-	ECapLetRecogn recogn;
+	SPDCapitalLetters recogn = SPD_CAP_NONE;
 
 	if (!strcmp(str, "none"))
-		recogn = RECOGN_NONE;
+		recogn = SPD_CAP_NONE;
 	else if (!strcmp(str, "spell"))
-		recogn = RECOGN_SPELL;
+		recogn = SPD_CAP_SPELL;
 	else if (!strcmp(str, "icon"))
-		recogn = RECOGN_ICON;
-	else
-		recogn = -1;
+		recogn = SPD_CAP_ICON;
 
 	return recogn;
 }

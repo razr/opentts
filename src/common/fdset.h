@@ -53,12 +53,6 @@ typedef enum {
 } EMessageType;
 
 typedef enum {
-	RECOGN_NONE = 0,
-	RECOGN_SPELL = 1,
-	RECOGN_ICON = 2
-} ECapLetRecogn;
-
-typedef enum {
 	SPELLING_OFF = 0,
 	SPELLING_ON = 1
 } ESpellMode;
@@ -101,7 +95,7 @@ typedef struct {
 	char *output_module;	/* Output module name. (e.g. "festival", "flite", "apollo", ...) */
 	EVoiceType voice;	/* see EVoiceType definition above */
 	char *synthesis_voice;
-	ECapLetRecogn cap_let_recogn;	/* Capital letters recognition: (0 - off, 1 - on) */
+	SPDCapitalLetters cap_let_recogn;	/* Capital letters recognition: (0 - off, 1 - on) */
 
 	ENotification notification;	/* Notification about start and stop of messages, about reached 
 					   index marks and state (canceled, paused, resumed). */
@@ -138,7 +132,7 @@ typedef struct {
 
 	SPDPunctuation punctuation_mode;
 	ESpellMode spelling_mode;
-	ECapLetRecogn cap_let_recogn;
+	SPDCapitalLetters cap_let_recogn;
 
 	char *language;
 

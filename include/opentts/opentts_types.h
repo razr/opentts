@@ -28,4 +28,10 @@ typedef enum {
 	SPD_PUNCT_SOME = 2
 } SPDPunctuation;
 
+typedef enum {
+	SPD_CAP_NONE = 0,
+	SPD_CAP_SPELL = 1,
+	SPD_CAP_ICON = 2
+} SPDCapitalLetters;
+
 #endif /* ifndef _OPENTTS_TYPES_H */
