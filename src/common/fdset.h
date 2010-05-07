@@ -51,12 +51,6 @@ typedef enum {
 } ENotification;
 
 typedef struct {
-	char *name;
-	char *language;
-	char *dialect;
-} VoiceDescription;
-
-typedef struct {
 	unsigned int uid;	/* Unique ID of the client */
 	int fd;			/* File descriptor the client is on. */
 	int active;		/* Is this client still active on socket or gone? */

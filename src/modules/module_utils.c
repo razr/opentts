@@ -466,7 +466,7 @@ gchar *do_debug(char *cmd_buf)
 
 gchar *do_list_voices(void)
 {
-	VoiceDescription **voices;
+	SPDVoice **voices;
 	int i;
 	const char *lang;
 	const char *dialect;
@@ -485,10 +485,10 @@ gchar *do_list_voices(void)
 			lang = "none";
 		else
 			lang = voices[i]->language;
-		if (voices[i]->dialect == NULL)
+		if (voices[i]->variant == NULL)
 			dialect = "none";
 		else
-			dialect = voices[i]->dialect;
+			dialect = voices[i]->variant;
 		g_string_append_printf(voice_list, "200-%s %s %s\n",
 				       voices[i]->name, lang, dialect);
 	}

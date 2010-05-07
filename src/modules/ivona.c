@@ -166,10 +166,10 @@ int module_audio_init(char **status_info)
 	return module_audio_init_spd(status_info);
 }
 
-static VoiceDescription voice_jacek;
-static VoiceDescription *voice_ivona[] = { &voice_jacek, NULL };
+static SPDVoice voice_jacek;
+static SPDVoice *voice_ivona[] = { &voice_jacek, NULL };
 
-VoiceDescription **module_list_voices(void)
+SPDVoice **module_list_voices(void)
 {
 	voice_jacek.name = IvonaSpeakerName;
 	voice_jacek.language = IvonaSpeakerLanguage;

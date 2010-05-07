@@ -725,7 +725,7 @@ char *vect_read_item(char **vect, char *field)
 	}
 }
 
-VoiceDescription **festivalGetVoices(FT_Info * info)
+SPDVoice **festivalGetVoices(FT_Info * info)
 {
 	char *reply;
 	char **voices;
@@ -733,7 +733,7 @@ VoiceDescription **festivalGetVoices(FT_Info * info)
 	char *dialect;
 	int i, j;
 	int num_voices = 0;
-	VoiceDescription **result;
+	SPDVoice **result;
 
 	FEST_SEND_CMD("(apply append (voice-list-language-codes))");
 	festival_read_response(info, &reply);
@@ -757,8 +757,8 @@ VoiceDescription **festivalGetVoices(FT_Info * info)
 	num_voices /= 3;
 
 	result =
-	    (VoiceDescription **) g_malloc((num_voices + 1) *
-					   sizeof(VoiceDescription *));
+	    (SPDVoice **) g_malloc((num_voices + 1) *
+					   sizeof(SPDVoice *));
 
 	for (i = 0, j = 0;; j++) {
 		if (voices[i] == NULL)
@@ -767,8 +767,8 @@ VoiceDescription **festivalGetVoices(FT_Info * info)
 			continue;
 		else {
 			result[j] =
-			    (VoiceDescription *)
-			    g_malloc(sizeof(VoiceDescription));
+			    (SPDVoice *)
+			    g_malloc(sizeof(SPDVoice));
 			result[j]->name = voices[i];
 			lang = voices[i + 1];
 			if ((lang != NULL) && (strcmp(lang, "nil")))
@@ -777,9 +777,9 @@ VoiceDescription **festivalGetVoices(FT_Info * info)
 				result[j]->language = NULL;
 			dialect = voices[i + 2];
 			if ((dialect != NULL) && (strcmp(dialect, "nil")))
-				result[j]->dialect = g_strdup(dialect);
+				result[j]->variant = g_strdup(dialect);
 			else
-				result[j]->dialect = NULL;
+				result[j]->variant = NULL;
 			i += 3;
 		}
 	}

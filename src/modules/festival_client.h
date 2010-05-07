@@ -126,7 +126,7 @@ int festivalKey(FT_Info * info, const char *text);
 int festivalSpell(FT_Info * info, const char *text);
 
 FT_Wave *festivalStringToWaveGetData(FT_Info * info);
-VoiceDescription **festivalGetVoices(FT_Info * info);
+SPDVoice **festivalGetVoices(FT_Info * info);
 
 FT_Info *festivalDefaultInfo();
 void festivalEmptySocket(FT_Info * info);

@@ -55,7 +55,7 @@ int festival_process_pid = 0;
 
 FT_Info *festival_info = NULL;
 
-VoiceDescription **festival_voice_list = NULL;
+SPDVoice **festival_voice_list = NULL;
 
 enum {
 	FCT_SOCKET = 0,
@@ -317,7 +317,7 @@ int module_audio_init(char **status_info)
 	return module_audio_init_spd(status_info);
 }
 
-VoiceDescription **module_list_voices(void)
+SPDVoice **module_list_voices(void)
 {
 	return festival_voice_list;
 }

@@ -243,7 +243,7 @@ int ibmtts_voice_speed;
 static char *ibmtts_input_encoding = "cp1252";
 
 /* list of voices */
-static VoiceDescription **ibmtts_voice_list = NULL;
+static SPDVoice **ibmtts_voice_list = NULL;
 static int *ibmtts_voice_index = NULL;
 
 /* Internal function prototypes for main thread. */
@@ -550,7 +550,7 @@ int module_audio_init(char **status_info)
 	return module_audio_init_spd(status_info);
 }
 
-VoiceDescription **module_list_voices(void)
+SPDVoice **module_list_voices(void)
 {
 	dbg("Ibmtts: %s", __FUNCTION__);
 	return ibmtts_voice_list;
@@ -1174,13 +1174,13 @@ ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice, char *dialect)
 	dbg("Ibmtts: %s, lang=%s, voice=%d, dialect=%s",
 	    __FUNCTION__, lang, (int)voice, dialect ? dialect : NULL);
 
-	VoiceDescription **v = ibmtts_voice_list;
+	SPDVoice **v = ibmtts_voice_list;
 	assert(v);
 
 	if (dialect_name) {
 		for (i = 0; v[i]; i++) {
-			dbg("%d. dialect=%s", i, v[i]->dialect);
-			if (!strcmp(v[i]->dialect, dialect_name)) {
+			dbg("%d. dialect=%s", i, v[i]->variant);
+			if (!strcmp(v[i]->variant, dialect_name)) {
 				int j = ibmtts_voice_index[i];
 				ret =
 				    eciSetParam(eciHandle, eciLanguageDialect,
@@ -1760,9 +1760,9 @@ void alloc_voice_list()
 		return;
 
 	ibmtts_voice_list =
-	    g_malloc((nLanguages + 1) * sizeof(VoiceDescription *));
+	    g_malloc((nLanguages + 1) * sizeof(SPDVoice *));
 	ibmtts_voice_index =
-	    g_malloc((nLanguages + 1) * sizeof(VoiceDescription *));
+	    g_malloc((nLanguages + 1) * sizeof(SPDVoice *));
 	if (!ibmtts_voice_list)
 		return;
 
@@ -1770,7 +1770,7 @@ void alloc_voice_list()
 	for (i = 0; i < nLanguages; i++) {
 		/* look for the language name */
 		int j;
-		ibmtts_voice_list[i] = g_malloc(sizeof(VoiceDescription));
+		ibmtts_voice_list[i] = g_malloc(sizeof(SPDVoice));
 
 		dbg("Ibmtts: aLanguage[%d]=0x%08x", i, aLanguage[i]);
 		for (j = 0; j < MAX_NB_OF_LANGUAGES; j++) {
@@ -1780,7 +1780,7 @@ void alloc_voice_list()
 				ibmtts_voice_list[i]->name = eciLocales[j].name;
 				ibmtts_voice_list[i]->language =
 				    eciLocales[j].lang;
-				ibmtts_voice_list[i]->dialect =
+				ibmtts_voice_list[i]->variant =
 				    eciLocales[j].dialect;
 				ibmtts_voice_index[i] = j;
 				dbg("Ibmtts: alloc_voice_list %s",

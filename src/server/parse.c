@@ -879,7 +879,7 @@ char *parse_list(const char *buf, const int bytes, const int fd)
 		char *module_name;
 		int uid;
 		TFDSetElement *settings;
-		VoiceDescription **voices;
+		SPDVoice **voices;
 		GString *result;
 		int i;
 		char *helper;
@@ -903,7 +903,7 @@ char *parse_list(const char *buf, const int bytes, const int fd)
 					       C_OK_VOICES "-%s %s %s\r\n",
 					       voices[i]->name,
 					       voices[i]->language,
-					       voices[i]->dialect);
+					       voices[i]->variant);
 		}
 		g_string_append(result, OK_VOICE_LIST_SENT);
 		helper = result->str;

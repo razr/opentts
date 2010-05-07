@@ -51,4 +51,10 @@ typedef enum {
 	SPD_CHILD_FEMALE = 8
 } SPDVoiceType;
 
+typedef struct {
+	char *name;	/* Name of the voice (id) */
+	char *language;	/* 2-letter ISO language code */
+	char *variant;	/* a not-well defined string describing dialect etc. */
+} SPDVoice;
+
 #endif /* ifndef _OPENTTS_TYPES_H */

@@ -76,10 +76,10 @@ void dbg(char *fmt, ...);
 
 int module_load(void);
 int module_init(char **status_info);
-VoiceDescription **module_list_voices(void);
+SPDVoice **module_list_voices(void);
+int module_audio_init_spd(char **status_info);
 int module_speak(char *data, size_t bytes, EMessageType msgtype);
 int module_stop(void);
-VoiceDescription **module_get_voices(void);
 size_t module_pause(void);
 char *module_is_speaking(void);
 void module_close(int status);
