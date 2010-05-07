@@ -129,15 +129,15 @@ SPDPunctuation str2punct(char *str)
 	return punct;
 }
 
-char *ESpellMode2str(ESpellMode spell)
+char *spell2str(SPDSpelling spell)
 {
 	char *str;
 
 	switch (spell) {
-	case SPELLING_ON:
+	case SPD_SPELL_ON:
 		str = g_strdup("on");
 		break;
-	case SPELLING_OFF:
+	case SPD_SPELL_OFF:
 		str = g_strdup("off");
 		break;
 	default:
@@ -147,16 +147,14 @@ char *ESpellMode2str(ESpellMode spell)
 	return str;
 }
 
-ESpellMode str2ESpellMode(char *str)
+SPDSpelling str2spell(char *str)
 {
-	ESpellMode spell;
+	SPDSpelling spell = SPD_SPELL_OFF;
 
 	if (!strcmp(str, "on"))
-		spell = SPELLING_ON;
+		spell = SPD_SPELL_ON;
 	else if (!strcmp(str, "off"))
-		spell = SPELLING_OFF;
-	else
-		spell = -1;
+		spell = SPD_SPELL_OFF;
 
 	return spell;
 }

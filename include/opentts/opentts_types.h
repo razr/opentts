@@ -34,4 +34,9 @@ typedef enum {
 	SPD_CAP_ICON = 2
 } SPDCapitalLetters;
 
+typedef enum {
+	SPD_SPELL_OFF = 0,
+	SPD_SPELL_ON = 1
+} SPDSpelling;
+
 #endif /* ifndef _OPENTTS_TYPES_H */

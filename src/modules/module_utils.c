@@ -215,7 +215,7 @@ gchar *do_set(void)
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "spelling_mode")) {
-				ret = str2ESpellMode(cur_value);
+				ret = str2spell(cur_value);
 				if (ret != -1)
 					msg_settings.spelling_mode = ret;
 				else

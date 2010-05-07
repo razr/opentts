@@ -344,7 +344,7 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 
 	festival_message_type = msgtype;
 	if ((msgtype == MSGTYPE_TEXT)
-	    && (msg_settings.spelling_mode == SPELLING_ON))
+	    && (msg_settings.spelling_mode == SPD_SPELL_ON))
 		festival_message_type = MSGTYPE_SPELL;
 
 	/* If the connection crashed or language or voice

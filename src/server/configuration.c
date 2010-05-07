@@ -461,7 +461,7 @@ void load_default_global_set_options()
 {
 	GlobalFDSet.priority = 3;
 	GlobalFDSet.punctuation_mode = SPD_PUNCT_NONE;
-	GlobalFDSet.spelling_mode = 0;
+	GlobalFDSet.spelling_mode = SPD_SPELL_OFF;
 	GlobalFDSet.rate = 0;
 	GlobalFDSet.pitch = 0;
 	GlobalFDSet.volume = 0;
