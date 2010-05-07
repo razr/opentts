@@ -43,7 +43,7 @@ char *voice_type;
 char *punctuation_mode;
 char *priority;
 int pipe_mode;
-int ssml_mode;
+SPDDataMode ssml_mode;
 int spelling;
 int wait_till_end;
 int stop_previous;
@@ -202,7 +202,7 @@ int options_parse(int argc, char *argv[])
 			OPT_SET_STR(priority);
 			break;
 		case 'x':
-			ssml_mode = 1;
+			ssml_mode = SPD_DATA_SSML;
 			break;
 		case 'N':
 			OPT_SET_STR(application_name);

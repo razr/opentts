@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <semaphore.h>
 #include <errno.h>
+#include <opentts/opentts_types.h>
 #include <opentts/libopentts.h>
 #include "options.h"
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
 	voice_type = NULL;
 	punctuation_mode = NULL;
 	spelling = -2;
-	ssml_mode = 0;
+	ssml_mode = SPD_DATA_TEXT;
 	wait_till_end = 0;
 	stop_previous = 0;
 	cancel_previous = 0;
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (ssml_mode)
+	if (ssml_mode == SPD_DATA_SSML)
 		if (spd_execute_command(conn, "SET SELF SSML_MODE ON"))
 			printf("Failed to set SSML mode.\n");
 

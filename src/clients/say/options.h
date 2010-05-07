@@ -24,6 +24,8 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+#include "opentts/opentts_types.h"
+
 /* Global variable declarations. */
 extern signed int rate;
 extern signed int pitch;
@@ -35,7 +37,7 @@ extern char *voice_type;
 extern char *punctuation_mode;
 extern char *priority;
 extern int pipe_mode;
-extern int ssml_mode;
+extern SPDDataMode ssml_mode;
 extern int spelling;
 extern int wait_till_end;
 extern int stop_previous;

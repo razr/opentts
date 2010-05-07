@@ -76,4 +76,9 @@ typedef enum {
 	SPD_EVENT_INDEX_MARK
 } SPDNotificationType;
 
+typedef enum {
+	SPD_DATA_TEXT = 0,
+	SPD_DATA_SSML = 1
+} SPDDataMode;
+
 #endif /* ifndef _OPENTTS_TYPES_H */

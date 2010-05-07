@@ -44,6 +44,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
+#include "opentts/opentts_types.h"
 #include <fdset.h>
 #include <timestamp.h>
 #include "audio.h"

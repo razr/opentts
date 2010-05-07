@@ -472,7 +472,7 @@ void load_default_global_set_options()
 	GlobalFDSet.cap_let_recogn = SPD_CAP_NONE;
 	GlobalFDSet.min_delay_progress = 2000;
 	GlobalFDSet.pause_context = 0;
-	GlobalFDSet.ssml_mode = 0;
+	GlobalFDSet.ssml_mode = SPD_DATA_TEXT;
 	GlobalFDSet.notification = SPD_NOTHING;
 
 #ifdef __SUNPRO_C

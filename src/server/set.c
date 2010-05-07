@@ -365,9 +365,9 @@ int set_pause_context_uid(int uid, int pause_context)
 	return 0;
 }
 
-SET_SELF_ALL(int, ssml_mode)
+SET_SELF_ALL(SPDDataMode, ssml_mode)
 
-int set_ssml_mode_uid(int uid, int ssml_mode)
+int set_ssml_mode_uid(int uid, SPDDataMode ssml_mode)
 {
 	TFDSetElement *settings;
 
@@ -375,7 +375,7 @@ int set_ssml_mode_uid(int uid, int ssml_mode)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->ssml_mode, ssml_mode);
+	set_param_int((int *)&settings->ssml_mode, ssml_mode);
 	return 0;
 }
 
