@@ -529,17 +529,17 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		return g_strdup(OK_VOICE_SET);
 	} else if (TEST_CMD(set_sub, "punctuation")) {
 		char *punct_s;
-		EPunctMode punctuation_mode;
+		SPDPunctuation punctuation_mode;
 
 		NOT_ALLOWED_INSIDE_BLOCK();
 		GET_PARAM_STR(punct_s, 3, CONV_DOWN);
 
 		if (TEST_CMD(punct_s, "all"))
-			punctuation_mode = PUNCT_ALL;
+			punctuation_mode = SPD_PUNCT_ALL;
 		else if (TEST_CMD(punct_s, "some"))
-			punctuation_mode = PUNCT_SOME;
+			punctuation_mode = SPD_PUNCT_SOME;
 		else if (TEST_CMD(punct_s, "none"))
-			punctuation_mode = PUNCT_NONE;
+			punctuation_mode = SPD_PUNCT_NONE;
 		else {
 			g_free(punct_s);
 			return g_strdup(ERR_PARAMETER_INVALID);

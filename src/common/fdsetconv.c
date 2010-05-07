@@ -28,6 +28,8 @@
 
 #include <string.h>
 #include <glib.h>
+
+#include "opentts/opentts_types.h"
 #include "fdsetconv.h"
 
 char *EVoice2str(EVoiceType voice)
@@ -92,18 +94,18 @@ EVoiceType str2EVoice(char *str)
 	return voice;
 }
 
-char *EPunctMode2str(EPunctMode punct)
+char *punct2str(SPDPunctuation punct)
 {
 	char *str;
 
 	switch (punct) {
-	case PUNCT_NONE:
+	case SPD_PUNCT_NONE:
 		str = g_strdup("none");
 		break;
-	case PUNCT_ALL:
+	case SPD_PUNCT_ALL:
 		str = g_strdup("all");
 		break;
-	case PUNCT_SOME:
+	case SPD_PUNCT_SOME:
 		str = g_strdup("some");
 		break;
 	default:
@@ -113,18 +115,16 @@ char *EPunctMode2str(EPunctMode punct)
 	return str;
 }
 
-EPunctMode str2EPunctMode(char *str)
+SPDPunctuation str2punct(char *str)
 {
-	EPunctMode punct;
+	SPDPunctuation punct = SPD_PUNCT_NONE;
 
 	if (!strcmp(str, "none"))
-		punct = PUNCT_NONE;
+		punct = SPD_PUNCT_NONE;
 	else if (!strcmp(str, "all"))
-		punct = PUNCT_ALL;
+		punct = SPD_PUNCT_ALL;
 	else if (!strcmp(str, "some"))
-		punct = PUNCT_SOME;
-	else
-		punct = -1;
+		punct = SPD_PUNCT_SOME;
 
 	return punct;
 }

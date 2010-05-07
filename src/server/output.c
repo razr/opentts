@@ -387,7 +387,7 @@ int output_send_settings(TSpeechDMessage * msg, OutputModule * output)
 	ADD_SET_INT(pitch);
 	ADD_SET_INT(rate);
 	ADD_SET_INT(volume);
-	ADD_SET_STR_C(punctuation_mode, EPunctMode2str);
+	ADD_SET_STR_C(punctuation_mode, punct2str);
 	ADD_SET_STR_C(spelling_mode, ESpellMode2str);
 	ADD_SET_STR_C(cap_let_recogn, ECapLetRecogn2str);
 	ADD_SET_STR(language);

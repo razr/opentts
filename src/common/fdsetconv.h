@@ -3,15 +3,17 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#include "opentts/opentts_types.h"
 #include "fdset.h"
 
 char *EVoice2str(EVoiceType voice);
 
 EVoiceType str2EVoice(char *str);
 
-char *EPunctMode2str(EPunctMode punct);
+char *punct2str(SPDPunctuation punct);
 
-EPunctMode str2EPunctMode(char *str);
+SPDPunctuation str2punct(char *str);
 
 char *ESpellMode2str(ESpellMode spell);
 

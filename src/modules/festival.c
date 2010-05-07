@@ -27,9 +27,9 @@
 
 #include <stdio.h>
 
+#include "opentts/opentts_types.h"
 #include <fdset.h>
 #include <fdsetconv.h>
-
 #include "festival_client.h"
 #include "module_utils.h"
 
@@ -141,7 +141,7 @@ void festival_set_pitch(signed int pitch);
 void festival_set_voice(EVoiceType voice);
 void festival_set_synthesis_voice(char *synthesis_voice);
 void festival_set_language(char *language);
-void festival_set_punctuation_mode(EPunctMode punct);
+void festival_set_punctuation_mode(SPDPunctuation punct);
 void festival_set_cap_let_recogn(ECapLetRecogn recogn);
 void festival_set_volume(signed int volume);
 
@@ -813,10 +813,10 @@ void festival_set_volume(signed int volume)
 	festival_volume = volume;
 }
 
-void festival_set_punctuation_mode(EPunctMode punct)
+void festival_set_punctuation_mode(SPDPunctuation punct)
 {
 	char *punct_mode;
-	punct_mode = EPunctMode2str(punct);
+	punct_mode = punct2str(punct);
 	FestivalSetPunctuationMode(festival_info, punct_mode);
 	g_free(punct_mode);
 }

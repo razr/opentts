@@ -28,6 +28,7 @@
 #include <dotconf.h>
 
 #include "openttsd.h"
+#include "opentts/opentts_types.h"
 #include "configuration.h"
 #include <fdsetconv.h>
 
@@ -195,8 +196,8 @@ GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, int,
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultVoiceType, voice, EVoiceType,
 			       str2EVoice)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPunctuationMode, punctuation_mode,
-			       EPunctMode,
-			       str2EPunctMode)
+			       SPDPunctuation,
+			       str2punct)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultCapLetRecognition, cap_let_recogn,
 			       ECapLetRecogn, str2ECapLetRecogn)
 SPEECHD_OPTION_CB_STR(CommunicationMethod, communication_method)
@@ -457,7 +458,7 @@ configoption_t *load_config_options(int *num_options)
 void load_default_global_set_options()
 {
 	GlobalFDSet.priority = 3;
-	GlobalFDSet.punctuation_mode = PUNCT_NONE;
+	GlobalFDSet.punctuation_mode = SPD_PUNCT_NONE;
 	GlobalFDSet.spelling_mode = 0;
 	GlobalFDSet.rate = 0;
 	GlobalFDSet.pitch = 0;

@@ -30,8 +30,8 @@
 #include <libdumbtts.h>
 #include "audio.h"
 
+#include "opentts/opentts_types.h"
 #include <fdset.h>
-
 #include "module_utils.h"
 #include "ivona_client.h"
 
@@ -60,7 +60,7 @@ int ivona_punct_mode = 0;
 
 /* Internal functions prototypes */
 static void ivona_set_volume(signed int volume);
-static void ivona_set_punctuation_mode(EPunctMode punct_mode);
+static void ivona_set_punctuation_mode(SPDPunctuation punct_mode);
 static void ivona_set_cap_let_recogn(ECapLetRecogn cap_mode);
 
 static void *_ivona_speak(void *);
@@ -468,18 +468,18 @@ static void ivona_set_cap_let_recogn(ECapLetRecogn cap_mode)
 	}
 }
 
-static void ivona_set_punctuation_mode(EPunctMode punct_mode)
+static void ivona_set_punctuation_mode(SPDPunctuation punct_mode)
 {
 	ivona_punct_mode = 1;
 	switch (punct_mode) {
-	case PUNCT_ALL:
-		ivona_punct_mode = 2;
+	case SPD_PUNCT_NONE:
+		ivona_punct_mode = 0;
 		break;
-	case PUNCT_SOME:
+	case SPD_PUNCT_SOME:
 		ivona_punct_mode = 1;
 		break;
-	case PUNCT_NONE:
-		ivona_punct_mode = 0;
+	case SPD_PUNCT_ALL:
+		ivona_punct_mode = 2;
 		break;
 	}
 }

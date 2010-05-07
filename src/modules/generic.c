@@ -28,8 +28,8 @@
 
 #include <glib.h>
 
+#include "opentts/opentts_types.h"
 #include <fdset.h>
-
 #include "module_utils.h"
 
 #define MODULE_NAME     "generic"
@@ -63,29 +63,29 @@ void generic_set_pitch(signed int pitch);
 void generic_set_voice(EVoiceType voice);
 void generic_set_language(char *language);
 void generic_set_volume(signed int volume);
-void generic_set_punct(EPunctMode punct);
+void generic_set_punct(SPDPunctuation punct);
 
 /* Fill the module_info structure with pointers to this modules functions */
 
 MOD_OPTION_1_STR(GenericExecuteSynth)
-    MOD_OPTION_1_INT(GenericMaxChunkLength)
-    MOD_OPTION_1_STR(GenericDelimiters)
-    MOD_OPTION_1_STR(GenericPunctNone)
-    MOD_OPTION_1_STR(GenericPunctSome)
-    MOD_OPTION_1_STR(GenericPunctAll)
-    MOD_OPTION_1_STR(GenericStripPunctChars)
-    MOD_OPTION_1_STR(GenericRecodeFallback)
+MOD_OPTION_1_INT(GenericMaxChunkLength)
+MOD_OPTION_1_STR(GenericDelimiters)
+MOD_OPTION_1_STR(GenericPunctNone)
+MOD_OPTION_1_STR(GenericPunctSome)
+MOD_OPTION_1_STR(GenericPunctAll)
+MOD_OPTION_1_STR(GenericStripPunctChars)
+MOD_OPTION_1_STR(GenericRecodeFallback)
 
-    MOD_OPTION_1_INT(GenericRateAdd)
-    MOD_OPTION_1_FLOAT(GenericRateMultiply)
-    MOD_OPTION_1_INT(GenericRateForceInteger)
-    MOD_OPTION_1_INT(GenericPitchAdd)
-    MOD_OPTION_1_FLOAT(GenericPitchMultiply)
-    MOD_OPTION_1_INT(GenericPitchForceInteger)
-    MOD_OPTION_1_INT(GenericVolumeAdd)
-    MOD_OPTION_1_FLOAT(GenericVolumeMultiply)
-    MOD_OPTION_1_INT(GenericVolumeForceInteger)
-    MOD_OPTION_3_HT(GenericLanguage, code, name, charset)
+MOD_OPTION_1_INT(GenericRateAdd)
+MOD_OPTION_1_FLOAT(GenericRateMultiply)
+MOD_OPTION_1_INT(GenericRateForceInteger)
+MOD_OPTION_1_INT(GenericPitchAdd)
+MOD_OPTION_1_FLOAT(GenericPitchMultiply)
+MOD_OPTION_1_INT(GenericPitchForceInteger)
+MOD_OPTION_1_INT(GenericVolumeAdd)
+MOD_OPTION_1_FLOAT(GenericVolumeMultiply)
+MOD_OPTION_1_INT(GenericVolumeForceInteger)
+MOD_OPTION_3_HT(GenericLanguage, code, name, charset)
 
 static char generic_msg_pitch_str[16];
 static char generic_msg_rate_str[16];
@@ -642,18 +642,19 @@ void generic_set_voice(EVoiceType voice)
 	}
 }
 
-void generic_set_punct(EPunctMode punct)
+void generic_set_punct(SPDPunctuation punct)
 {
-	if (punct == PUNCT_NONE) {
-		generic_msg_punct_str = g_strdup((char *)GenericPunctNone);
-		return;
-	} else if (punct == PUNCT_SOME) {
-		generic_msg_punct_str = g_strdup((char *)GenericPunctSome);
-		return;
-	} else if (punct == PUNCT_ALL) {
-		generic_msg_punct_str = g_strdup((char *)GenericPunctAll);
-		return;
-	} else {
+	switch (punct) {
+		case SPD_PUNCT_NONE:
+			generic_msg_punct_str = g_strdup((char *)GenericPunctNone);
+			return;
+		case SPD_PUNCT_SOME:
+			generic_msg_punct_str = g_strdup((char *)GenericPunctSome);
+			return;
+		case SPD_PUNCT_ALL:
+			generic_msg_punct_str = g_strdup((char *)GenericPunctAll);
+			return;
+		default:
 		dbg("ERROR: Unknown punctuation setting, ignored");
 	}
 }

@@ -25,6 +25,8 @@
 #ifndef FDSET_H
 #define FDSET_H
 
+#include "opentts/opentts_types.h"
+
 typedef enum {			/* Type of voice */
 	NO_VOICE = 0,
 	MALE1 = 1,
@@ -55,12 +57,6 @@ typedef enum {
 	RECOGN_SPELL = 1,
 	RECOGN_ICON = 2
 } ECapLetRecogn;
-
-typedef enum {
-	PUNCT_NONE = 0,
-	PUNCT_ALL = 1,
-	PUNCT_SOME = 2
-} EPunctMode;
 
 typedef enum {
 	SPELLING_OFF = 0,
@@ -95,7 +91,7 @@ typedef struct {
 	signed int rate;	/* Speed of voice from <-100;+100>, 0 is the default */
 	signed int pitch;	/* Pitch of voice from <-100;+100>, 0 is the default */
 	signed int volume;	/* Volume of voice from <-100;+100), 0 is the default */
-	EPunctMode punctuation_mode;	/* Punctuation mode: 0, 1 or 2
+	SPDPunctuation punctuation_mode;	/* Punctuation mode: 0, 1 or 2
 					   0    -       no punctuation
 					   1    -       all punctuation
 					   2    -       only user-selected punctuation */
@@ -140,7 +136,7 @@ typedef struct {
 	signed int pitch;
 	signed int volume;
 
-	EPunctMode punctuation_mode;
+	SPDPunctuation punctuation_mode;
 	ESpellMode spelling_mode;
 	ECapLetRecogn cap_let_recogn;
 

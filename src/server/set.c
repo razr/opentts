@@ -28,14 +28,10 @@
 
 #include <fnmatch.h>
 
+#include "opentts/opentts_types.h"
 #include "set.h"
 #include "alloc.h"
 #include "msg.h"
-
-gint spd_str_compare(gconstpointer a, gconstpointer b)
-{
-	return strcmp((char *)a, (char *)b);
-}
 
 int set_priority_self(int fd, int priority)
 {
@@ -174,9 +170,9 @@ int set_voice_uid(int uid, char *voice)
 	return 0;
 }
 
-SET_SELF_ALL(EPunctMode, punctuation_mode)
+SET_SELF_ALL(SPDPunctuation, punctuation_mode)
 
-int set_punctuation_mode_uid(int uid, EPunctMode punctuation)
+int set_punctuation_mode_uid(int uid, SPDPunctuation punctuation)
 {
 	TFDSetElement *settings;
 

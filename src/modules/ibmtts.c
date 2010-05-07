@@ -57,7 +57,7 @@
 #include <eci.h>
 
 /* Speech Dispatcher includes. */
-#include "config.h"
+#include "opentts/opentts_types.h"
 #include "audio.h"
 #include <fdset.h>
 #include "module_utils.h"
@@ -991,7 +991,7 @@ static void *_ibmtts_synth(void *nothing)
 			eciSetParam(eciHandle, eciTextMode, eciTextModeDefault);
 			break;
 		case MSGTYPE_SPELL:
-			if (PUNCT_NONE != msg_settings.punctuation_mode)
+			if (SPD_PUNCT_NONE != msg_settings.punctuation_mode)
 				eciSetParam(eciHandle, eciTextMode,
 					    eciTextModeAllSpell);
 			else

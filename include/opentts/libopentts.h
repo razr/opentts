@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <pthread.h>
+#include <opentts/opentts_types.h>
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
@@ -39,12 +40,6 @@ extern "C" {
 #define SPD_NO_REPLY 0		/* No reply requested */
 
 /* --------------------- Public data types ------------------------ */
-
-typedef enum {
-	SPD_PUNCT_ALL = 0,
-	SPD_PUNCT_NONE = 1,
-	SPD_PUNCT_SOME = 2
-} SPDPunctuation;
 
 typedef enum {
 	SPD_CAP_NONE = 0,

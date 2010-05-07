@@ -209,7 +209,7 @@ gchar *do_set(void)
 							  &msg_settings.volume,
 							  -100, 100);
 			} else if (!strcmp(cur_item, "punctuation_mode")) {
-				ret = str2EPunctMode(cur_value);
+				ret = str2punct(cur_value);
 				if (ret != -1)
 					msg_settings.punctuation_mode = ret;
 				else
