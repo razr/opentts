@@ -25,7 +25,6 @@
 #include <config.h>
 #endif
 
-#include <fdset.h>
 #include <errno.h>
 #include <sys/poll.h>
 #include <fcntl.h>

@@ -45,9 +45,23 @@
 #include <sys/sem.h>
 
 #include "opentts/opentts_types.h"
-#include <fdset.h>
 #include <timestamp.h>
 #include "audio.h"
+
+typedef struct {
+	signed int rate;
+	signed int pitch;
+	signed int volume;
+
+	SPDPunctuation punctuation_mode;
+	SPDSpelling spelling_mode;
+	SPDCapitalLetters cap_let_recogn;
+
+	char *language;
+
+	SPDVoiceType voice;
+	char *synthesis_voice;
+} SPDMsgSettings;
 
 extern AudioID *module_audio_id;
 

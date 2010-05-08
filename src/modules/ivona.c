@@ -31,7 +31,6 @@
 #include "audio.h"
 
 #include "opentts/opentts_types.h"
-#include <fdset.h>
 #include "module_utils.h"
 #include "ivona_client.h"
 

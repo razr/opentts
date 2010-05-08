@@ -84,19 +84,4 @@ typedef struct {
 	TFDSetElement val;
 } TFDSetClientSpecific;
 
-typedef struct {
-	signed int rate;
-	signed int pitch;
-	signed int volume;
-
-	SPDPunctuation punctuation_mode;
-	SPDSpelling spelling_mode;
-	SPDCapitalLetters cap_let_recogn;
-
-	char *language;
-
-	SPDVoiceType voice;
-	char *synthesis_voice;
-} SPDMsgSettings;
-
 #endif /* not ifndef FDSET */

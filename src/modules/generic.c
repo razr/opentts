@@ -29,7 +29,6 @@
 #include <glib.h>
 
 #include "opentts/opentts_types.h"
-#include <fdset.h>
 #include "module_utils.h"
 
 #define MODULE_NAME     "generic"

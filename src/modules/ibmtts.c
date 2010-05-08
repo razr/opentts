@@ -59,7 +59,6 @@
 /* Speech Dispatcher includes. */
 #include "opentts/opentts_types.h"
 #include "audio.h"
-#include <fdset.h>
 #include "module_utils.h"
 
 #if HAVE_SNDFILE

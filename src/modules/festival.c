@@ -28,7 +28,6 @@
 #include <stdio.h>
 
 #include "opentts/opentts_types.h"
-#include <fdset.h>
 #include <fdsetconv.h>
 #include "festival_client.h"
 #include "module_utils.h"

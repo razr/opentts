@@ -29,8 +29,6 @@
 #include "opentts/opentts_types.h"
 #include <flite/flite.h>
 #include "audio.h"
-
-#include <fdset.h>
 #include "module_utils.h"
 
 #define MODULE_NAME     "flite"

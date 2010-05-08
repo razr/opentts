@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "opentts/opentts_types.h"
-#include "fdset.h"
 
 char *voice2str(SPDVoiceType voice);
 
