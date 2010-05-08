@@ -81,4 +81,12 @@ typedef enum {
 	SPD_DATA_SSML = 1
 } SPDDataMode;
 
+typedef enum {
+	SPD_IMPORTANT = 1,
+	SPD_MESSAGE = 2,
+	SPD_TEXT = 3,
+	SPD_NOTIFICATION = 4,
+	SPD_PROGRESS = 5
+} SPDPriority;
+
 #endif /* ifndef _OPENTTS_TYPES_H */

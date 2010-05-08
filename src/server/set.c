@@ -33,7 +33,7 @@
 #include "alloc.h"
 #include "msg.h"
 
-int set_priority_self(int fd, int priority)
+int set_priority_self(int fd, SPDPriority priority)
 {
 	int uid;
 	int ret;
@@ -46,7 +46,7 @@ int set_priority_self(int fd, int priority)
 	return ret;
 }
 
-int set_priority_uid(int uid, int priority)
+int set_priority_uid(int uid, SPDPriority priority)
 {
 	TFDSetElement *settings;
 	if ((priority < 0) || (priority > 5))
@@ -55,7 +55,7 @@ int set_priority_uid(int uid, int priority)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->priority, priority);
+	set_param_int((int *)&settings->priority, priority);
 	return 0;
 }
 

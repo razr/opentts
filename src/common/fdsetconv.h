@@ -23,6 +23,6 @@ char *recogn2str(SPDCapitalLetters recogn);
 
 SPDCapitalLetters str2recogn(char *str);
 
-int str2intpriority(char *str);
+SPDPriority str2priority(char *str);
 
 #endif

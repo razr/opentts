@@ -191,8 +191,8 @@ GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, int,
-			       str2intpriority)
+GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, SPDPriority,
+			       str2priority)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultVoiceType, voice, SPDVoiceType,
 			       str2voice)
 GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPunctuationMode, punctuation_mode,
@@ -459,7 +459,7 @@ configoption_t *load_config_options(int *num_options)
 
 void load_default_global_set_options()
 {
-	GlobalFDSet.priority = 3;
+	GlobalFDSet.priority = SPD_MESSAGE;
 	GlobalFDSet.punctuation_mode = SPD_PUNCT_NONE;
 	GlobalFDSet.spelling_mode = SPD_SPELL_OFF;
 	GlobalFDSet.rate = 0;

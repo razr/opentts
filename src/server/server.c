@@ -165,21 +165,21 @@ queue_message(TSpeechDMessage * new, int fd, int history_flag,
 	/* Put the element new to queue according to it's priority. */
 	check_locked(&element_free_mutex);
 	switch (settings->priority) {
-	case 1:
+	case SPD_IMPORTANT:
 		MessageQueue->p1 = g_list_append(MessageQueue->p1, new);
 		break;
-	case 2:
+	case SPD_MESSAGE:
 		MessageQueue->p2 = g_list_append(MessageQueue->p2, new);
 		break;
-	case 3:
+	case SPD_TEXT:
 		MessageQueue->p3 = g_list_append(MessageQueue->p3, new);
 		break;
-	case 4:
+	case SPD_NOTIFICATION:
 		MessageQueue->p4 = g_list_append(MessageQueue->p4, new);
 		break;
-	case 5:
+	case SPD_PROGRESS:
 		MessageQueue->p5 = g_list_append(MessageQueue->p5, new);
-		//clear last_p5_block if we get new block or no block message
+		/* clear last_p5_block if we get new block or no block message */
 		element = g_list_last(last_p5_block);
 		if (!element || !element->data
 		    || ((TSpeechDMessage *) (element->data))->settings.
@@ -189,7 +189,7 @@ queue_message(TSpeechDMessage * new, int fd, int history_flag,
 			g_list_free(last_p5_block);
 			last_p5_block = NULL;
 		}
-		// insert message
+		/* insert message */
 		message_copy = spd_message_copy(new);
 		if (message_copy != NULL)
 			last_p5_block =

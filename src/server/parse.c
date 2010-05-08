@@ -413,7 +413,7 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 
 	if (TEST_CMD(set_sub, "priority")) {
 		char *priority_s;
-		int priority;
+		SPDPriority priority;
 		NOT_ALLOWED_INSIDE_BLOCK();
 
 		/* Setting priority only allowed for "self" */
@@ -422,15 +422,15 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		GET_PARAM_STR(priority_s, 3, CONV_DOWN);
 
 		if (TEST_CMD(priority_s, "important"))
-			priority = 1;
-		else if (TEST_CMD(priority_s, "text"))
-			priority = 2;
+			priority = SPD_IMPORTANT;
 		else if (TEST_CMD(priority_s, "message"))
-			priority = 3;
+			priority = SPD_MESSAGE;
+		else if (TEST_CMD(priority_s, "text"))
+			priority = SPD_TEXT;
 		else if (TEST_CMD(priority_s, "notification"))
-			priority = 4;
+			priority = SPD_NOTIFICATION;
 		else if (TEST_CMD(priority_s, "progress"))
-			priority = 5;
+			priority = SPD_PROGRESS;
 		else {
 			g_free(priority_s);
 			return g_strdup(ERR_UNKNOWN_PRIORITY);

@@ -192,22 +192,20 @@ SPDCapitalLetters str2recogn(char *str)
 	return recogn;
 }
 
-int str2intpriority(char *str)
+SPDPriority str2priority(char *str)
 {
-	int priority;
+	SPDPriority priority = SPD_TEXT;
 
 	if (!strcmp(str, "important"))
-		priority = 1;
-	else if (!strcmp(str, "text"))
-		priority = 2;
+		priority = SPD_IMPORTANT;
 	else if (!strcmp(str, "message"))
-		priority = 3;
+		priority = SPD_MESSAGE;
+	else if (!strcmp(str, "text"))
+		priority = SPD_TEXT;
 	else if (!strcmp(str, "notification"))
-		priority = 4;
+		priority = SPD_NOTIFICATION;
 	else if (!strcmp(str, "progress"))
-		priority = 5;
-	else
-		priority = -1;
+		priority = SPD_PROGRESS;
 
 	return priority;
 }
