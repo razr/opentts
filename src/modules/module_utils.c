@@ -38,7 +38,7 @@ void xfree(void *data)
 		free(data);
 }
 
-gchar *do_message(EMessageType msgtype)
+gchar *do_message(SPDMessageType msgtype)
 {
 	int ret;
 	char *cur_line;
@@ -72,11 +72,11 @@ gchar *do_message(EMessageType msgtype)
 		xfree(cur_line);
 	}
 
-	if ((msgtype != MSGTYPE_TEXT) && (nlines > 2)) {
+	if ((msgtype != SPD_MSGTYPE_TEXT) && (nlines > 2)) {
 		return g_strdup("305 DATA MORE THAN ONE LINE");
 	}
 
-	if ((msgtype == MSGTYPE_CHAR) && (!strcmp(msg->str, "space"))) {
+	if ((msgtype == SPD_MSGTYPE_CHAR) && (!strcmp(msg->str, "space"))) {
 		g_string_free(msg, 1);
 		msg = g_string_new(" ");
 	}
@@ -92,22 +92,22 @@ gchar *do_message(EMessageType msgtype)
 
 gchar *do_speak(void)
 {
-	return do_message(MSGTYPE_TEXT);
+	return do_message(SPD_MSGTYPE_TEXT);
 }
 
 gchar *do_sound_icon(void)
 {
-	return do_message(MSGTYPE_SOUND_ICON);
+	return do_message(SPD_MSGTYPE_SOUND_ICON);
 }
 
 gchar *do_char(void)
 {
-	return do_message(MSGTYPE_CHAR);
+	return do_message(SPD_MSGTYPE_CHAR);
 }
 
 gchar *do_key(void)
 {
-	return do_message(MSGTYPE_KEY);
+	return do_message(SPD_MSGTYPE_KEY);
 }
 
 void do_stop(void)
@@ -649,7 +649,7 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 			  TChildFunction child_function,
 			  TParentFunction parent_function,
 			  int *speaking_flag, char **message,
-			  const EMessageType * msgtype, const size_t maxlen,
+			  const SPDMessageType * msgtype, const size_t maxlen,
 			  const char *dividers, size_t * module_position,
 			  int *pause_requested)
 {
@@ -723,7 +723,7 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 
 size_t
 module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
-		    EMessageType msgtype, const size_t maxlen,
+		    SPDMessageType msgtype, const size_t maxlen,
 		    const char *dividers, int *pause_requested)
 {
 	unsigned int pos = 0;

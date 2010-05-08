@@ -52,7 +52,7 @@ static pthread_t ivona_speak_thread;
 static sem_t *ivona_semaphore;
 
 static char **ivona_message;
-static EMessageType ivona_message_type;
+static SPDMessageType ivona_message_type;
 
 signed int ivona_volume = 0;
 signed int ivona_cap_mode = 0;
@@ -176,7 +176,7 @@ SPDVoice **module_list_voices(void)
 	return voice_ivona;
 }
 
-int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
+int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	dbg("write()\n");
 
@@ -196,9 +196,9 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	}
 	*ivona_message = module_strip_ssml(data);
 	ivona_message_type = msgtype;
-	if ((msgtype == MSGTYPE_TEXT)
+	if ((msgtype == SPD_MSGTYPE_TEXT)
 	    && (msg_settings.spelling_mode == SPD_SPELL_ON))
-		ivona_message_type = MSGTYPE_SPELL;
+		ivona_message_type = SPD_MSGTYPE_SPELL;
 
 	/* Setting voice */
 	UPDATE_PARAMETER(volume, ivona_set_volume);

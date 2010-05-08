@@ -335,7 +335,7 @@ SPDVoice **module_list_voices(void)
 	return espeak_voice_list;
 }
 
-int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
+int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	espeak_ERROR result = EE_INTERNAL_ERROR;
 	int flags = espeakSSML | espeakCHARS_UTF8;
@@ -374,11 +374,11 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	 */
 	/* Send data to espeak */
 	switch (msgtype) {
-	case MSGTYPE_TEXT:
+	case SPD_MSGTYPE_TEXT:
 		result = espeak_Synth(data, bytes + 1, 0, POS_CHARACTER, 0,
 				      flags, NULL, NULL);
 		break;
-	case MSGTYPE_SOUND_ICON:
+	case SPD_MSGTYPE_SOUND_ICON:
 		{
 			char *msg =
 			    g_strdup_printf("<audio src=\"%s%s\">%s</audio>",
@@ -389,7 +389,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 			g_free(msg);
 			break;
 		}
-	case MSGTYPE_CHAR:
+	case SPD_MSGTYPE_CHAR:
 		{
 			wchar_t wc = 0;
 			if (bytes == 1) {	// ASCII
@@ -420,7 +420,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 			g_free(msg);
 			break;
 		}
-	case MSGTYPE_KEY:
+	case SPD_MSGTYPE_KEY:
 		{
 			/* TODO: Convert unspeakable keys to speakable form */
 			char *msg =
@@ -433,7 +433,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 			g_free(msg);
 			break;
 		}
-	case MSGTYPE_SPELL:
+	case SPD_MSGTYPE_SPELL:
 		/* TODO: Not sure what to do here... */
 		break;
 	}

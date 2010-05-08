@@ -32,21 +32,13 @@ typedef enum {
 	SORT_BY_ALPHABET = 1
 } ESort;
 
-typedef enum {
-	MSGTYPE_TEXT = 0,
-	MSGTYPE_SOUND_ICON = 1,
-	MSGTYPE_CHAR = 2,
-	MSGTYPE_KEY = 3,
-	MSGTYPE_SPELL = 99
-} EMessageType;
-
 typedef struct {
 	unsigned int uid;	/* Unique ID of the client */
 	int fd;			/* File descriptor the client is on. */
 	int active;		/* Is this client still active on socket or gone? */
 	int paused;		/* Internal flag, 1 for paused client or 0 for normal. */
 	int paused_while_speaking;
-	EMessageType type;	/* Type of the message (1=text, 2=icon, 3=char, 4=key) */
+	SPDMessageType type;	/* Type of the message (1=text, 2=icon, 3=char, 4=key) */
 	SPDDataMode ssml_mode;	/* SSML mode on (1)/off (0) */
 	SPDPriority priority;	/* Priority between 1 and 3 (1 - highest, 3 - lowest) */
 	signed int rate;	/* Speed of voice from <-100;+100>, 0 is the default */

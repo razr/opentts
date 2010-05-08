@@ -521,15 +521,15 @@ int output_speak(TSpeechDMessage * msg)
 	MSG(4, "Module speak!");
 
 	switch (msg->settings.type) {
-	case MSGTYPE_TEXT:
+	case SPD_MSGTYPE_TEXT:
 		SEND_CMD("SPEAK") break;
-	case MSGTYPE_SOUND_ICON:
+	case SPD_MSGTYPE_SOUND_ICON:
 		SEND_CMD("SOUND_ICON");
 		break;
-	case MSGTYPE_CHAR:
+	case SPD_MSGTYPE_CHAR:
 		SEND_CMD("CHAR");
 		break;
-	case MSGTYPE_KEY:
+	case SPD_MSGTYPE_KEY:
 		SEND_CMD("KEY");
 		break;
 	default:

@@ -47,7 +47,7 @@ static pthread_t cicero_speaking_thread;
 static sem_t *cicero_semaphore;
 
 static char **cicero_message;
-static EMessageType cicero_message_type;
+static SPDMessageType cicero_message_type;
 
 static int cicero_position = 0;
 static int cicero_pause_requested = 0;
@@ -245,7 +245,7 @@ SPDVoice **module_list_voices(void)
 	return NULL;
 }
 
-int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
+int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	dbg("Module speak\n");
 
@@ -265,7 +265,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 		*cicero_message = NULL;
 	}
 	*cicero_message = module_strip_ssml(data);
-	cicero_message_type = MSGTYPE_TEXT;
+	cicero_message_type = SPD_MSGTYPE_TEXT;
 
 	/* Setting voice */
 	/*    UPDATE_PARAMETER(voice, cicero_set_voice); */

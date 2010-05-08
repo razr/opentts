@@ -95,7 +95,7 @@ static int get_unichar(char **str)
 	return wc;
 }
 
-int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
+int ivona_get_msgpart(struct dumbtts_conf *conf, SPDMessageType type, char **msg,
 		      char *icon, char **buf, int *len, int cap_mode,
 		      char *delimeters, int punct_mode, char *punct_some)
 {
@@ -115,7 +115,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 		**buf = 0;
 	dbg("Ivona message %s type %d\n", *msg, type);
 	switch (type) {
-	case MSGTYPE_SOUND_ICON:
+	case SPD_MSGTYPE_SOUND_ICON:
 		if (strlen(*msg) < 63) {
 			strcpy(icon, *msg);
 			rc = 0;
@@ -125,7 +125,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 		*msg = NULL;
 		return rc;
 
-	case MSGTYPE_SPELL:
+	case SPD_MSGTYPE_SPELL:
 		wc = get_unichar(msg);
 		if (!wc) {
 			*msg = NULL;
@@ -147,10 +147,10 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 			strcpy(icon, "capital");
 		return 0;
 
-	case MSGTYPE_KEY:
-	case MSGTYPE_CHAR:
+	case SPD_MSGTYPE_KEY:
+	case SPD_MSGTYPE_CHAR:
 
-		if (type == MSGTYPE_KEY) {
+		if (type == SPD_MSGTYPE_KEY) {
 			n = dumbtts_KeyString(conf, *msg, *buf, *len, cap_mode,
 					      &isicon);
 		} else {
@@ -161,7 +161,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 		if (n > 0) {
 			*len = n + 128;
 			*buf = g_realloc(*buf, *len);
-			if (type == MSGTYPE_KEY) {
+			if (type == SPD_MSGTYPE_KEY) {
 				n = dumbtts_KeyString(conf, *msg, *buf, *len,
 						      cap_mode, &isicon);
 			} else {
@@ -175,7 +175,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 			strcpy(icon, "capital");
 		return n;
 
-	case MSGTYPE_TEXT:
+	case SPD_MSGTYPE_TEXT:
 		pos = 0;
 		bytes =
 		    module_get_message_part(*msg, xbuf, &pos, 1023, delimeters);

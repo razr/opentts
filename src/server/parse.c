@@ -188,7 +188,7 @@ enddata:
 			reparted = SpeechdSocket[fd].inside_block;
 			MSG(5, "New buf is now: |%s|", new->buf);
 			if ((msg_uid =
-			     queue_message(new, fd, 1, MSGTYPE_TEXT,
+			     queue_message(new, fd, 1, SPD_MSGTYPE_TEXT,
 					   reparted)) == 0) {
 				if (SPEECHD_DEBUG)
 					FATAL("Can't queue message\n");
@@ -781,7 +781,7 @@ char *parse_resume(const char *buf, const int bytes, const int fd)
 }
 
 char *parse_general_event(const char *buf, const int bytes, const int fd,
-			  EMessageType type)
+			  SPDMessageType type)
 {
 	char *param;
 	TSpeechDMessage *msg;
@@ -823,17 +823,17 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 
 char *parse_snd_icon(const char *buf, const int bytes, const int fd)
 {
-	return parse_general_event(buf, bytes, fd, MSGTYPE_SOUND_ICON);
+	return parse_general_event(buf, bytes, fd, SPD_MSGTYPE_SOUND_ICON);
 }
 
 char *parse_char(const char *buf, const int bytes, const int fd)
 {
-	return parse_general_event(buf, bytes, fd, MSGTYPE_CHAR);
+	return parse_general_event(buf, bytes, fd, SPD_MSGTYPE_CHAR);
 }
 
 char *parse_key(const char *buf, const int bytes, const int fd)
 {
-	return parse_general_event(buf, bytes, fd, MSGTYPE_KEY);
+	return parse_general_event(buf, bytes, fd, SPD_MSGTYPE_KEY);
 }
 
 char *parse_list(const char *buf, const int bytes, const int fd)
