@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from distutils.core import setup
-setup(name='speechd',
+setup(name='opentts',
       version='0.3',
-      packages=['speechd'],
+      packages=['opentts'],
       )
 
-setup(name='speechd_config',
+setup(name='opentts_config',
       version='0.0',
-      packages=['speechd_config'],
-      scripts=['speechd_config/spd-conf']
+      packages=['opentts_config'],
+      scripts=['opentts_config/otts-conf']
       )

@@ -5,14 +5,14 @@ sysconfdir = @sysconfdir@
 spdconforigdir = @spdconforigdir@
 datarootdir = @datarootdir@
 
-SPD_CONF_PATH_PY="speechd_config/spd_conf_path.py"
+SPD_CONF_PATH_PY="opentts_config/spd_conf_path.py"
 
 all:
-	echo "SPD_CONF_ORIG_PATH=\"@spdconforigdir@\"" > speechd_config/paths.py
-	echo "SPD_CONF_PATH=\"@spdconfdir@\"" >> speechd_config/paths.py
-	echo "SPD_SOUND_DATA_PATH=\"@snddatadir@\"" >> speechd_config/paths.py
-	echo "SPD_DESKTOP_CONF_PATH=\"@spddesktopconforigdir@\"" >> speechd_config/paths.py
-	@ENABLE_SESSION_TRUE@echo "SPD_SPAWN_CMD=\"@prefix@/bin/speechd-server-spawn\"" > speechd/spawn.py
+	echo "SPD_CONF_ORIG_PATH=\"@spdconforigdir@\"" > opentts_config/paths.py
+	echo "SPD_CONF_PATH=\"@spdconfdir@\"" >> opentts_config/paths.py
+	echo "SPD_SOUND_DATA_PATH=\"@snddatadir@\"" >> opentts_config/paths.py
+	echo "SPD_DESKTOP_CONF_PATH=\"@spddesktopconforigdir@\"" >> opentts_config/paths.py
+	@ENABLE_SESSION_TRUE@echo "SPD_SPAWN_CMD=\"@prefix@/bin/opentts-server-spawn\"" > opentts/spawn.py
 
 install:
 	if test -x /usr/bin/python; then \
@@ -22,15 +22,15 @@ install:
 			./setup.py install --prefix="${prefix}"; \
 		fi; \
 	else \
-		echo "Python not found, not installing speechd module nor spd-conf"; \
+		echo "Python not found, not installing opentts module nor otts-conf"; \
 	fi
-	cp speechd_config/test.wav "${DESTDIR}@snddatadir@"
+	cp opentts_config/test.wav "${DESTDIR}@snddatadir@"
 
 	if test ! -d "${DESTDIR}@spddesktopconforigdir@"; then \
 		mkdir -p "${DESTDIR}@spddesktopconforigdir@"; \
 	fi
 
-	cp speechd_config/speechd.desktop "${DESTDIR}@spddesktopconforigdir@/"
+	cp opentts_config/opentts.desktop "${DESTDIR}@spddesktopconforigdir@/"
 
 uninstall:
 	rm -f "${DESTDIR}@snddatadir@/test.wav"
@@ -39,8 +39,8 @@ uninstall:
 clean:
 	rm -f *.pyc
 	rm -rf build
-	rm -f speechd_config/paths.py
-	rm -f speechd/spawn.py
+	rm -f opentts_config/paths.py
+	rm -f opentts/spawn.py
 
 distclean: clean
 

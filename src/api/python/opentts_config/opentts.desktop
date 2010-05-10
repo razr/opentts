@@ -3,7 +3,7 @@
 Type=Application
 Encoding=UTF-8
 Version=1.0
-Name=Speech Dispatcher
+Name=OpenTTS
 Comment=Interface to Text to Speech services
 TryExec=speech-dispatcher
 Exec=speech-dispatcher
