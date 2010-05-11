@@ -436,7 +436,7 @@ static void flite_set_pitch(signed int pitch)
 static void flite_set_voice(EVoiceType voice)
 {
 	if (voice == MALE1) {
-		free(flite_voice);
+		g_free(flite_voice);
 		flite_voice = (cst_voice *) register_cmu_us_kal();
 	}
 }

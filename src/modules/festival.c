@@ -94,7 +94,7 @@ struct {
           if (resp != NULL) \
              *resp = r; \
           else \
-             free(r); \
+             g_free(r); \
         } \
         return ret; \
     }

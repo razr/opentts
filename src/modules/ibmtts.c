@@ -1031,7 +1031,7 @@ static void *_ibmtts_synth(void *nothing)
 			part_len = strlen(part);
 			pos += part_len;
 			ret = process_text_mark(part, part_len, mark_name);
-			free(part);
+			g_free(part);
 			part = NULL;
 			mark_name = NULL;
 			if (ret == 1)
@@ -1801,7 +1801,7 @@ static void free_voice_list()
 	int i = 0;
 
 	if (ibmtts_voice_index) {
-		free(ibmtts_voice_index);
+		g_free(ibmtts_voice_index);
 		ibmtts_voice_index = NULL;
 	}
 
@@ -1809,9 +1809,9 @@ static void free_voice_list()
 		return;
 
 	for (i = 0; ibmtts_voice_list[i]; i++) {
-		free(ibmtts_voice_list[i]);
+		g_free(ibmtts_voice_list[i]);
 	}
 
-	free(ibmtts_voice_list);
+	g_free(ibmtts_voice_list);
 	ibmtts_voice_list = NULL;
 }

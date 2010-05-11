@@ -446,7 +446,7 @@ void *_generic_speak(void *nothing)
 				execute_synth_str2 =
 				    g_strdup(p + (strlen("$DATA")));
 
-				free(e_string);
+				g_free(e_string);
 
 				/* execute_synth_str1 se sem musi nejak dostat */
 				DBG("Starting child...\n");
