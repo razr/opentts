@@ -45,6 +45,7 @@
 #include <sys/sem.h>
 
 #include <fdset.h>
+#include <timestamp.h>
 #include "spd_audio.h"
 
 int log_level;
@@ -89,20 +90,14 @@ int module_num_dc_options;
 
 #define DBG(arg...) \
   if (Debug){ \
-    time_t t; \
-    struct timeval tv; \
-    char *tstr; \
-    t = time(NULL); \
-    tstr = g_strdup(ctime(&t)); \
-    tstr[strlen(tstr)-1] = 0; \
-    gettimeofday(&tv,NULL); \
-    fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
+     char *tstr = get_timestamp(); \
+     fputs(tstr, stderr); \
     fprintf(stderr, ": "); \
     fprintf(stderr, arg); \
     fprintf(stderr, "\n"); \
     fflush(stderr); \
     if ((Debug==2) || (Debug==3)){ \
-      fprintf(CustomDebugFile," %s [%d]",tstr, (int) tv.tv_usec);	\
+      fputs(tstr, CustomDebugFile); \
       fprintf(CustomDebugFile, ": ");					\
       fprintf(CustomDebugFile, arg);					\
       fprintf(CustomDebugFile, "\n");                                   \

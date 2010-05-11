@@ -28,6 +28,7 @@
 #include <gmodule.h>
 #include <sys/stat.h>
 
+#include <timestamp.h>
 #include "speechd.h"
 
 /* Declare dotconf functions and data structures*/
@@ -141,31 +142,17 @@ void MSG2(int level, char *kind, char *format, ...)
 		{
 			{
 				/* Print timestamp */
-				time_t t;
-				char *tstr;
-				struct timeval tv;
-				t = time(NULL);
-				tstr = g_strdup(ctime(&t));
-				gettimeofday(&tv, NULL);
-				assert(tstr);
-				/* Remove the trailing \n */
-				assert(strlen(tstr) > 1);
-				tstr[strlen(tstr) - 1] = 0;
+				char *tstr = get_timestamp();
 				if (std_log) {
-					fprintf(logfile, "[%s : %d] speechd: ",
-						tstr, (int)tv.tv_usec);
-					//            fprintf(logfile, "[test : %d] speechd: ",
-					//                     (int) tv.tv_usec); 
+					fprintf(logfile, "%s speechd: ", tstr);
 				}
 				if (custom_log) {
 					fprintf(custom_logfile,
-						"[%s : %d] speechd: ", tstr,
-						(int)tv.tv_usec);
+						"%s speechd: ", tstr);
 				}
 				if (SpeechdOptions.debug) {
 					fprintf(debug_logfile,
-						"[%s : %d] speechd: ", tstr,
-						(int)tv.tv_usec);
+						"%s speechd: ", tstr);
 				}
 				g_free(tstr);
 			}
@@ -220,25 +207,12 @@ void MSG(int level, char *format, ...)
 		{
 			{
 				/* Print timestamp */
-				time_t t;
-				char *tstr;
-				struct timeval tv;
-				t = time(NULL);
-				tstr = g_strdup(ctime(&t));
-				gettimeofday(&tv, NULL);
-				/* Remove the trailing \n */
-				assert(tstr);
-				assert(strlen(tstr) > 1);
-				tstr[strlen(tstr) - 1] = 0;
+				char *tstr = get_timestamp();
 				if (level <= SpeechdOptions.log_level)
-					fprintf(logfile, "[%s : %d] speechd: ",
-						tstr, (int)tv.tv_usec);
+					fprintf(logfile, "%s speechd: ", tstr);
 				if (SpeechdOptions.debug)
 					fprintf(debug_logfile,
-						"[%s : %d] speechd: ", tstr,
-						(int)tv.tv_usec);
-				/*                fprintf(logfile, "[%s : %d] speechd: ",
-				   tstr, (int) tv.tv_usec); */
+						"%s speechd: ", tstr);
 				g_free(tstr);
 			}
 
@@ -805,6 +779,8 @@ int main(int argc, char *argv[])
 
 	/* Initialize threading and thread safety in Glib */
 	g_thread_init(NULL);
+
+	init_timestamps();		/* For correct timestamp generation. */
 
 	/* Strip all permisions for 'others' from the files created */
 	umask(007);

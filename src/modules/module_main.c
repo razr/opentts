@@ -33,6 +33,7 @@
 #include <dotconf.h>
 #include <ltdl.h>
 
+#include <timestamp.h>
 #include "module_utils.h"
 
 #ifdef __SUNPRO_C
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize ltdl's list of preloaded audio backends. */
 	LTDL_SET_PRELOADED_SYMBOLS();
+	init_timestamps();		/* For correct timestamp generation. */
 	module_num_dc_options = 0;
 	module_audio_id = 0;
 

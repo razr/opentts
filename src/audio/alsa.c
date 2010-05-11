@@ -36,6 +36,7 @@
 #include <glib.h>
 
 #include <alsa/asoundlib.h>
+#include <timestamp.h>
 
 #define SPD_AUDIO_PLUGIN_ENTRY otts_alsa_LTX_spd_audio_plugin_get
 #include "spd_audio_plugin.h"
@@ -79,14 +80,8 @@ do { \
 /* Put a message into the logfile (stderr) */
 #define MSG(level, arg...) \
  if(level <= alsa_log_level){ \
-     time_t t; \
-     struct timeval tv; \
-     char *tstr; \
-     t = time(NULL); \
-     tstr = g_strdup(ctime(&t)); \
-     tstr[strlen(tstr)-1] = 0; \
-     gettimeofday(&tv,NULL); \
-     fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
+     char *tstr = get_timestamp(); \
+     fputs(tstr, stderr); \
      fprintf(stderr," ALSA: "); \
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
@@ -96,14 +91,8 @@ do { \
 
 #define ERR(arg...) \
  { \
-     time_t t; \
-     struct timeval tv; \
-     char *tstr; \
-     t = time(NULL); \
-     tstr = g_strdup(ctime(&t)); \
-     tstr[strlen(tstr)-1] = 0; \
-     gettimeofday(&tv,NULL); \
-     fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
+     char *tstr = get_timestamp(); \
+     fputs(tstr, stderr); \
      fprintf(stderr," ALSA ERROR: "); \
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \

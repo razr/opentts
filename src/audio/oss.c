@@ -38,6 +38,7 @@
 #include <pthread.h>
 
 #include <sys/soundcard.h>
+#include <timestamp.h>
 #include <glib.h>
 
 #define SPD_AUDIO_PLUGIN_ENTRY otts_oss_LTX_spd_audio_plugin_get
@@ -59,14 +60,8 @@ static int _oss_sync(spd_oss_id_t * id);
 /* Put a message into the logfile (stderr) */
 #define MSG(level, arg...) \
  if(level <= oss_log_level){ \
-     time_t t; \
-     struct timeval tv; \
-     char *tstr; \
-     t = time(NULL); \
-     tstr = g_strdup(ctime(&t)); \
-     tstr[strlen(tstr)-1] = 0; \
-     gettimeofday(&tv,NULL); \
-     fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
+     char *tstr = get_timestamp(); \
+     fputs(tstr, stderr); \
      fprintf(stderr," OSS: "); \
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
@@ -76,14 +71,8 @@ static int _oss_sync(spd_oss_id_t * id);
 
 #define ERR(arg...) \
  { \
-     time_t t; \
-     struct timeval tv; \
-     char *tstr; \
-     t = time(NULL); \
-     tstr = g_strdup(ctime(&t)); \
-     tstr[strlen(tstr)-1] = 0; \
-     gettimeofday(&tv,NULL); \
-     fprintf(stderr," %s [%d]",tstr, (int) tv.tv_usec); \
+     char *tstr = get_timestamp(); \
+     fputs(tstr, stderr); \
      fprintf(stderr," OSS ERROR: "); \
      fprintf(stderr,arg); \
      fprintf(stderr,"\n"); \
