@@ -108,6 +108,9 @@ static int libao_play(AudioID * id, AudioTrack track)
 	if (track.samples == NULL || track.num_samples <= 0)
 		return 0;
 
+	/* Zero the whole ao_sample_format structure. */
+	memset(&format, '\0', sizeof(ao_sample_format));
+
 	/* Choose the correct format */
 	format.bits = track.bits;
 	if (track.bits == 16)
