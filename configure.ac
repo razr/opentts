@@ -333,8 +333,8 @@ AC_ARG_WITH([bash-profile-dir],
                            [choose directory for session integration shell file (default=SYSCONFDIR/profile.d)]),
             with_bash_profile_dir=$withval,
             with_bash_profile_dir=$sysconfdir/profile.d)
-BASH_PROFILE_DIR=$with_bash_profile_dir
-AC_SUBST(BASH_PROFILE_DIR)
+bashprofiledir=$with_bash_profile_dir
+AC_SUBST(bashprofiledir)
 
 AC_ARG_WITH([system-speechd-start-cmd],
             AC_HELP_STRING([--with-system-speechd-start-cmd=COMMAND],
