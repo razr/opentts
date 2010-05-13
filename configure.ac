@@ -44,7 +44,11 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
-AC_PATH_PROG([PYTHON],[python])
+
+# Python support?
+# Python 2.4 or greater should be acceptable.
+AM_PATH_PYTHON([2.4],, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ':'])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h langinfo.h limits.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h wchar.h wctype.h])
@@ -400,6 +404,8 @@ AC_CONFIG_FILES([Makefile
                  src/api/Makefile
                  src/api/c/Makefile
                  src/api/python/Makefile
+                 src/api/python/opentts/Makefile
+                 src/api/python/opentts_config/Makefile
                  src/audio/Makefile
                  src/clients/Makefile
                  src/clients/say/Makefile
