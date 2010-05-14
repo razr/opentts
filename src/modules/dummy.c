@@ -40,11 +40,6 @@
 
 #define Debug 1
 
-#ifdef __SUNPRO_C
-/* Added by Willie Walker - getline is a gcc-ism */
-ssize_t getline(char **lineptr, size_t * n, FILE * f);
-#endif
-
 /* Thread and process control */
 static int dummy_speaking = 0;
 

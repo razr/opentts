@@ -44,6 +44,7 @@
 #include <assert.h>
 
 #include <def.h>
+#include <getline.h>
 #include "libopentts.h"
 
 /* Comment/uncomment to switch debugging on/off */
@@ -75,7 +76,7 @@ static void *spd_events_handler(void *);
 pthread_mutex_t spd_logging_mutex;
 
 #ifdef __SUNPRO_C
-/* Added by Willie Walker - strndup and getline are gcc-isms */
+/* Added by Willie Walker - strndup is a gcc-ism */
 char *strndup(const char *s, size_t n)
 {
 	size_t nAvail;
@@ -93,47 +94,6 @@ char *strndup(const char *s, size_t n)
 	p[nAvail - 1] = '\0';
 
 	return p;
-}
-
-#define BUFFER_LEN 256
-ssize_t getline(char **lineptr, size_t * n, FILE * f)
-{
-	char ch;
-	size_t m = 0;
-	ssize_t buf_len = 0;
-	char *buf = NULL;
-	char *p = NULL;
-
-	if (errno != 0) {
-		SPD_DBG("getline: errno came in as %d!!!\n", errno);
-		errno = 0;
-	}
-	while ((ch = getc(f)) != EOF) {
-		if (errno != 0)
-			return -1;
-		if (m++ >= buf_len) {
-			buf_len += BUFFER_LEN;
-			buf = (char *)realloc(buf, buf_len + 1);
-			if (buf == NULL) {
-				SPD_DBG("buf==NULL");
-				return -1;
-			}
-			p = buf + buf_len - BUFFER_LEN;
-		}
-		*p = ch;
-		p++;
-		if (ch == '\n')
-			break;
-	}
-	if (m == 0) {
-		SPD_DBG("getline: m=%d!", m);
-		return -1;
-	} else {
-		*p = '\0';
-		*lineptr = buf;
-		*n = m;
-		return m;
-	}
 }
 #endif /* __SUNPRO_C */
 
@@ -1207,7 +1167,7 @@ static char *get_reply(SPDConnection * connection)
 	/* Wait for activity on the socket, when there is some,
 	   read all the message line by line */
 	do {
-		bytes = getline(&line, &N, connection->stream);
+		bytes = otts_getline(&line, &N, connection->stream);
 		if (bytes == -1) {
 			SPD_DBG
 			    ("Error: Can't read reply, broken socket in get_reply!");
@@ -1221,7 +1181,7 @@ static char *get_reply(SPDConnection * connection)
 		/* terminate if we reached the last line (without '-' after numcode) */
 	} while (!errors && !((strlen(line) < 4) || (line[3] == ' ')));
 
-	xfree(line);		/* getline allocates with malloc. */
+	xfree(line);		/* otts_getline allocates with malloc. */
 
 	if (errors) {
 		/* Free the GString and its character data, and return NULL. */

@@ -28,6 +28,7 @@
 #include "output.h"
 
 #include <fdsetconv.h>
+#include <getline.h>
 #include "parse.h"
 
 #ifdef TEMP_FAILURE_RETRY	/* GNU libc */
@@ -47,48 +48,6 @@ static inline ssize_t safe_write(int fd, const void *buf, size_t count)
 	} while (1);
 }
 #endif /* TEMP_FAILURE_RETRY */
-
-#ifdef __SUNPRO_C
-/* Added by Willie Walker - strndup, and getline are gcc-isms
- */
-#define BUFFER_LEN 256
-ssize_t getline(char **lineptr, size_t * n, FILE * f)
-{
-	char ch;
-	size_t m = 0;
-	ssize_t buf_len = 0;
-	char *buf = NULL;
-	char *p = NULL;
-
-	if (errno != 0) {
-		errno = 0;
-	}
-	while ((ch = getc(f)) != EOF) {
-		if (errno != 0)
-			return -1;
-		if (m++ >= buf_len) {
-			buf_len += BUFFER_LEN;
-			buf = (char *)realloc(buf, buf_len + 1);
-			if (buf == NULL) {
-				return -1;
-			}
-			p = buf + buf_len - BUFFER_LEN;
-		}
-		*p = ch;
-		p++;
-		if (ch == '\n')
-			break;
-	}
-	if (m == 0) {
-		return -1;
-	} else {
-		*p = '\0';
-		*lineptr = buf;
-		*n = m;
-		return m;
-	}
-}
-#endif /* __SUNPRO_C */
 
 void output_set_speaking_monitor(TSpeechDMessage * msg, OutputModule * output)
 {
@@ -212,7 +171,7 @@ GString *output_read_reply(OutputModule * output)
 	/* Wait for activity on the socket, when there is some,
 	   read all the message line by line */
 	do {
-		bytes = getline(&line, &N, output->stream_out);
+		bytes = otts_getline(&line, &N, output->stream_out);
 		if (bytes == -1) {
 			MSG(2, "Error: Broken pipe to module.");
 			output->working = 0;
@@ -228,7 +187,7 @@ GString *output_read_reply(OutputModule * output)
 	} while (!errors && !((strlen(line) < 4) || (line[3] == ' ')));
 
 	if (line != NULL)
-		free(line);	/* getline allocates with malloc and realloc. */
+		free(line);	/* otts_getline allocates with malloc and realloc. */
 
 	if (errors) {
 		g_string_free(rstr, TRUE);

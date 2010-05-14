@@ -47,13 +47,7 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
-
-#ifdef __SUNPRO_C
-/* Added by Willie Walker - TEMP_FAILURE_RETRY, strndup, and getline
- * are gcc-isms
- */
-ssize_t getline(char **lineptr, size_t * n, FILE * f);
-#endif /* __SUNPRO_C */
+#include <getline.h>
 
 /* Utilities */
 
@@ -218,7 +212,7 @@ static Success forward_ssip_answer(Stream from, Stream to, bool _closep)
 		system_error("memory allocation");
 
 	while (1) {
-		int n = getline(&line, &line_size, f);
+		int n = otts_getline(&line, &line_size, f);
 		if (n < 0 || write_data(to, line, n) == ERROR) {
 			result = ERROR;
 			break;

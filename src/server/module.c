@@ -31,15 +31,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <getline.h>
 #include "speechd.h"
 #include "output.h"
-
-#ifdef __SUNPRO_C
-/* Added by Willie Walker - TEMP_FAILURE_RETRY, strndup, and getline
- * are gcc-isms
- */
-ssize_t getline(char **lineptr, size_t * n, FILE * f);
-#endif /* __SUNPRO_C */
 
 void destroy_module(OutputModule * module)
 {
@@ -200,7 +194,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 			reply = g_string_new("\n---------------\n");
 			f = fdopen(dup(module->pipe_out[0]), "r");
 			while (1) {
-				ret = getline(&rep_line, &n, f);
+				ret = otts_getline(&rep_line, &n, f);
 				if (ret <= 0) {
 					MSG(1,
 					    "ERROR: Bad syntax from output module %s 1",

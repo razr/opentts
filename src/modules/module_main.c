@@ -34,12 +34,8 @@
 #include <ltdl.h>
 
 #include <timestamp.h>
+#include <getline.h>
 #include "module_utils.h"
-
-#ifdef __SUNPRO_C
-/* Added by Willie Walker - getline is a gcc-ism */
-ssize_t getline(char **lineptr, size_t * n, FILE * f);
-#endif
 
 int dispatch_cmd(char *cmd_line);
 
@@ -100,7 +96,7 @@ int main(int argc, char *argv[])
 
 	cmd_buf = NULL;
 	n = 0;
-	ret = getline(&cmd_buf, &n, stdin);
+	ret = otts_getline(&cmd_buf, &n, stdin);
 	if (ret == -1) {
 		DBG("Broken pipe when reading INIT, exiting... \n");
 		module_close(2);
@@ -131,7 +127,7 @@ int main(int argc, char *argv[])
 	while (1) {
 		cmd_buf = NULL;
 		n = 0;
-		ret = getline(&cmd_buf, &n, stdin);
+		ret = otts_getline(&cmd_buf, &n, stdin);
 		if (ret == -1) {
 			DBG("Broken pipe, exiting... \n");
 			module_close(2);
