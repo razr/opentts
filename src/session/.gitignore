@@ -1,1 +1,2 @@
-!Makefile.in
+speechd-server-spawn
+speechd-user-port.sh

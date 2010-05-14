@@ -348,6 +348,9 @@ AC_ARG_WITH([system-speechd-start-cmd],
 SPEECHD_SYSTEM_START_CMD=$with_system_speechd_start_cmd
 AC_SUBST(SPEECHD_SYSTEM_START_CMD)
 
+SPEECHD_DEFAULT_PORT=`grep SPEECHD_DEFAULT_PORT src/common/def.h | awk '{print $3}'`
+AC_SUBST(SPEECHD_DEFAULT_PORT)
+
 spdconfdir='${sysconfdir}/opentts'
 AC_SUBST(spdconfdir)
 moduleconfdir='${spdconfdir}/modules' 
@@ -414,6 +417,8 @@ AC_CONFIG_FILES([Makefile
                  src/modules/Makefile
                  src/server/Makefile
                  src/session/Makefile
+                 src/session/speechd-server-spawn
+                 src/session/speechd-user-port.sh
                  src/tests/Makefile])
 AC_OUTPUT
 

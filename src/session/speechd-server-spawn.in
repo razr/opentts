@@ -62,7 +62,7 @@ autospawn_check()
 
 
 if [ "$(pidof_current_user)" = "" ]; then
-	SYSTEM_SPEECHD_SERVER_START_COMMAND="@SPEECHD_SYSTEM_STARTUP_CMD@ > /dev/null 2>&1"
+	SYSTEM_SPEECHD_SERVER_START_COMMAND="@SPEECHD_SYSTEM_START_CMD@ > /dev/null 2>&1"
 
 	if [ $(id -u) -eq 0 ]; then
 		if autospawn_check ; then
