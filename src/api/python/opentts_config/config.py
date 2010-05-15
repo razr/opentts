@@ -656,7 +656,7 @@ Please start your system Speech Dispatcher now with parameter '-D'""");
 Can't connect Speech Dispatcher on the given port.
 Do you want to try another port?""", True)
                 if reply:
-                    speechd_port = question("What port?", 6561)
+                    speechd_port = question("What port?", 6560)
                 else:
                     report("Can't test Speech Dispatcher connection, continuing anyway.")
                     
@@ -806,10 +806,7 @@ Do you want to keep it?""", False)
             "alsa",
             ["alsa", "pulse", "oss"])
     
-        if type == 'user':
-            default_port = 6561
-        else:
-            default_port = 6560
+        default_port = 6560
         self.port = question(
             "Default port",
             default_port)
