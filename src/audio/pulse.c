@@ -142,7 +142,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		ss.rate = track.sample_rate;
 		ss.channels = track.num_channels;
 		if (bytes_per_sample == 2) {
-			switch (spd_audio_endian) {
+			switch (id->format) {
 			case SPD_AUDIO_LE:
 				ss.format = PA_SAMPLE_S16LE;
 				break;
