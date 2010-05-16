@@ -37,7 +37,72 @@
 #include <getline.h>
 #include "module_utils.h"
 
-int dispatch_cmd(char *cmd_line);
+AudioID *module_audio_id;
+SPDMsgSettings msg_settings;
+SPDMsgSettings msg_settings_old;
+
+int Debug;
+FILE *CustomDebugFile;
+
+pthread_mutex_t module_stdout_mutex;
+
+configoption_t *module_dc_options;
+int module_num_dc_options;
+
+int dispatch_cmd(char *cmd_line)
+{
+	char *cmd = NULL;
+	size_t cmd_len;
+	char *msg = NULL;
+
+	cmd_len = strcspn(cmd_line, " \t\n\r\f");
+	cmd = g_strndup(cmd_line, cmd_len);
+	pthread_mutex_lock(&module_stdout_mutex);
+
+	if (!strcasecmp("audio", cmd)) {
+		msg = do_audio();
+	} else if (!strcasecmp("set", cmd)) {
+		msg = do_set();
+	} else if (!strcasecmp("speak", cmd)) {
+		msg = do_speak();
+	} else if (!strcasecmp("key", cmd)) {
+		msg = do_key();
+	} else if (!strcasecmp("sound_icon", cmd)) {
+		msg = do_sound_icon();
+	} else if (!strcasecmp("char", cmd)) {
+		msg = do_char();
+	} else if (!strcasecmp("pause", cmd)) {
+		do_pause();
+	} else if (!strcasecmp("stop", cmd)) {
+		do_stop();
+	} else if (!strcasecmp("list_voices", cmd)) {
+		msg = do_list_voices();
+	} else if (!strcasecmp("loglevel", cmd)) {
+		msg = do_loglevel();
+	} else if (!strcasecmp("debug", cmd)) {
+		msg = do_debug(cmd_line);
+	} else if (!strcasecmp("quit", cmd)) {
+		do_quit();
+	} else {
+/*should we log?*/
+		printf("300 ERR UNKNOWN COMMAND\n");
+		fflush(stdout);
+	}
+
+	if (msg != NULL) {
+		if (0 > printf("%s\n", msg)) {
+			DBG("Broken pipe, exiting...\n");
+			module_close(2);
+		}
+		fflush(stdout);
+		g_free(msg);
+	}
+
+	pthread_mutex_unlock(&module_stdout_mutex);
+	g_free(cmd);
+
+	return (0);
+}
 
 int main(int argc, char *argv[])
 {
@@ -46,6 +111,7 @@ int main(int argc, char *argv[])
 	int ret_init;
 	size_t n;
 	char *configfilename;
+	configfile_t *configfile;
 	char *status_info;
 
 	g_thread_init(NULL);
@@ -139,59 +205,4 @@ int main(int argc, char *argv[])
 
 		xfree(cmd_buf);
 	}
-}
-
-int dispatch_cmd(char *cmd_line)
-{
-	char *cmd = NULL;
-	size_t cmd_len;
-	char *msg = NULL;
-
-	cmd_len = strcspn(cmd_line, " \t\n\r\f");
-	cmd = g_strndup(cmd_line, cmd_len);
-	pthread_mutex_lock(&module_stdout_mutex);
-
-	if (!strcasecmp("audio", cmd)) {
-		msg = do_audio();
-	} else if (!strcasecmp("set", cmd)) {
-		msg = do_set();
-	} else if (!strcasecmp("speak", cmd)) {
-		msg = do_speak();
-	} else if (!strcasecmp("key", cmd)) {
-		msg = do_key();
-	} else if (!strcasecmp("sound_icon", cmd)) {
-		msg = do_sound_icon();
-	} else if (!strcasecmp("char", cmd)) {
-		msg = do_char();
-	} else if (!strcasecmp("pause", cmd)) {
-		do_pause();
-	} else if (!strcasecmp("stop", cmd)) {
-		do_stop();
-	} else if (!strcasecmp("list_voices", cmd)) {
-		msg = do_list_voices();
-	} else if (!strcasecmp("loglevel", cmd)) {
-		msg = do_loglevel();
-	} else if (!strcasecmp("debug", cmd)) {
-		msg = do_debug(cmd_line);
-	} else if (!strcasecmp("quit", cmd)) {
-		do_quit();
-	} else {
-/*should we log?*/
-		printf("300 ERR UNKNOWN COMMAND\n");
-		fflush(stdout);
-	}
-
-	if (msg != NULL) {
-		if (0 > printf("%s\n", msg)) {
-			DBG("Broken pipe, exiting...\n");
-			module_close(2);
-		}
-		fflush(stdout);
-		g_free(msg);
-	}
-
-	pthread_mutex_unlock(&module_stdout_mutex);
-	g_free(cmd);
-
-	return (0);
 }

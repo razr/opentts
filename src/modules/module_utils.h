@@ -50,17 +50,18 @@
 
 int log_level;
 
-AudioID *module_audio_id;
+extern AudioID *module_audio_id;
 
-SPDMsgSettings msg_settings;
-SPDMsgSettings msg_settings_old;
+extern SPDMsgSettings msg_settings;
+extern SPDMsgSettings msg_settings_old;
 
-int Debug;
-FILE *CustomDebugFile;
+extern int Debug;
+extern FILE *CustomDebugFile;
 
-configfile_t *configfile;
-configoption_t *module_dc_options;
-int module_num_dc_options;
+extern pthread_mutex_t module_stdout_mutex;
+
+extern configoption_t *module_dc_options;
+extern int module_num_dc_options;
 
 #define CLEAN_OLD_SETTINGS_TABLE()\
  msg_settings_old.rate = -101;\
@@ -396,9 +397,6 @@ void module_report_event_begin(void);
 void module_report_event_end(void);
 void module_report_event_stop(void);
 void module_report_event_pause(void);
-
-pthread_mutex_t module_stdout_mutex;
-
 int module_utils_init(void);
 int module_audio_init_spd(char **status_info);
 int module_audio_init(char **status_info);
