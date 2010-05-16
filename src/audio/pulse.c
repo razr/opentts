@@ -51,7 +51,13 @@ typedef struct {
 	char *pa_server;
 	int pa_min_audio_length;
 	volatile int pa_stop_playback;
+	int current_rate;
+	int current_bps;
+	int current_channels;
 } spd_pulse_id_t;
+
+/* Switch this on to debug, see output log location in MSG() */
+/*#define DEBUG_PULSE*/
 
 /* send a packet of XXX bytes to the sound device */
 #define PULSE_SEND_BYTES 256
@@ -93,6 +99,9 @@ static AudioID *pulse_open(void **pars)
 
 	pulse_id->pa_simple = NULL;
 	pulse_id->pa_server = (char *)pars[3];
+	pulse_id->current_rate = -1;
+	pulse_id->current_bps = -1;
+	pulse_id->current_channels = -1;
 	pulse_id->pa_min_audio_length = DEFAULT_PA_MIN_AUDIO_LENgTH;
 
 	if (!strcmp(pulse_id->pa_server, "default")) {
@@ -137,7 +146,13 @@ static int pulse_play(AudioID * id, AudioTrack track)
 	}
 	output_samples = track.samples;
 	num_bytes = track.num_samples * bytes_per_sample;
-	if (pulse_id->pa_simple == NULL) {
+
+	/* Insure that the connection is open, and that its parameters
+	 * are suitable for this track. */
+	if (pulse_id->pa_simple == NULL
+	    || pulse_id->current_rate != track.sample_rate
+	    || pulse_id->current_bps != track.bits
+	    || pulse_id->current_channels != track.num_channels) {
 		/* Choose the correct format */
 		ss.rate = track.sample_rate;
 		ss.channels = track.num_channels;
@@ -160,6 +175,13 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		buffAttr.prebuf = (uint32_t) - 1;
 		buffAttr.minreq = (uint32_t) - 1;
 		buffAttr.fragsize = (uint32_t) - 1;
+
+		if (pulse_id->pa_simple != NULL) {
+			/* Close the old connection. */
+			pa_simple_free(pulse_id->pa_simple);
+			MSG("Reopenning connection due to change in track parameters sample_rate:%d bps:%d channels:%d\n", track.sample_rate, track.bits, track.num_channels);
+		}
+
 		if (!
 		    (pulse_id->pa_simple =
 		     pa_simple_new(pulse_id->pa_server, "speech-dispatcher",
@@ -170,6 +192,10 @@ static int pulse_play(AudioID * id, AudioTrack track)
 				pa_strerror(error));
 			return 1;
 		}
+
+		pulse_id->current_rate = track.sample_rate;
+		pulse_id->current_bps = track.bits;
+		pulse_id->current_channels = track.num_channels;
 	}
 	MSG("bytes to play: %d, (%f secs)\n", num_bytes,
 	    (((float)(num_bytes) / 2) / (float)track.sample_rate));
