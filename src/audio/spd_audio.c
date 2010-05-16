@@ -38,7 +38,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/soundcard.h>
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
