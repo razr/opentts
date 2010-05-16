@@ -50,6 +50,7 @@ static EMessageType flite_message_type;
 
 static int flite_position = 0;
 static int flite_pause_requested = 0;
+static int current_index_mark;
 
 signed int flite_volume = 0;
 
