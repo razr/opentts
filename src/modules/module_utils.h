@@ -48,7 +48,6 @@
 #include <timestamp.h>
 #include "spd_audio.h"
 
-
 extern AudioID *module_audio_id;
 
 extern SPDMsgSettings msg_settings;
@@ -64,24 +63,7 @@ extern int module_num_dc_options;
 
 void clean_old_settings_table();
 void init_settings_tables();
-
-#define DBG(arg...) \
-  if (Debug){ \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-    fprintf(stderr, ": "); \
-    fprintf(stderr, arg); \
-    fprintf(stderr, "\n"); \
-    fflush(stderr); \
-    if ((Debug==2) || (Debug==3)){ \
-      fputs(tstr, CustomDebugFile); \
-      fprintf(CustomDebugFile, ": ");					\
-      fprintf(CustomDebugFile, arg);					\
-      fprintf(CustomDebugFile, "\n");                                   \
-      fflush(CustomDebugFile);			\
-    } \
-   g_free(tstr); \
-  }
+void dbg(char *fmt, ...);
 
 #define FATAL(msg) { \
      fprintf(stderr, "FATAL ERROR in output module [%s:%d]:\n   "msg, \

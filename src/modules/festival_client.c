@@ -239,7 +239,7 @@ static char *socket_receive_file_to_buff(int fd, int *size)
 	for (k = 0; file_stuff_key[k] != '\0';) {
 		n = read(fd, &c, 1);
 		if (n <= 0) {
-			DBG("ERROR: FESTIVAL CLOSED CONNECTION (1)");
+			dbg("ERROR: FESTIVAL CLOSED CONNECTION (1)");
 			close(fd);
 			festival_connection_crashed = 1;
 			g_free(buff);
@@ -312,7 +312,7 @@ static FT_Wave *client_accept_waveform(int fd, int *stop_flag,
 
 		if ((num_samples * sizeof(short)) + 1024 == filesize) {
 			wave = (FT_Wave *) g_malloc(sizeof(FT_Wave));
-			DBG("Number of samples from festival: %d", num_samples);
+			dbg("Number of samples from festival: %d", num_samples);
 			wave->num_samples = num_samples;
 			wave->sample_rate = sample_rate;
 			if (num_samples != 0) {
@@ -352,7 +352,7 @@ int festival_get_ack(FT_Info ** info, char *ack)
 			/* WARNING: This is a very strange situation
 			   but it happens often, I don't really know
 			   why??? */
-			DBG("ERROR: FESTIVAL CLOSED CONNECTION (2)");
+			dbg("ERROR: FESTIVAL CLOSED CONNECTION (2)");
 			close((*info)->server_fd);
 			festival_connection_crashed = 1;
 			return -1;
@@ -368,7 +368,7 @@ int festival_read_response(FT_Info * info, char **expr)
 	char buf[4];
 	char *r;
 
-	DBG("Com: Reading response");
+	dbg("Com: Reading response");
 
 	if (info == NULL)
 		return 1;
@@ -379,7 +379,7 @@ int festival_read_response(FT_Info * info, char **expr)
 		return 1;
 	buf[3] = 0;
 
-	DBG("<- Festival: |%s|", buf);
+	dbg("<- Festival: |%s|", buf);
 
 	if (!strcmp(buf, "ER\n")) {
 		if (expr != NULL)
@@ -396,7 +396,7 @@ int festival_read_response(FT_Info * info, char **expr)
 
 	if (festival_get_ack(&info, buf))
 		return 1;
-	DBG("<- Festival: |%s|", buf);
+	dbg("<- Festival: |%s|", buf);
 
 	return 0;
 }
@@ -407,11 +407,11 @@ int festival_accept_any_response(FT_Info * info)
 	int r;
 	char *expr;
 
-	DBG("Com: Accepting any response");
+	dbg("Com: Accepting any response");
 	do {
 		if ((r = festival_get_ack(&info, ack)))
 			return r;
-		DBG("<- Festival: |%s|", ack);
+		dbg("<- Festival: |%s|", ack);
 		if (strcmp(ack, "WV\n") == 0) {	/* receive a waveform */
 			client_accept_waveform(info->server_fd, NULL, 0);
 		} else if (strcmp(ack, "LP\n") == 0) {	/* receive an s-expr */
@@ -433,7 +433,7 @@ int festival_check_info(FT_Info * info, char *fnname)
 {
 	assert(fnname != NULL);
 	if ((info == NULL) || (info->server_fd == -1)) {
-		DBG("%s called with info = NULL or server_fd == -1\n", fnname);
+		dbg("%s called with info = NULL or server_fd == -1\n", fnname);
 		return -1;
 	}
 	return 0;
@@ -450,7 +450,7 @@ FT_Info *festivalOpen(FT_Info * info)
 	char *resp;
 	int ret;
 
-	DBG("Openning socket fo Festival server");
+	dbg("Openning socket fo Festival server");
 
 	festival_connection_crashed = 0;
 
@@ -469,7 +469,7 @@ FT_Info *festivalOpen(FT_Info * info)
 	FEST_SEND_CMD("(require 'speech-dispatcher)");
 	ret = festival_read_response(info, &resp);
 	if (ret || resp == NULL || strcmp(resp, "t\n")) {
-		DBG("ERROR: Can't load speech-dispatcher module into Festival."
+		dbg("ERROR: Can't load speech-dispatcher module into Festival."
 		    "Reason: %s", resp);
 		return NULL;
 	}
@@ -478,7 +478,7 @@ FT_Info *festivalOpen(FT_Info * info)
 	FEST_SEND_CMD("(Parameter.set 'Wavefiletype 'nist)\n");
 	ret = festival_read_response(info, &resp);
 	if (ret || resp == NULL || strcmp(resp, "nist\n")) {
-		DBG("ERROR: Can't set Wavefiletype to nist in Festival. Reason: %s", resp);
+		dbg("ERROR: Can't set Wavefiletype to nist in Festival. Reason: %s", resp);
 		return NULL;
 	}
 	g_free(resp);
@@ -502,7 +502,7 @@ festival_speak_command(FT_Info * info, char *command, const char *text,
 	if (text == NULL)
 		return -1;
 
-	DBG("(festival_speak_command): %s", text);
+	dbg("(festival_speak_command): %s", text);
 
 	/* Opens a stream associated to the socket */
 	fd = fdopen(dup(info->server_fd), "wb");
@@ -524,18 +524,18 @@ festival_speak_command(FT_Info * info, char *command, const char *text,
 	else
 		fprintf(fd, ")\n");
 
-	DBG("-> Festival: escaped text is %s", text);
-	DBG("-> Festival: |%sthe text is displayed above\")|", str);
+	dbg("-> Festival: escaped text is %s", text);
+	dbg("-> Festival: |%sthe text is displayed above\")|", str);
 
 	g_free(str);
 	/* Close the stream (but not the socket) */
 	fclose(fd);
-	DBG("Resources freed");
+	dbg("Resources freed");
 
 	if (resp) {
 		ret = festival_read_response(info, NULL);
 		if (ret) {
-			DBG("ERROR: Festival reported error in speak command);");
+			dbg("ERROR: Festival reported error in speak command);");
 			return -1;
 		}
 	}
@@ -577,7 +577,7 @@ FT_Wave *festivalStringToWaveGetData(FT_Info * info)
 	do {
 		if (festival_get_ack(&info, ack))
 			return NULL;
-		DBG("<- Festival: %s", ack);
+		dbg("<- Festival: %s", ack);
 		if (strcmp(ack, "WV\n") == 0) {
 			wave = client_accept_waveform(info->server_fd, NULL, 0);
 		} else if (strcmp(ack, "LP\n") == 0) {
@@ -609,9 +609,9 @@ FT_Wave *festivalGetDataMulti(FT_Info * info, char **callback, int *stop_flag,
 
 	*callback = NULL;
 
-	DBG("Stop by close mode : %d", stop_by_close);
+	dbg("Stop by close mode : %d", stop_by_close);
 
-	DBG("-> Festival: (speechd-next)");
+	dbg("-> Festival: (speechd-next)");
 	fd = fdopen(dup(info->server_fd), "wb");
 	fprintf(fd, "(speechd-next)\n");
 	fflush(fd);
@@ -619,10 +619,10 @@ FT_Wave *festivalGetDataMulti(FT_Info * info, char **callback, int *stop_flag,
 
 	do {
 		if (festival_get_ack(&info, ack)) {
-			DBG("Get ack failed");
+			dbg("Get ack failed");
 			return NULL;
 		}
-		DBG("<- Festival: %s", ack);
+		dbg("<- Festival: %s", ack);
 
 		if (strcmp(ack, "WV\n") == 0) {
 			wave =
@@ -632,20 +632,20 @@ FT_Wave *festivalGetDataMulti(FT_Info * info, char **callback, int *stop_flag,
 			g_free(resp);
 			resp = client_accept_s_expr(info->server_fd);
 			if (resp == NULL) {
-				DBG("ERROR: Something wrong in communication with Festival, s_expr = NULL");
+				dbg("ERROR: Something wrong in communication with Festival, s_expr = NULL");
 				return NULL;
 			}
 			if (strlen(resp) != 0)
 				resp[strlen(resp) - 1] = 0;
-			DBG("<- Festival: |%s|", resp);
+			dbg("<- Festival: |%s|", resp);
 			if (!strcmp(resp, "nil")) {
-				DBG("festival_client: end of samples\n");
+				dbg("festival_client: end of samples\n");
 				g_free(resp);
 				wave = NULL;
 				resp = NULL;
 			}
 		} else if (strcmp(ack, "ER\n") == 0) {
-			DBG("festival_client: server returned error\n");
+			dbg("festival_client: server returned error\n");
 			return NULL;
 		}
 	} while (strcmp(ack, "OK\n") != 0);
@@ -738,15 +738,15 @@ VoiceDescription **festivalGetVoices(FT_Info * info)
 	FEST_SEND_CMD("(apply append (voice-list-language-codes))");
 	festival_read_response(info, &reply);
 	if (reply == NULL) {
-		DBG("ERROR: Invalid reply for voice-list");
+		dbg("ERROR: Invalid reply for voice-list");
 		return NULL;
 	}
 	/* Remove trailing newline */
 	reply[strlen(reply) - 1] = 0;
-	DBG("Voice list reply: |%s|", reply);
+	dbg("Voice list reply: |%s|", reply);
 	voices = lisp_list_get_vect(reply);
 	if (voices == NULL) {
-		DBG("ERROR: Can't parse voice listing reply into vector");
+		dbg("ERROR: Can't parse voice listing reply into vector");
 		return NULL;
 	}
 

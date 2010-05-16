@@ -113,7 +113,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 	icon[0] = 0;
 	if (*buf)
 		**buf = 0;
-	DBG("Ivona message %s type %d\n", *msg, type);
+	dbg("Ivona message %s type %d\n", *msg, type);
 	switch (type) {
 	case MSGTYPE_SOUND_ICON:
 		if (strlen(*msg) < 63) {
@@ -157,7 +157,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 			n = dumbtts_CharString(conf, *msg, *buf, *len, cap_mode,
 					       &isicon);
 		}
-		DBG("Got n=%d", n);
+		dbg("Got n=%d", n);
 		if (n > 0) {
 			*len = n + 128;
 			*buf = g_realloc(*buf, *len);
@@ -179,7 +179,7 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 		pos = 0;
 		bytes =
 		    module_get_message_part(*msg, xbuf, &pos, 1023, delimeters);
-		DBG("Got bytes %d, %s", bytes, xbuf);
+		dbg("Got bytes %d, %s", bytes, xbuf);
 		if (bytes <= 0) {
 			*msg = NULL;
 			return 1;
@@ -200,13 +200,13 @@ int ivona_get_msgpart(struct dumbtts_conf *conf, EMessageType type, char **msg,
 			*msg = NULL;
 			return 1;
 		}
-		DBG("Returning to Ivona |%s|", *buf);
+		dbg("Returning to Ivona |%s|", *buf);
 		return 0;
 
 	default:
 
 		*msg = NULL;
-		DBG("Unknown message type\n");
+		dbg("Unknown message type\n");
 		return 1;
 	}
 }
@@ -248,10 +248,10 @@ char *ivona_get_wave_fd(int fd, int *nsamples, int *offset)
 			    g_realloc(ivona_wave, wave_size + STEP_WAVE_SIZE);
 			wave_size += STEP_WAVE_SIZE;
 		}
-		DBG("Have place for %d bytes", wave_size - wave_length);
+		dbg("Have place for %d bytes", wave_size - wave_length);
 		got =
 		    read(fd, ivona_wave + wave_length, wave_size - wave_length);
-		DBG("Wave part at %d size %d", wave_length, got);
+		dbg("Wave part at %d size %d", wave_length, got);
 		if (got <= 0)
 			break;
 		wave_length += got;
@@ -265,12 +265,12 @@ char *ivona_get_wave_fd(int fd, int *nsamples, int *offset)
 		g_free(ivona_wave);
 		return NULL;
 	}
-	DBG("Trimmed %d samples at end", wave_length / 2 - i - 1);
+	dbg("Trimmed %d samples at end", wave_length / 2 - i - 1);
 	*nsamples = i + 1;
 	for (i = 0; i < *nsamples; i++)
 		if (w[i])
 			break;
-	DBG("Should trim %d bytes at start", i);
+	dbg("Should trim %d bytes at start", i);
 	*offset = i;
 	(*nsamples) -= i;
 	return ivona_wave;
@@ -310,25 +310,25 @@ static gboolean ivona_play_file(char *filename)
 	SNDFILE *sf;
 	SF_INFO sfinfo;
 
-	DBG("Ivona: Playing |%s|", filename);
+	dbg("Ivona: Playing |%s|", filename);
 	memset(&sfinfo, 0, sizeof(sfinfo));
 	sf = sf_open(filename, SFM_READ, &sfinfo);
 	subformat = sfinfo.format & SF_FORMAT_SUBMASK;
 	items = sfinfo.channels * sfinfo.frames;
-	DBG("Ivona: frames = %ld, channels = %d", (long)sfinfo.frames,
+	dbg("Ivona: frames = %ld, channels = %d", (long)sfinfo.frames,
 	    sfinfo.channels);
-	DBG("Ivona: samplerate = %i, items = %Ld", sfinfo.samplerate,
+	dbg("Ivona: samplerate = %i, items = %Ld", sfinfo.samplerate,
 	    (long long)items);
-	DBG("Ivona: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X",
+	dbg("Ivona: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X",
 	    sfinfo.format & SF_FORMAT_TYPEMASK, subformat,
 	    sfinfo.format & SF_FORMAT_ENDMASK);
 	if (sfinfo.channels < 1 || sfinfo.channels > 2) {
-		DBG("Ivona: ERROR: channels = %d.\n", sfinfo.channels);
+		dbg("Ivona: ERROR: channels = %d.\n", sfinfo.channels);
 		result = FALSE;
 		goto cleanup1;
 	}
 	if (sfinfo.frames > 0x7FFFFFFF) {
-		DBG("Ivona: ERROR: Unknown number of frames.");
+		dbg("Ivona: ERROR: Unknown number of frames.");
 		result = FALSE;
 		goto cleanup1;
 	}
@@ -343,20 +343,20 @@ static gboolean ivona_play_file(char *filename)
 	track.bits = 16;
 	track.samples = g_malloc(items * sizeof(short));
 	readcount = sf_read_short(sf, (short *)track.samples, items);
-	DBG("Ivona: read %Ld items from audio file.", (long long)readcount);
+	dbg("Ivona: read %Ld items from audio file.", (long long)readcount);
 
 	if (readcount > 0) {
 		track.num_samples = readcount / sfinfo.channels;
-		DBG("Ivona: Sending %i samples to audio.", track.num_samples);
+		dbg("Ivona: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
 		//spd_audio_set_volume(module_audio_id, IvonaSoundIconVolume);
 		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
-			DBG("ERROR: Can't play track for unknown reason.");
+			dbg("ERROR: Can't play track for unknown reason.");
 			result = FALSE;
 			goto cleanup2;
 		}
-		DBG("Ivona: Sent to audio.");
+		dbg("Ivona: Sent to audio.");
 	}
 cleanup2:
 	g_free(track.samples);
@@ -446,7 +446,7 @@ void ivona_store_wave_in_cache(char *str, char *wave, int samples)
 	ica->samples = samples;
 	strcpy(ica->str, str);
 	ica_tohead(ica);
-	DBG("Stored cache %s", str);
+	dbg("Stored cache %s", str);
 }
 
 char *ivona_get_wave_from_cache(char *to_say, int *samples)
@@ -455,7 +455,7 @@ char *ivona_get_wave_from_cache(char *to_say, int *samples)
 	if (strlen(to_say) > IVONA_CACHE_MAX_STRLEN)
 		return NULL;
 	for (ica = ica_tail.succ; ica && ica->samples; ica = ica->succ) {
-		DBG("Cache cmp '%s'='%s'", ica->str, to_say);
+		dbg("Cache cmp '%s'='%s'", ica->str, to_say);
 		if (!strcmp(ica->str, to_say)) {
 			char *wave = g_malloc(ica->samples * 2);
 			memcpy(wave, ica->wave, ica->samples * 2);

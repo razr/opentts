@@ -94,7 +94,7 @@ int dispatch_cmd(char *cmd_line)
 
 	if (msg != NULL) {
 		if (0 > printf("%s\n", msg)) {
-			DBG("Broken pipe, exiting...\n");
+			dbg("Broken pipe, exiting...\n");
 			module_close(2);
 		}
 		fflush(stdout);
@@ -146,19 +146,19 @@ int main(int argc, char *argv[])
 				   CASE_INSENSITIVE);
 		if (configfile) {
 			if (dotconf_command_loop(configfile) == 0) {
-				DBG("Error reading config file\n");
+				dbg("Error reading config file\n");
 				module_close(1);
 			}
 			dotconf_cleanup(configfile);
-			DBG("Configuration (pre) has been read from \"%s\"\n",
+			dbg("Configuration (pre) has been read from \"%s\"\n",
 			    configfilename);
 
 			g_free(configfilename);
 		} else {
-			DBG("Can't read specified config file!\n");
+			dbg("Can't read specified config file!\n");
 		}
 	} else {
-		DBG("No config file specified, using defaults...\n");
+		dbg("No config file specified, using defaults...\n");
 	}
 
 	ret_init = module_init(&status_info);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 	n = 0;
 	ret = otts_getline(&cmd_buf, &n, stdin);
 	if (ret == -1) {
-		DBG("Broken pipe when reading INIT, exiting... \n");
+		dbg("Broken pipe when reading INIT, exiting... \n");
 		module_close(2);
 	}
 
@@ -183,12 +183,12 @@ int main(int argc, char *argv[])
 		g_free(status_info);
 
 		if (ret < 0) {
-			DBG("Broken pipe, exiting...\n");
+			dbg("Broken pipe, exiting...\n");
 			module_close(2);
 		}
 		fflush(stdout);
 	} else {
-		DBG("ERROR: Wrong communication from module client: didn't call INIT\n");
+		dbg("ERROR: Wrong communication from module client: didn't call INIT\n");
 		module_close(3);
 	}
 	xfree(cmd_buf);
@@ -198,11 +198,11 @@ int main(int argc, char *argv[])
 		n = 0;
 		ret = otts_getline(&cmd_buf, &n, stdin);
 		if (ret == -1) {
-			DBG("Broken pipe, exiting... \n");
+			dbg("Broken pipe, exiting... \n");
 			module_close(2);
 		}
 
-		DBG("CMD: <%s>", cmd_buf);
+		dbg("CMD: <%s>", cmd_buf);
 
 		dispatch_cmd(cmd_buf);
 

@@ -406,7 +406,7 @@ int module_load(void)
 }
 
 #define ABORT(msg) g_string_append(info, msg); \
-        DBG("FATAL ERROR: %s", info->str); \
+        dbg("FATAL ERROR: %s", info->str); \
         *status_info = info->str; \
         g_string_free(info, 0); \
         return FATAL_ERROR;
@@ -418,20 +418,20 @@ int module_init(char **status_info)
 	char ibmVersion[20];
 	int ibm_sample_rate;
 
-	DBG("Ibmtts: Module init().");
+	dbg("Ibmtts: Module init().");
 	*status_info = NULL;
 	info = g_string_new("");
 	ibmtts_thread_exit_requested = IBMTTS_FALSE;
 
 	/* Report versions. */
 	eciVersion(ibmVersion);
-	DBG("Ibmtts: IBM TTS Output Module version %s, IBM TTS Engine version %s", MODULE_VERSION, ibmVersion);
+	dbg("Ibmtts: IBM TTS Output Module version %s, IBM TTS Engine version %s", MODULE_VERSION, ibmVersion);
 
 	/* Setup IBM TTS engine. */
-	DBG("Ibmtts: Creating ECI instance.");
+	dbg("Ibmtts: Creating ECI instance.");
 	eciHandle = eciNew();
 	if (NULL_ECI_HAND == eciHandle) {
-		DBG("Ibmtts: Could not create ECI instance.\n");
+		dbg("Ibmtts: Could not create ECI instance.\n");
 		*status_info = g_strdup("Could not create ECI instance. "
 					"Is the IBM TTS engine installed?");
 		return FATAL_ERROR;
@@ -450,7 +450,7 @@ int module_init(char **status_info)
 		eci_sample_rate = 22050;
 		break;
 	default:
-		DBG("Ibmtts: Invalid audio sample rate returned by ECI = %i",
+		dbg("Ibmtts: Invalid audio sample rate returned by ECI = %i",
 		    ibm_sample_rate);
 	}
 
@@ -459,12 +459,12 @@ int module_init(char **status_info)
 	    (TEciAudioSamples *) g_malloc((IbmttsAudioChunkSize) *
 					  sizeof(TEciAudioSamples));
 
-	DBG("Ibmtts: Registering ECI callback.");
+	dbg("Ibmtts: Registering ECI callback.");
 	eciRegisterCallback(eciHandle, eciCallback, NULL);
 
-	DBG("Ibmtts: Registering an ECI audio buffer.");
+	dbg("Ibmtts: Registering an ECI audio buffer.");
 	if (!eciSetOutputBuffer(eciHandle, IbmttsAudioChunkSize, audio_chunk)) {
-		DBG("Ibmtts: Error registering ECI audio buffer.");
+		dbg("Ibmtts: Error registering ECI audio buffer.");
 		ibmtts_log_eci_error();
 	}
 
@@ -484,21 +484,21 @@ int module_init(char **status_info)
 	pthread_mutex_init(&playback_queue_mutex, NULL);
 
 	/*
-	   DBG("Ibmtts: IbmttsMaxChunkLength = %d", IbmttsMaxChunkLength);
-	   DBG("Ibmtts: IbmttsDelimiters = %s", IbmttsDelimiters);
+	   dbg("Ibmtts: IbmttsMaxChunkLength = %d", IbmttsMaxChunkLength);
+	   dbg("Ibmtts: IbmttsDelimiters = %s", IbmttsDelimiters);
 	 */
-	DBG("Ibmtts: ImbttsAudioChunkSize = %d", IbmttsAudioChunkSize);
+	dbg("Ibmtts: ImbttsAudioChunkSize = %d", IbmttsAudioChunkSize);
 
 	ibmtts_message = g_malloc(sizeof(char *));
 	*ibmtts_message = NULL;
 
-	DBG("Ibmtts: Creating new thread for stop or pause.");
+	dbg("Ibmtts: Creating new thread for stop or pause.");
 	ibmtts_stop_or_pause_semaphore = module_semaphore_init();
 	ret =
 	    pthread_create(&ibmtts_stop_or_pause_thread, NULL,
 			   _ibmtts_stop_or_pause, NULL);
 	if (0 != ret) {
-		DBG("Ibmtts: stop or pause thread creation failed.");
+		dbg("Ibmtts: stop or pause thread creation failed.");
 		*status_info =
 		    g_strdup
 		    ("The module couldn't initialize stop or pause thread. "
@@ -508,11 +508,11 @@ int module_init(char **status_info)
 		return FATAL_ERROR;
 	}
 
-	DBG("Ibmtts: Creating new thread for playback.");
+	dbg("Ibmtts: Creating new thread for playback.");
 	ibmtts_play_semaphore = module_semaphore_init();
 	ret = pthread_create(&ibmtts_play_thread, NULL, _ibmtts_play, NULL);
 	if (0 != ret) {
-		DBG("Ibmtts: play thread creation failed.");
+		dbg("Ibmtts: play thread creation failed.");
 		*status_info =
 		    g_strdup("The module couldn't initialize play thread. "
 			     "This could be either an internal problem or an "
@@ -521,11 +521,11 @@ int module_init(char **status_info)
 		return FATAL_ERROR;
 	}
 
-	DBG("Ibmtts: Creating new thread for IBM TTS synthesis.");
+	dbg("Ibmtts: Creating new thread for IBM TTS synthesis.");
 	ibmtts_synth_semaphore = module_semaphore_init();
 	ret = pthread_create(&ibmtts_synth_thread, NULL, _ibmtts_synth, NULL);
 	if (0 != ret) {
-		DBG("Ibmtts: synthesis thread creation failed.");
+		dbg("Ibmtts: synthesis thread creation failed.");
 		*status_info =
 		    g_strdup("The module couldn't initialize synthesis thread. "
 			     "This could be either an internal problem or an "
@@ -546,44 +546,44 @@ int module_init(char **status_info)
 
 int module_audio_init(char **status_info)
 {
-	DBG("Opening audio");
+	dbg("Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
 VoiceDescription **module_list_voices(void)
 {
-	DBG("Ibmtts: %s", __FUNCTION__);
+	dbg("Ibmtts: %s", __FUNCTION__);
 	return ibmtts_voice_list;
 }
 
 int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 {
-	DBG("Ibmtts: module_speak().");
+	dbg("Ibmtts: module_speak().");
 
 	if (is_thread_busy(&ibmtts_synth_suspended_mutex) ||
 	    is_thread_busy(&ibmtts_play_suspended_mutex) ||
 	    is_thread_busy(&ibmtts_stop_or_pause_suspended_mutex)) {
-		DBG("Ibmtts: Already synthesizing when requested to synthesize (module_speak).");
+		dbg("Ibmtts: Already synthesizing when requested to synthesize (module_speak).");
 		return IBMTTS_FALSE;
 	}
 
 	if (0 != module_write_data_ok(data))
 		return FATAL_ERROR;
 
-	DBG("Ibmtts: Type: %d, bytes: %d, requested data: |%s|\n", msgtype,
+	dbg("Ibmtts: Type: %d, bytes: %d, requested data: |%s|\n", msgtype,
 	    bytes, data);
 
 	g_free(*ibmtts_message);
 	*ibmtts_message = NULL;
 
 	if (!g_utf8_validate(data, bytes, NULL)) {
-		DBG("Ibmtts: Input is not valid utf-8.");
+		dbg("Ibmtts: Input is not valid utf-8.");
 		/* Actually, we should just fail here, but let's assume input is latin-1 */
 		*ibmtts_message =
 		    g_convert(data, bytes, "utf-8", "iso-8859-1", NULL, NULL,
 			      NULL);
 		if (*ibmtts_message == NULL) {
-			DBG("Ibmtts: Fallback conversion to utf-8 failed.");
+			dbg("Ibmtts: Fallback conversion to utf-8 failed.");
 			return FALSE;
 		}
 	} else {
@@ -626,13 +626,13 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	/* Send semaphore signal to the synthesis thread */
 	sem_post(ibmtts_synth_semaphore);
 
-	DBG("Ibmtts: Leaving module_speak() normally.");
+	dbg("Ibmtts: Leaving module_speak() normally.");
 	return TRUE;
 }
 
 int module_stop(void)
 {
-	DBG("Ibmtts: module_stop().");
+	dbg("Ibmtts: module_stop().");
 
 	if ((is_thread_busy(&ibmtts_synth_suspended_mutex) ||
 	     is_thread_busy(&ibmtts_play_suspended_mutex)) &&
@@ -659,7 +659,7 @@ size_t module_pause(void)
 	   make use of it because Speech Dispatcher doesn't have a module_resume
 	   function. Instead, Speech Dispatcher resumes by calling module_speak
 	   from the last index mark reported in the text. */
-	DBG("Ibmtts: module_pause().");
+	dbg("Ibmtts: module_pause().");
 
 	/* Request playback thread to pause.  Note we cannot stop synthesis or
 	   playback until end of sentence or end of message is played. */
@@ -674,29 +674,29 @@ size_t module_pause(void)
 void module_close(int status)
 {
 
-	DBG("Ibmtts: close().");
+	dbg("Ibmtts: close().");
 
 	if (is_thread_busy(&ibmtts_synth_suspended_mutex) ||
 	    is_thread_busy(&ibmtts_play_suspended_mutex)) {
-		DBG("Ibmtts: Stopping speech");
+		dbg("Ibmtts: Stopping speech");
 		module_stop();
 	}
 
-	DBG("Ibmtts: De-registering ECI callback.");
+	dbg("Ibmtts: De-registering ECI callback.");
 	eciRegisterCallback(eciHandle, NULL, NULL);
 
-	DBG("Ibmtts: Destroying ECI instance.");
+	dbg("Ibmtts: Destroying ECI instance.");
 	eciDelete(eciHandle);
 	eciHandle = NULL_ECI_HAND;
 
 	/* Free buffer for ECI audio. */
 	g_free(audio_chunk);
 
-	DBG("Ibmtts: Closing audio output");
+	dbg("Ibmtts: Closing audio output");
 	spd_audio_close(module_audio_id);
 
 	/* Request each thread exit and wait until it exits. */
-	DBG("Ibmtts: Terminating threads");
+	dbg("Ibmtts: Terminating threads");
 	ibmtts_thread_exit_requested = IBMTTS_TRUE;
 	sem_post(ibmtts_synth_semaphore);
 	sem_post(ibmtts_play_semaphore);
@@ -782,7 +782,7 @@ static char *ibmtts_next_part(char *msg, char **mark_name)
 /* Stop or Pause thread. */
 static void *_ibmtts_stop_or_pause(void *nothing)
 {
-	DBG("Ibmtts: Stop or pause thread starting.......\n");
+	dbg("Ibmtts: Stop or pause thread starting.......\n");
 
 	/* Block all signals to this thread. */
 	set_speaking_thread_parameters();
@@ -798,7 +798,7 @@ static void *_ibmtts_stop_or_pause(void *nothing)
 			if (ibmtts_thread_exit_requested)
 				break;
 		}
-		DBG("Ibmtts: Stop or pause semaphore on.");
+		dbg("Ibmtts: Stop or pause semaphore on.");
 		/* The following is a hack. The condition should never
 		   be true, but sometimes it is true for unclear reasons. */
 		if (!(ibmtts_stop_synth_requested || ibmtts_pause_requested))
@@ -807,32 +807,32 @@ static void *_ibmtts_stop_or_pause(void *nothing)
 		if (ibmtts_stop_synth_requested) {
 			/* Stop synthesis (if in progress). */
 			if (eciHandle) {
-				DBG("Ibmtts: Stopping synthesis.");
+				dbg("Ibmtts: Stopping synthesis.");
 				eciStop(eciHandle);
 			}
 
 			/* Stop any audio playback (if in progress). */
 			if (module_audio_id) {
 				pthread_mutex_lock(&sound_stop_mutex);
-				DBG("Ibmtts: Stopping audio.");
+				dbg("Ibmtts: Stopping audio.");
 				int ret = spd_audio_stop(module_audio_id);
 				if (0 != ret)
-					DBG("Ibmtts: WARNING: Non 0 value from spd_audio_stop: %d", ret);
+					dbg("Ibmtts: WARNING: Non 0 value from spd_audio_stop: %d", ret);
 				pthread_mutex_unlock(&sound_stop_mutex);
 			}
 		}
 
-		DBG("Ibmtts: Waiting for synthesis thread to suspend.");
+		dbg("Ibmtts: Waiting for synthesis thread to suspend.");
 		while (is_thread_busy(&ibmtts_synth_suspended_mutex))
 			g_usleep(100);
-		DBG("Ibmtts: Waiting for playback thread to suspend.");
+		dbg("Ibmtts: Waiting for playback thread to suspend.");
 		while (is_thread_busy(&ibmtts_play_suspended_mutex))
 			g_usleep(100);
 
-		DBG("Ibmtts: Clearing playback queue.");
+		dbg("Ibmtts: Clearing playback queue.");
 		ibmtts_clear_playback_queue();
 
-		DBG("Ibmtts: Clearing index mark lookup table.");
+		dbg("Ibmtts: Clearing index mark lookup table.");
 		if (ibmtts_index_mark_ht) {
 			g_hash_table_destroy(ibmtts_index_mark_ht);
 			ibmtts_index_mark_ht = NULL;
@@ -847,9 +847,9 @@ static void *_ibmtts_stop_or_pause(void *nothing)
 		ibmtts_stop_play_requested = IBMTTS_FALSE;
 		ibmtts_pause_requested = IBMTTS_FALSE;
 
-		DBG("Ibmtts: Stop or pause completed.");
+		dbg("Ibmtts: Stop or pause completed.");
 	}
-	DBG("Ibmtts: Stop or pause thread ended.......\n");
+	dbg("Ibmtts: Stop or pause thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -863,15 +863,15 @@ static int process_text_mark(char *part, int part_len, char *mark_name)
 		*markId = 1 + g_hash_table_size(ibmtts_index_mark_ht);
 		g_hash_table_insert(ibmtts_index_mark_ht, markId, mark_name);
 		if (!eciInsertIndex(eciHandle, *markId)) {
-			DBG("Ibmtts: Error sending index mark to synthesizer.");
+			dbg("Ibmtts: Error sending index mark to synthesizer.");
 			ibmtts_log_eci_error();
 			/* Try to keep going. */
 		} else
-			DBG("Ibmtts: Index mark |%s| (id %i) sent to synthesizer.", mark_name, *markId);
+			dbg("Ibmtts: Index mark |%s| (id %i) sent to synthesizer.", mark_name, *markId);
 		/* If pause is requested, skip over rest of message,
 		   but synthesize what we have so far. */
 		if (ibmtts_pause_requested) {
-			DBG("Ibmtts: Pause requested in synthesis thread.");
+			dbg("Ibmtts: Pause requested in synthesis thread.");
 			return 1;
 		}
 		return 0;
@@ -879,11 +879,11 @@ static int process_text_mark(char *part, int part_len, char *mark_name)
 
 	/* Handle normal text. */
 	if (part_len > 0) {
-		DBG("Ibmtts: Returned %d bytes from get_part.", part_len);
-		DBG("Ibmtts: Text to synthesize is |%s|\n", part);
-		DBG("Ibmtts: Sending text to synthesizer.");
+		dbg("Ibmtts: Returned %d bytes from get_part.", part_len);
+		dbg("Ibmtts: Text to synthesize is |%s|\n", part);
+		dbg("Ibmtts: Sending text to synthesizer.");
 		if (!eciAddText(eciHandle, part)) {
-			DBG("Ibmtts: Error sending text.");
+			dbg("Ibmtts: Error sending text.");
 			ibmtts_log_eci_error();
 			return 2;
 		}
@@ -891,27 +891,27 @@ static int process_text_mark(char *part, int part_len, char *mark_name)
 	}
 
 	/* Handle end of text. */
-	DBG("Ibmtts: End of data in synthesis thread.");
+	dbg("Ibmtts: End of data in synthesis thread.");
 	/*
 	   Add index mark for end of message.
 	   This also makes sure the callback gets called at least once 
 	 */
 	eciInsertIndex(eciHandle, IBMTTS_MSG_END_MARK);
-	DBG("Ibmtts: Trying to synthesize text.");
+	dbg("Ibmtts: Trying to synthesize text.");
 	if (!eciSynthesize(eciHandle)) {
-		DBG("Ibmtts: Error synthesizing.");
+		dbg("Ibmtts: Error synthesizing.");
 		ibmtts_log_eci_error();
 		return 2;;
 	}
 
 	/* Audio and index marks are returned in eciCallback(). */
-	DBG("Ibmtts: Waiting for synthesis to complete.");
+	dbg("Ibmtts: Waiting for synthesis to complete.");
 	if (!eciSynchronize(eciHandle)) {
-		DBG("Ibmtts: Error waiting for synthesis to complete.");
+		dbg("Ibmtts: Error waiting for synthesis to complete.");
 		ibmtts_log_eci_error();
 		return 2;
 	}
-	DBG("Ibmtts: Synthesis complete.");
+	dbg("Ibmtts: Synthesis complete.");
 	return 3;
 }
 
@@ -923,7 +923,7 @@ static void *_ibmtts_synth(void *nothing)
 	int part_len = 0;
 	int ret;
 
-	DBG("Ibmtts: Synthesis thread starting.......\n");
+	dbg("Ibmtts: Synthesis thread starting.......\n");
 
 	/* Block all signals to this thread. */
 	set_speaking_thread_parameters();
@@ -940,7 +940,7 @@ static void *_ibmtts_synth(void *nothing)
 			if (ibmtts_thread_exit_requested)
 				break;
 		}
-		DBG("Ibmtts: Synthesis semaphore on.");
+		dbg("Ibmtts: Synthesis semaphore on.");
 
 		/* This table assigns each index mark name an integer id for fast lookup when
 		   ECI returns the integer index mark event. */
@@ -983,9 +983,9 @@ static void *_ibmtts_synth(void *nothing)
 			break;
 		case MSGTYPE_KEY:
 			/* Map unspeakable keys to speakable words. */
-			DBG("Ibmtts: Key from Speech Dispatcher: |%s|", pos);
+			dbg("Ibmtts: Key from Speech Dispatcher: |%s|", pos);
 			pos = ibmtts_subst_keys(pos);
-			DBG("Ibmtts: Key to speak: |%s|", pos);
+			dbg("Ibmtts: Key to speak: |%s|", pos);
 			g_free(*ibmtts_message);
 			*ibmtts_message = pos;
 			eciSetParam(eciHandle, eciTextMode, eciTextModeDefault);
@@ -1003,7 +1003,7 @@ static void *_ibmtts_synth(void *nothing)
 		ibmtts_add_flag_to_playback_queue(IBMTTS_QET_BEGIN);
 		while (TRUE) {
 			if (ibmtts_stop_synth_requested) {
-				DBG("Ibmtts: Stop in synthesis thread, terminating.");
+				dbg("Ibmtts: Stop in synthesis thread, terminating.");
 				break;
 			}
 
@@ -1022,7 +1022,7 @@ static void *_ibmtts_synth(void *nothing)
 
 			part = ibmtts_next_part(pos, &mark_name);
 			if (NULL == part) {
-				DBG("Ibmtts: Error getting next part of message.");
+				dbg("Ibmtts: Error getting next part of message.");
 				/* TODO: What to do here? */
 				break;
 			}
@@ -1039,7 +1039,7 @@ static void *_ibmtts_synth(void *nothing)
 		}
 	}
 
-	DBG("Ibmtts: Synthesis thread ended.......\n");
+	dbg("Ibmtts: Synthesis thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -1063,10 +1063,10 @@ static void ibmtts_set_rate(signed int rate)
 	assert(speed >= 0 && speed <= 140);
 	int ret = eciSetVoiceParam(eciHandle, 0, eciSpeed, speed);
 	if (-1 == ret) {
-		DBG("Ibmtts: Error setting rate %i.", speed);
+		dbg("Ibmtts: Error setting rate %i.", speed);
 		ibmtts_log_eci_error();
 	} else
-		DBG("Ibmtts: Rate set to %i.", speed);
+		dbg("Ibmtts: Rate set to %i.", speed);
 }
 
 static void ibmtts_set_volume(signed int volume)
@@ -1087,10 +1087,10 @@ static void ibmtts_set_volume(signed int volume)
 	assert(vol >= 0 && vol <= 100);
 	int ret = eciSetVoiceParam(eciHandle, 0, eciVolume, vol);
 	if (-1 == ret) {
-		DBG("Ibmtts: Error setting volume %i.", vol);
+		dbg("Ibmtts: Error setting volume %i.", vol);
 		ibmtts_log_eci_error();
 	} else
-		DBG("Ibmtts: Volume set to %i.", vol);
+		dbg("Ibmtts: Volume set to %i.", vol);
 }
 
 static void ibmtts_set_pitch(signed int pitch)
@@ -1116,10 +1116,10 @@ static void ibmtts_set_pitch(signed int pitch)
 	int ret =
 	    eciSetVoiceParam(eciHandle, 0, eciPitchBaseline, pitchBaseline);
 	if (-1 == ret) {
-		DBG("Ibmtts: Error setting pitch %i.", pitchBaseline);
+		dbg("Ibmtts: Error setting pitch %i.", pitchBaseline);
 		ibmtts_log_eci_error();
 	} else
-		DBG("Ibmtts: Pitch set to %i.", pitchBaseline);
+		dbg("Ibmtts: Pitch set to %i.", pitchBaseline);
 }
 
 static char *ibmtts_voice_enum_to_str(EVoiceType voice)
@@ -1171,7 +1171,7 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 	int ret = -1;
 	int i = 0;
 
-	DBG("Ibmtts: %s, lang=%s, voice=%d, dialect=%s",
+	dbg("Ibmtts: %s, lang=%s, voice=%d, dialect=%s",
 	    __FUNCTION__, lang, (int)voice, dialect ? dialect : NULL);
 
 	VoiceDescription **v = ibmtts_voice_list;
@@ -1179,13 +1179,13 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 
 	if (dialect_name) {
 		for (i = 0; v[i]; i++) {
-			DBG("%d. dialect=%s", i, v[i]->dialect);
+			dbg("%d. dialect=%s", i, v[i]->dialect);
 			if (!strcmp(v[i]->dialect, dialect_name)) {
 				int j = ibmtts_voice_index[i];
 				ret =
 				    eciSetParam(eciHandle, eciLanguageDialect,
 						eciLocales[j].langID);
-				DBG("Ibmtts: set langID=0x%x (ret=%d)",
+				dbg("Ibmtts: set langID=0x%x (ret=%d)",
 				    eciLocales[j].langID, ret);
 				ibmtts_input_encoding = eciLocales[j].charset;
 				break;
@@ -1193,14 +1193,14 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 		}
 	} else {
 		for (i = 0; v[i]; i++) {
-			DBG("%d. language=%s", i, v[i]->language);
+			dbg("%d. language=%s", i, v[i]->language);
 			if (!strcmp(v[i]->language, lang)) {
 				int j = ibmtts_voice_index[i];
 				dialect_name = v[i]->name;
 				ret =
 				    eciSetParam(eciHandle, eciLanguageDialect,
 						eciLocales[j].langID);
-				DBG("Ibmtts: set langID=0x%x (ret=%d)",
+				dbg("Ibmtts: set langID=0x%x (ret=%d)",
 				    eciLocales[j].langID, ret);
 				ibmtts_input_encoding = eciLocales[j].charset;
 				break;
@@ -1209,7 +1209,7 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 	}
 
 	if (-1 == ret) {
-		DBG("Ibmtts: Unable to set language");
+		dbg("Ibmtts: Unable to set language");
 		ibmtts_log_eci_error();
 	}
 
@@ -1217,7 +1217,7 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 	TIbmttsVoiceParameters *params =
 	    g_hash_table_lookup(IbmttsVoiceParameters, voicename);
 	if (NULL == params) {
-		DBG("Ibmtts: Setting default VoiceParameters for voice %s",
+		dbg("Ibmtts: Setting default VoiceParameters for voice %s",
 		    voicename);
 		switch (voice) {
 		case MALE1:
@@ -1250,56 +1250,56 @@ ibmtts_set_language_and_voice(char *lang, EVoiceType voice, char *dialect)
 		}
 		ret = eciCopyVoice(eciHandle, eciVoice, 0);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting default voice parameters (voice %i).", eciVoice);
+			dbg("Ibmtts: ERROR: Setting default voice parameters (voice %i).", eciVoice);
 	} else {
-		DBG("Ibmtts: Setting custom VoiceParameters for voice %s",
+		dbg("Ibmtts: Setting custom VoiceParameters for voice %s",
 		    voicename);
 		ret = eciSetVoiceParam(eciHandle, 0, eciGender, params->gender);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting gender %i", params->gender);
+			dbg("Ibmtts: ERROR: Setting gender %i", params->gender);
 		ret =
 		    eciSetVoiceParam(eciHandle, 0, eciBreathiness,
 				     params->breathiness);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting breathiness %i",
+			dbg("Ibmtts: ERROR: Setting breathiness %i",
 			    params->breathiness);
 		ret =
 		    eciSetVoiceParam(eciHandle, 0, eciHeadSize,
 				     params->head_size);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting head size %i",
+			dbg("Ibmtts: ERROR: Setting head size %i",
 			    params->head_size);
 		ret =
 		    eciSetVoiceParam(eciHandle, 0, eciPitchBaseline,
 				     params->pitch_baseline);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting pitch baseline %i",
+			dbg("Ibmtts: ERROR: Setting pitch baseline %i",
 			    params->pitch_baseline);
 		ret =
 		    eciSetVoiceParam(eciHandle, 0, eciPitchFluctuation,
 				     params->pitch_fluctuation);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting pitch fluctuation %i",
+			dbg("Ibmtts: ERROR: Setting pitch fluctuation %i",
 			    params->pitch_fluctuation);
 		ret =
 		    eciSetVoiceParam(eciHandle, 0, eciRoughness,
 				     params->roughness);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting roughness %i",
+			dbg("Ibmtts: ERROR: Setting roughness %i",
 			    params->roughness);
 		ret = eciSetVoiceParam(eciHandle, 0, eciSpeed, params->speed);
 		if (-1 == ret)
-			DBG("Ibmtts: ERROR: Setting speed %i", params->speed);
+			dbg("Ibmtts: ERROR: Setting speed %i", params->speed);
 	}
 	g_free(voicename);
 	/* Retrieve the baseline pitch and speed of the voice. */
 	ibmtts_voice_pitch_baseline =
 	    eciGetVoiceParam(eciHandle, 0, eciPitchBaseline);
 	if (-1 == ibmtts_voice_pitch_baseline)
-		DBG("Ibmtts: Cannot get pitch baseline of voice.");
+		dbg("Ibmtts: Cannot get pitch baseline of voice.");
 	ibmtts_voice_speed = eciGetVoiceParam(eciHandle, 0, eciSpeed);
 	if (-1 == ibmtts_voice_speed)
-		DBG("Ibmtts: Cannot get speed of voice.");
+		dbg("Ibmtts: Cannot get speed of voice.");
 }
 
 static void ibmtts_set_voice(EVoiceType voice)
@@ -1324,7 +1324,7 @@ static void ibmtts_set_synthesis_voice(char *synthesis_voice)
 		return;
 	}
 
-	DBG("Ibmtts: %s, synthesis voice=%s", __FUNCTION__, synthesis_voice);
+	dbg("Ibmtts: %s, synthesis voice=%s", __FUNCTION__, synthesis_voice);
 
 	for (i = 0; i < MAX_NB_OF_LANGUAGES; i++) {
 		if (!strcasecmp(eciLocales[i].name, synthesis_voice)) {
@@ -1342,7 +1342,7 @@ static void ibmtts_log_eci_error()
 	/* TODO: This routine is not working.  Not sure why. */
 	char buf[100];
 	eciErrorMessage(eciHandle, buf);
-	DBG("Ibmtts: ECI Error Message: %s", buf);
+	dbg("Ibmtts: ECI Error Message: %s", buf);
 }
 
 /* IBM TTS calls back here when a chunk of audio is ready or an index mark
@@ -1362,7 +1362,7 @@ static enum ECICallbackReturn eciCallback(ECIHand hEngine,
 
 	switch (msg) {
 	case eciWaveformBuffer:
-		DBG("Ibmtts: %ld audio samples returned from IBM TTS.", lparam);
+		dbg("Ibmtts: %ld audio samples returned from IBM TTS.", lparam);
 		/* Add audio to output queue. */
 		ret = ibmtts_add_audio_to_playback_queue(audio_chunk, lparam);
 		/* Wake up the audio playback thread, if not already awake. */
@@ -1371,7 +1371,7 @@ static enum ECICallbackReturn eciCallback(ECIHand hEngine,
 		return eciDataProcessed;
 		break;
 	case eciIndexReply:
-		DBG("Ibmtts: Index mark id %ld returned from IBM TTS.", lparam);
+		dbg("Ibmtts: Index mark id %ld returned from IBM TTS.", lparam);
 		if (lparam == IBMTTS_MSG_END_MARK) {
 			ibmtts_add_flag_to_playback_queue(IBMTTS_QET_END);
 		} else {
@@ -1498,15 +1498,15 @@ ibmtts_send_to_audio(TPlaybackQueueEntry * playback_queue_entry)
 	track.samples = playback_queue_entry->data.audio.audio_chunk;
 
 	if (track.samples != NULL) {
-		DBG("Ibmtts: Sending %i samples to audio.", track.num_samples);
+		dbg("Ibmtts: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
 		spd_audio_set_volume(module_audio_id, 75);
 		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
-			DBG("ERROR: Can't play track for unknown reason.");
+			dbg("ERROR: Can't play track for unknown reason.");
 			return IBMTTS_FALSE;
 		}
-		DBG("Ibmtts: Sent to audio.");
+		dbg("Ibmtts: Sent to audio.");
 	}
 
 	return IBMTTS_TRUE;
@@ -1519,7 +1519,7 @@ static void *_ibmtts_play(void *nothing)
 	char *mark_name;
 	TPlaybackQueueEntry *playback_queue_entry = NULL;
 
-	DBG("Ibmtts: Playback thread starting.......\n");
+	dbg("Ibmtts: Playback thread starting.......\n");
 
 	/* Block all signals to this thread. */
 	set_speaking_thread_parameters();
@@ -1531,7 +1531,7 @@ static void *_ibmtts_play(void *nothing)
 			sem_wait(ibmtts_play_semaphore);
 			pthread_mutex_unlock(&ibmtts_play_suspended_mutex);
 		}
-		/* DBG("Ibmtts: Playback semaphore on."); */
+		/* dbg("Ibmtts: Playback semaphore on."); */
 
 		while (!ibmtts_stop_play_requested
 		       && !ibmtts_thread_exit_requested) {
@@ -1558,18 +1558,18 @@ static void *_ibmtts_play(void *nothing)
 				    g_hash_table_lookup(ibmtts_index_mark_ht,
 							&markId);
 				if (NULL == mark_name) {
-					DBG("Ibmtts: markId %d returned by IBM TTS not found in lookup table.", markId);
+					dbg("Ibmtts: markId %d returned by IBM TTS not found in lookup table.", markId);
 				} else {
-					DBG("Ibmtts: reporting index mark |%s|.", mark_name);
+					dbg("Ibmtts: reporting index mark |%s|.", mark_name);
 					module_report_index_mark(mark_name);
-					DBG("Ibmtts: index mark reported.");
+					dbg("Ibmtts: index mark reported.");
 					/* If pause requested, wait for an end-of-sentence index mark. */
 					if (ibmtts_pause_requested) {
 						if (0 ==
 						    strncmp(mark_name,
 							    SD_MARK_BODY,
 							    SD_MARK_BODY_LEN)) {
-							DBG("Ibmtts: Pause requested in playback thread.  Stopping.");
+							dbg("Ibmtts: Pause requested in playback thread.  Stopping.");
 							ibmtts_stop_play_requested
 							    = IBMTTS_TRUE;
 						}
@@ -1593,10 +1593,10 @@ static void *_ibmtts_play(void *nothing)
 			playback_queue_entry = NULL;
 		}
 		if (ibmtts_stop_play_requested)
-			DBG("Ibmtts: Stop or pause in playback thread.");
+			dbg("Ibmtts: Stop or pause in playback thread.");
 	}
 
-	DBG("Ibmtts: Playback thread ended.......\n");
+	dbg("Ibmtts: Playback thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -1692,22 +1692,22 @@ static TIbmttsBool ibmtts_play_file(char *filename)
 	SNDFILE *sf;
 	SF_INFO sfinfo;
 
-	DBG("Ibmtts: Playing |%s|", filename);
+	dbg("Ibmtts: Playing |%s|", filename);
 	memset(&sfinfo, 0, sizeof(sfinfo));
 	sf = sf_open(filename, SFM_READ, &sfinfo);
 	subformat = sfinfo.format & SF_FORMAT_SUBMASK;
 	items = sfinfo.channels * sfinfo.frames;
-	DBG("Ibmtts: frames = %ld, channels = %d", (long)sfinfo.frames,
+	dbg("Ibmtts: frames = %ld, channels = %d", (long)sfinfo.frames,
 	    sfinfo.channels);
-	DBG("Ibmtts: samplerate = %i, items = %Ld", sfinfo.samplerate, items);
-	DBG("Ibmtts: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X", sfinfo.format & SF_FORMAT_TYPEMASK, subformat, sfinfo.format & SF_FORMAT_ENDMASK);
+	dbg("Ibmtts: samplerate = %i, items = %Ld", sfinfo.samplerate, items);
+	dbg("Ibmtts: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X", sfinfo.format & SF_FORMAT_TYPEMASK, subformat, sfinfo.format & SF_FORMAT_ENDMASK);
 	if (sfinfo.channels < 1 || sfinfo.channels > 2) {
-		DBG("Ibmtts: ERROR: channels = %d.\n", sfinfo.channels);
+		dbg("Ibmtts: ERROR: channels = %d.\n", sfinfo.channels);
 		result = IBMTTS_FALSE;
 		goto cleanup1;
 	}
 	if (sfinfo.frames > 0x7FFFFFFF) {
-		DBG("Ibmtts: ERROR: Unknown number of frames.");
+		dbg("Ibmtts: ERROR: Unknown number of frames.");
 		result = IBMTTS_FALSE;
 		goto cleanup1;
 	}
@@ -1722,25 +1722,25 @@ static TIbmttsBool ibmtts_play_file(char *filename)
 	track.bits = 16;
 	track.samples = g_malloc(items * sizeof(short));
 	if (NULL == track.samples) {
-		DBG("Ibmtts: ERROR: Cannot allocate audio buffer.");
+		dbg("Ibmtts: ERROR: Cannot allocate audio buffer.");
 		result = IBMTTS_FALSE;
 		goto cleanup1;
 	}
 	readcount = sf_read_short(sf, (short *)track.samples, items);
-	DBG("Ibmtts: read %Ld items from audio file.", readcount);
+	dbg("Ibmtts: read %Ld items from audio file.", readcount);
 
 	if (readcount > 0) {
 		track.num_samples = readcount / sfinfo.channels;
-		DBG("Ibmtts: Sending %i samples to audio.", track.num_samples);
+		dbg("Ibmtts: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
 		spd_audio_set_volume(module_audio_id, 0);
 		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
-			DBG("ERROR: Can't play track for unknown reason.");
+			dbg("ERROR: Can't play track for unknown reason.");
 			result = IBMTTS_FALSE;
 			goto cleanup2;
 		}
-		DBG("Ibmtts: Sent to audio.");
+		dbg("Ibmtts: Sent to audio.");
 	}
 cleanup2:
 	g_free(track.samples);
@@ -1766,15 +1766,15 @@ void alloc_voice_list()
 	if (!ibmtts_voice_list)
 		return;
 
-	DBG("Ibmtts: nLanguages=%d/%d", nLanguages, MAX_NB_OF_LANGUAGES);
+	dbg("Ibmtts: nLanguages=%d/%d", nLanguages, MAX_NB_OF_LANGUAGES);
 	for (i = 0; i < nLanguages; i++) {
 		/* look for the language name */
 		int j;
 		ibmtts_voice_list[i] = g_malloc(sizeof(VoiceDescription));
 
-		DBG("Ibmtts: aLanguage[%d]=0x%08x", i, aLanguage[i]);
+		dbg("Ibmtts: aLanguage[%d]=0x%08x", i, aLanguage[i]);
 		for (j = 0; j < MAX_NB_OF_LANGUAGES; j++) {
-			DBG("Ibmtts: eciLocales[%d].langID=0x%08x", j,
+			dbg("Ibmtts: eciLocales[%d].langID=0x%08x", j,
 			    eciLocales[j].langID);
 			if (eciLocales[j].langID == aLanguage[i]) {
 				ibmtts_voice_list[i]->name = eciLocales[j].name;
@@ -1783,7 +1783,7 @@ void alloc_voice_list()
 				ibmtts_voice_list[i]->dialect =
 				    eciLocales[j].dialect;
 				ibmtts_voice_index[i] = j;
-				DBG("Ibmtts: alloc_voice_list %s",
+				dbg("Ibmtts: alloc_voice_list %s",
 				    ibmtts_voice_list[i]->name);
 				break;
 			}
@@ -1791,7 +1791,7 @@ void alloc_voice_list()
 		assert(j < MAX_NB_OF_LANGUAGES);
 	}
 	ibmtts_voice_list[nLanguages] = NULL;
-	DBG("Ibmtts: LEAVE %s", __func__);
+	dbg("Ibmtts: LEAVE %s", __func__);
 }
 
 static void free_voice_list()

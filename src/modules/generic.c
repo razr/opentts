@@ -139,9 +139,9 @@ int module_init(char **status_info)
 
 	*status_info = NULL;
 
-	DBG("GenericMaxChunkLength = %d\n", GenericMaxChunkLength);
-	DBG("GenericDelimiters = %s\n", GenericDelimiters);
-	DBG("GenericExecuteSynth = %s\n", GenericExecuteSynth);
+	dbg("GenericMaxChunkLength = %d\n", GenericMaxChunkLength);
+	dbg("GenericDelimiters = %s\n", GenericDelimiters);
+	dbg("GenericExecuteSynth = %s\n", GenericExecuteSynth);
 
 	generic_msg_language =
 	    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
@@ -152,11 +152,11 @@ int module_init(char **status_info)
 	generic_message = g_malloc(sizeof(char *));
 	generic_semaphore = module_semaphore_init();
 
-	DBG("Generic: creating new thread for generic_speak\n");
+	dbg("Generic: creating new thread for generic_speak\n");
 	generic_speaking = 0;
 	ret = pthread_create(&generic_speak_thread, NULL, _generic_speak, NULL);
 	if (ret != 0) {
-		DBG("Generic: thread failed\n");
+		dbg("Generic: thread failed\n");
 		*status_info = g_strdup("The module couldn't initialize threads"
 					"This can be either an internal problem or an"
 					"architecture problem. If you are sure your architecture"
@@ -171,7 +171,7 @@ int module_init(char **status_info)
 int module_audio_init(char **status_info)
 {
 	status_info = NULL;
-	DBG("Opening audio");
+	dbg("Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
@@ -184,10 +184,10 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 {
 	char *tmp;
 
-	DBG("speak()\n");
+	dbg("speak()\n");
 
 	if (generic_speaking) {
-		DBG("Speaking when requested to write");
+		dbg("Speaking when requested to write");
 		return 0;
 	}
 
@@ -204,7 +204,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	/* Set the appropriate charset */
 	assert(generic_msg_language != NULL);
 	if (generic_msg_language->charset != NULL) {
-		DBG("Recoding from UTF-8 to %s...",
+		dbg("Recoding from UTF-8 to %s...",
 		    generic_msg_language->charset);
 		tmp =
 		    (char *)g_convert_with_fallback(data, bytes,
@@ -213,7 +213,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 						    GenericRecodeFallback, NULL,
 						    NULL, NULL);
 	} else {
-		DBG("Warning: Prefered charset not specified, recoding to iso-8859-1");
+		dbg("Warning: Prefered charset not specified, recoding to iso-8859-1");
 		tmp =
 		    (char *)g_convert_with_fallback(data, bytes, "iso-8859-2",
 						    "UTF-8",
@@ -234,22 +234,22 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 
 	generic_message_type = MSGTYPE_TEXT;
 
-	DBG("Requested data: |%s|\n", data);
+	dbg("Requested data: |%s|\n", data);
 
 	/* Send semaphore signal to the speaking thread */
 	generic_speaking = 1;
 	sem_post(generic_semaphore);
 
-	DBG("Generic: leaving write() normaly\n\r");
+	dbg("Generic: leaving write() normaly\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	DBG("generic: stop()\n");
+	dbg("generic: stop()\n");
 
 	if (generic_speaking && generic_pid != 0) {
-		DBG("generic: stopping process group pid %d\n", generic_pid);
+		dbg("generic: stopping process group pid %d\n", generic_pid);
 		kill(-generic_pid, SIGKILL);
 	}
 	return 0;
@@ -257,12 +257,12 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	DBG("pause requested\n");
+	dbg("pause requested\n");
 	if (generic_speaking) {
-		DBG("Sending request to pause to child\n");
+		dbg("Sending request to pause to child\n");
 		generic_pause_requested = 1;
 
-		DBG("paused at byte: %d", generic_position);
+		dbg("paused at byte: %d", generic_position);
 		return 0;
 	} else {
 		return -1;
@@ -276,7 +276,7 @@ char *module_is_speaking(void)
 
 void module_close(int status)
 {
-	DBG("generic: close()\n");
+	dbg("generic: close()\n");
 
 	if (generic_speaking) {
 		module_stop();
@@ -329,24 +329,24 @@ void *_generic_speak(void *nothing)
 	int ret;
 	int status;
 
-	DBG("generic: speaking thread starting.......\n");
+	dbg("generic: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(generic_semaphore);
-		DBG("Semaphore on\n");
+		dbg("Semaphore on\n");
 
 		ret = pipe(module_pipe.pc);
 		if (ret != 0) {
-			DBG("Can't create pipe pc\n");
+			dbg("Can't create pipe pc\n");
 			generic_speaking = 0;
 			continue;
 		}
 
 		ret = pipe(module_pipe.cp);
 		if (ret != 0) {
-			DBG("Can't create pipe cp\n");
+			dbg("Can't create pipe cp\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			generic_speaking = 0;
@@ -360,7 +360,7 @@ void *_generic_speak(void *nothing)
 
 		switch (generic_pid) {
 		case -1:
-			DBG("Can't say the message. fork() failed!\n");
+			dbg("Can't say the message. fork() failed!\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			close(module_pipe.cp[0]);
@@ -392,14 +392,14 @@ void *_generic_speak(void *nothing)
 				play_command =
 				    spd_audio_get_playcmd(module_audio_id);
 				if (play_command == NULL) {
-					DBG("This audio backend has no default play command; using \"play\"\n");
+					dbg("This audio backend has no default play command; using \"play\"\n");
 					play_command = "play";
 				}
 
 				/* Set this process as a process group leader (so that SIGKILL
 				   is also delivered to the child processes created by system()) */
 				if (setpgid(0, 0) == -1)
-					DBG("Can't set myself as project group leader!");
+					dbg("Can't set myself as project group leader!");
 
 				e_string = g_strdup(GenericExecuteSynth);
 
@@ -449,7 +449,7 @@ void *_generic_speak(void *nothing)
 				g_free(e_string);
 
 				/* execute_synth_str1 se sem musi nejak dostat */
-				DBG("Starting child...\n");
+				dbg("Starting child...\n");
 				_generic_child(module_pipe,
 					       GenericMaxChunkLength);
 			}
@@ -465,7 +465,7 @@ void *_generic_speak(void *nothing)
 						GenericDelimiters,
 						&generic_pause_requested);
 
-			DBG("Waiting for child...");
+			dbg("Waiting for child...");
 			waitpid(generic_pid, &status, 0);
 			generic_speaking = 0;
 
@@ -476,13 +476,13 @@ void *_generic_speak(void *nothing)
 			else
 				module_report_event_end();
 
-			DBG("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
 		}
 	}
 
 	generic_speaking = 0;
 
-	DBG("generic: speaking thread ended.......\n");
+	dbg("generic: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -502,19 +502,19 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 
 	module_child_dp_init(dpipe);
 
-	DBG("Entering child loop\n");
+	dbg("Entering child loop\n");
 	while (1) {
 		/* Read the waiting data */
 		text = g_malloc((maxlen + 1) * sizeof(char));
 		bytes = module_child_dp_read(dpipe, text, maxlen);
-		DBG("read %d bytes in child", bytes);
+		dbg("read %d bytes in child", bytes);
 		if (bytes == 0) {
 			g_free(text);
 			generic_child_close(dpipe);
 		}
 
 		text[bytes] = 0;
-		DBG("text read is: |%s|\n", text);
+		dbg("text read is: |%s|\n", text);
 
 		/* Escape any quotes */
 		message = g_string_new("");
@@ -530,20 +530,20 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 			}
 		}
 
-		DBG("child: escaped text is |%s|", message->str);
+		dbg("child: escaped text is |%s|", message->str);
 
 		if (strlen(message->str) != 0) {
 			command =
 			    g_strdup_printf("%s%s%s", execute_synth_str1,
 					    message->str, execute_synth_str2);
 
-			DBG("child: synth command = |%s|", command);
+			dbg("child: synth command = |%s|", command);
 
-			DBG("Speaking in child...");
+			dbg("Speaking in child...");
 			module_sigblockusr(&some_signals);
 			{
 				ret = system(command);
-				DBG("Executed shell command returned with %d",
+				dbg("Executed shell command returned with %d",
 				    ret);
 			}
 		}
@@ -553,16 +553,16 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 		g_free(text);
 		g_string_free(message, 1);
 
-		DBG("child->parent: ok, send more data");
+		dbg("child->parent: ok, send more data");
 		module_child_dp_write(dpipe, "C", 1);
 	}
 }
 
 static void generic_child_close(TModuleDoublePipe dpipe)
 {
-	DBG("child: Pipe closed, exiting, closing pipes..\n");
+	dbg("child: Pipe closed, exiting, closing pipes..\n");
 	module_child_dp_close(dpipe);
-	DBG("Child ended...\n");
+	dbg("Child ended...\n");
 	exit(0);
 }
 
@@ -594,10 +594,10 @@ void generic_set_volume(int volume)
 {
 	float hvolume;
 
-	DBG("Volume: %d", volume);
+	dbg("Volume: %d", volume);
 
 	hvolume = ((float)volume) * GenericVolumeMultiply + GenericVolumeAdd;
-	DBG("HVolume: %f", hvolume);
+	dbg("HVolume: %f", hvolume);
 	if (!GenericVolumeForceInteger) {
 		snprintf(generic_msg_volume_str, 15, "%.2f", hvolume);
 	} else {
@@ -611,7 +611,7 @@ void generic_set_language(char *lang)
 	generic_msg_language =
 	    (TGenericLanguage *) module_get_ht_option(GenericLanguage, lang);
 	if (generic_msg_language == NULL) {
-		DBG("Language %s not found in the configuration file, using defaults.", lang);
+		dbg("Language %s not found in the configuration file, using defaults.", lang);
 		generic_msg_language =
 		    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
 		generic_msg_language->code = g_strdup(lang);
@@ -620,7 +620,7 @@ void generic_set_language(char *lang)
 	}
 
 	if (generic_msg_language->name == NULL) {
-		DBG("Language name for %s not found in the configuration file.",
+		dbg("Language name for %s not found in the configuration file.",
 		    lang);
 		generic_msg_language =
 		    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
@@ -638,7 +638,7 @@ void generic_set_voice(EVoiceType voice)
 	generic_msg_voice_str =
 	    module_getvoice(generic_msg_language->code, voice);
 	if (generic_msg_voice_str == NULL) {
-		DBG("Invalid voice type specified or no voice available!");
+		dbg("Invalid voice type specified or no voice available!");
 	}
 }
 
@@ -654,6 +654,6 @@ void generic_set_punct(EPunctMode punct)
 		generic_msg_punct_str = g_strdup((char *)GenericPunctAll);
 		return;
 	} else {
-		DBG("ERROR: Unknown punctuation setting, ignored");
+		dbg("ERROR: Unknown punctuation setting, ignored");
 	}
 }

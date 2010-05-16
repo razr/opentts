@@ -56,17 +56,17 @@ DOTCONF_CB(AddVoice_cb)
 	SPDVoiceDef *value;
 
 	if (language == NULL) {
-		DBG("Missing language.\n");
+		dbg("Missing language.\n");
 		return NULL;
 	}
 
 	if (cmd->data.list[1] == NULL) {
-		DBG("Missing symbolic name.\n");
+		dbg("Missing symbolic name.\n");
 		return NULL;
 	}
 
 	if (voicename == NULL) {
-		DBG("Missing voice name for %s\n", cmd->data.list[0]);
+		dbg("Missing voice name for %s\n", cmd->data.list[0]);
 		return NULL;
 	}
 
@@ -112,7 +112,7 @@ DOTCONF_CB(AddVoice_cb)
 	else if (!strcmp(symbolic, "CHILD_FEMALE"))
 		voices->child_female = g_strdup(voicename);
 	else {
-		DBG("Unrecognized voice name in configuration\n");
+		dbg("Unrecognized voice name in configuration\n");
 		return NULL;
 	}
 
@@ -134,13 +134,13 @@ char *module_getvoice(char *language, EVoiceType voice)
 	char *ret;
 
 	if (module_voice_table == NULL) {
-		DBG("Can't get voice because voicetable is NULL\n");
+		dbg("Can't get voice because voicetable is NULL\n");
 		return NULL;
 	}
 
 	voices = g_hash_table_lookup(module_voice_table, language);
 	if (voices == NULL) {
-		DBG("There are no voices in the table for language=%s\n",
+		dbg("There are no voices in the table for language=%s\n",
 		    language);
 		return NULL;
 	}

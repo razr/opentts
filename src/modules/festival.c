@@ -243,7 +243,7 @@ int module_init(char **status_info)
 
 	info = g_string_new("");
 
-	DBG("module_init()");
+	dbg("module_init()");
 
 	/* Initialize appropriate communication mechanism */
 	FestivalComType = FestivalComunicationType;
@@ -287,12 +287,12 @@ int module_init(char **status_info)
 	festival_semaphore = module_semaphore_init();
 	if (festival_semaphore == NULL)
 		return -1;
-	DBG("Festival: creating new thread for festival_speak\n");
+	dbg("Festival: creating new thread for festival_speak\n");
 	festival_speaking = 0;
 	ret =
 	    pthread_create(&festival_speak_thread, NULL, _festival_speak, NULL);
 	if (ret != 0) {
-		DBG("Festival: thread failed\n");
+		dbg("Festival: thread failed\n");
 		g_string_append(info, "The module couldn't initialize threads"
 				"This can be either an internal problem or an"
 				"architecture problem. If you are sure your architecture"
@@ -326,13 +326,13 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 {
 	int ret;
 
-	DBG("module_speak()\n");
+	dbg("module_speak()\n");
 
 	if (data == NULL)
 		return -1;
 
 	if (festival_speaking) {
-		DBG("Speaking when requested to write\n");
+		dbg("Speaking when requested to write\n");
 		return -1;
 	}
 
@@ -351,13 +351,13 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	   change, we will need to set all the parameters again */
 	if (COM_SOCKET) {
 		if (festival_connection_crashed) {
-			DBG("Recovering after a connection loss");
+			dbg("Recovering after a connection loss");
 			clean_old_settings_table();
 			festival_info = festivalOpen(festival_info);
 			if (festival_info)
 				festival_connection_crashed = 0;
 			else {
-				DBG("Can't recover. Not possible to open connection to Festival.");
+				dbg("Can't recover. Not possible to open connection to Festival.");
 				return -1;
 			}
 			ret = FestivalSetMultiMode(festival_info, "t");
@@ -372,12 +372,12 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	    || (msg_settings.language != NULL)
 	    && (msg_settings_old.language != NULL)
 	    && (strcmp(msg_settings.language, msg_settings_old.language))) {
-		DBG("Cleaning old settings table");
+		dbg("Cleaning old settings table");
 		clean_old_settings_table();
 	}
 
 	/* Setting voice parameters */
-	DBG("Updating parameters");
+	dbg("Updating parameters");
 	UPDATE_STRING_PARAMETER(language, festival_set_language);
 	UPDATE_PARAMETER(voice, festival_set_voice);
 	UPDATE_STRING_PARAMETER(synthesis_voice, festival_set_synthesis_voice);
@@ -388,11 +388,11 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	UPDATE_PARAMETER(cap_let_recogn, festival_set_cap_let_recogn);
 
 	if (festival_connection_crashed) {
-		DBG("ERROR: Festival connection not working!");
+		dbg("ERROR: Festival connection not working!");
 		return -1;
 	}
 
-	DBG("Requested data: |%s| \n", data);
+	dbg("Requested data: |%s| \n", data);
 
 	g_free(*festival_message);
 	*festival_message = g_strdup(data);
@@ -401,13 +401,13 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	festival_speaking = 1;
 	sem_post(festival_semaphore);
 
-	DBG("Festival: leaving write() normaly\n\r");
+	dbg("Festival: leaving write() normaly\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	DBG("stop()\n");
+	dbg("stop()\n");
 
 	if (festival_speaking) {
 		/* if(COM_SOCKET) */
@@ -419,11 +419,11 @@ int module_stop(void)
 					close(festival_info->server_fd);
 					festival_info->server_fd = -1;
 					festival_connection_crashed = 1;
-					DBG("festival socket closed by module_stop()");
+					dbg("festival socket closed by module_stop()");
 				}
 		}
 		if (COM_LOCAL) {
-			DBG("festival local stopped by sending SIGINT");
+			dbg("festival local stopped by sending SIGINT");
 			/* TODO: Write this function for local communication */
 			//      festival_stop_local();
 		}
@@ -443,11 +443,11 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	DBG("pause requested\n");
+	dbg("pause requested\n");
 	if (festival_speaking) {
-		DBG("Sending request for pause to child\n");
+		dbg("Sending request for pause to child\n");
 		festival_pause_requested = 1;
-		DBG("Signalled to pause");
+		dbg("Signalled to pause");
 		return 0;
 	} else {
 		return -1;
@@ -457,28 +457,28 @@ size_t module_pause(void)
 void module_close(int status)
 {
 
-	DBG("festival: close()\n");
+	dbg("festival: close()\n");
 
-	DBG("Stopping the module");
+	dbg("Stopping the module");
 	while (festival_speaking) {
 		module_stop();
 		usleep(50);
 	}
 
-	// DBG("festivalClose()");
+	// dbg("festivalClose()");
 	// festivalClose(festival_info);
 
-	DBG("Terminating threads");
+	dbg("Terminating threads");
 	module_terminate_thread(festival_speak_thread);
 
 	if (festival_info)
 		delete_FT_Info(festival_info);
 
 	/* TODO: Solve this */
-	//    DBG("Removing junk files in tmp/");
+	//    dbg("Removing junk files in tmp/");
 	//    system("rm -f /tmp/est* 2> /dev/null");
 
-	DBG("Closing audio output");
+	dbg("Closing audio output");
 	if (module_audio_id)
 		spd_audio_close(module_audio_id);
 
@@ -520,7 +520,7 @@ int festival_send_to_audio(FT_Wave * fwave)
 	track.samples = fwave->samples;
 
 	if (track.samples != NULL) {
-		DBG("Sending to audio");
+		dbg("Sending to audio");
 		switch (module_audio_id->format) {
 		case SPD_AUDIO_LE:
 			ret =
@@ -534,8 +534,8 @@ int festival_send_to_audio(FT_Wave * fwave)
 			break;
 		}
 		if (ret < 0)
-			DBG("ERROR: Can't play track for unknown reason.");
-		DBG("Sent to audio.");
+			dbg("ERROR: Can't play track for unknown reason.");
+		dbg("Sent to audio.");
 	}
 
 	return 0;
@@ -554,7 +554,7 @@ void *_festival_speak(void *nothing)
 
 	char *callback;
 
-	DBG("festival: speaking thread starting.......\n");
+	dbg("festival: speaking thread starting.......\n");
 
 	cache_init();
 
@@ -563,7 +563,7 @@ void *_festival_speak(void *nothing)
 	while (1) {
 sem_wait:
 		sem_wait(festival_semaphore);
-		DBG("Semaphore on, speaking\n");
+		dbg("Semaphore on, speaking\n");
 
 		spd_audio_set_volume(module_audio_id, festival_volume);
 
@@ -578,10 +578,10 @@ sem_wait:
 
 		module_report_event_begin();
 
-		DBG("Going to synthesize: |%s|", *festival_message);
+		dbg("Going to synthesize: |%s|", *festival_message);
 		if (bytes > 0) {
 			if (!is_text(festival_message_type)) {	/* it is a raw text */
-				DBG("Cache mechanisms...");
+				dbg("Cache mechanisms...");
 				fwave =
 				    cache_lookup(*festival_message,
 						 festival_message_type, 1);
@@ -652,7 +652,7 @@ sem_wait:
 				r = -1;
 			}
 			if (r < 0) {
-				DBG("Couldn't process the request to say the object.");
+				dbg("Couldn't process the request to say the object.");
 				CLP(0, module_report_event_stop);
 			}
 		}
@@ -660,17 +660,17 @@ sem_wait:
 		while (1) {
 
 			wave_cached = 0;
-			DBG("Retrieving data\n");
+			dbg("Retrieving data\n");
 
 			/* (speechd-next) */
 			if (is_text(festival_message_type)) {
 
 				if (festival_stop) {
-					DBG("Module stopped 1");
+					dbg("Module stopped 1");
 					CLEAN_UP(0, module_report_event_stop);
 				}
 
-				DBG("Getting data in multi mode");
+				dbg("Getting data in multi mode");
 				fwave =
 				    festivalGetDataMulti(festival_info,
 							 &callback,
@@ -683,7 +683,7 @@ sem_wait:
 					    (!strncmp
 					     (callback, INDEX_MARK_BODY,
 					      INDEX_MARK_BODY_LEN))) {
-						DBG("Pause requested, pausing.");
+						dbg("Pause requested, pausing.");
 						module_report_index_mark
 						    (callback);
 						g_free(callback);
@@ -698,7 +698,7 @@ sem_wait:
 					}
 				}
 			} else {	/* is event */
-				DBG("Getting data in single mode");
+				dbg("Getting data in single mode");
 				fwave =
 				    festivalStringToWaveGetData(festival_info);
 				terminate = 1;
@@ -706,14 +706,14 @@ sem_wait:
 			}
 
 			if (fwave == NULL) {
-				DBG("End of sound samples, terminating this message...");
+				dbg("End of sound samples, terminating this message...");
 				CLEAN_UP(0, module_report_event_end);
 			}
 
 			if (festival_message_type == MSGTYPE_CHAR
 			    || festival_message_type == MSGTYPE_KEY
 			    || festival_message_type == MSGTYPE_SOUND_ICON) {
-				DBG("Storing record for %s in cache\n",
+				dbg("Storing record for %s in cache\n",
 				    *festival_message);
 				/* cache_insert takes care of not inserting the same
 				   message again */
@@ -723,12 +723,12 @@ sem_wait:
 			}
 
 			if (festival_stop) {
-				DBG("Module stopped 2");
+				dbg("Module stopped 2");
 				CLEAN_UP(0, module_report_event_stop);
 			}
 
 			if (fwave->num_samples != 0) {
-				DBG("Sending message to audio: %ld bytes\n",
+				dbg("Sending message to audio: %ld bytes\n",
 				    (fwave->num_samples) * sizeof(short));
 
 				if (FestivalDebugSaveOutput) {
@@ -739,21 +739,21 @@ sem_wait:
 					save_FT_Wave_snd(fwave, filename_debug);
 				}
 
-				DBG("Playing sound samples");
+				dbg("Playing sound samples");
 				festival_send_to_audio(fwave);
 
 				if (!wave_cached)
 					delete_FT_Wave(fwave);
-				DBG("End of playing sound samples");
+				dbg("End of playing sound samples");
 			}
 
 			if (terminate) {
-				DBG("Ok, end of samples, returning");
+				dbg("Ok, end of samples, returning");
 				CLP(0, module_report_event_end);
 			}
 
 			if (festival_stop) {
-				DBG("Module stopped 3");
+				dbg("Module stopped 3");
 				CLP(0, module_report_event_stop);
 			}
 		}
@@ -763,7 +763,7 @@ sem_wait:
 	festival_stop = 0;
 	festival_speaking = 0;
 
-	DBG("festival: speaking thread ended.......\n");
+	dbg("festival: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -864,7 +864,7 @@ int cache_init()
 	    g_hash_table_new_full(g_str_hash, g_str_equal, free,
 				  cache_destroy_table_entry);
 	FestivalCache.cache_counter = NULL;
-	DBG("Cache: initialized");
+	dbg("Cache: initialized");
 	return 0;
 }
 
@@ -915,7 +915,7 @@ void cache_debug_foreach_list_score(gpointer a, gpointer user)
 	time_t t;
 
 	t = time(NULL);
-	DBG("key: %s      -> score %f (count: %d, dtime: %d)", A->key,
+	dbg("key: %s      -> score %f (count: %d, dtime: %d)", A->key,
 	    ((float)A->count / (float)(t - A->start)), (int)A->count,
 	    (int)(t - A->start));
 }
@@ -928,7 +928,7 @@ int cache_clean(size_t new_element_size)
 	GList *gl;
 	TCounterEntry *centry;
 
-	DBG("Cache: cleaning, cache size %ld kbytes (>max %d).",
+	dbg("Cache: cleaning, cache size %ld kbytes (>max %d).",
 	    FestivalCache.size / 1024, FestivalCacheMaxKBytes);
 
 	req_size = 2 * FestivalCache.size / 3;
@@ -943,14 +943,14 @@ int cache_clean(size_t new_element_size)
 		if (gl == NULL)
 			break;
 		if (gl->data == NULL) {
-			DBG("Error: Cache: gl->data in cache_clean is NULL, but shouldn't be.");
+			dbg("Error: Cache: gl->data in cache_clean is NULL, but shouldn't be.");
 			return -1;
 		}
 		centry = gl->data;
 		FestivalCache.size -= centry->size;
-		DBG("Cache: Removing element with key '%s'", centry->key);
+		dbg("Cache: Removing element with key '%s'", centry->key);
 		if (FestivalCache.size < 0) {
-			DBG("Error: Cache: FestivalCache.size < 0, this shouldn't be.");
+			dbg("Error: Cache: FestivalCache.size < 0, this shouldn't be.");
 			return -1;
 		}
 		/* Remove the data itself from the hash table */
@@ -974,7 +974,7 @@ char *cache_gen_key(EMessageType type)
 	if (msg_settings.language == NULL)
 		return NULL;
 
-	DBG("v, p, r = %d %d %d", FestivalCacheDistinguishVoices,
+	dbg("v, p, r = %d %d %d", FestivalCacheDistinguishVoices,
 	    FestivalCacheDistinguishPitch, FestivalCacheDistinguishRate);
 
 	if (FestivalCacheDistinguishVoices)
@@ -991,7 +991,7 @@ char *cache_gen_key(EMessageType type)
 	else if (type == MSGTYPE_SOUND_ICON)
 		ktype = 's';
 	else {
-		DBG("Invalid message type for cache_gen_key()");
+		dbg("Invalid message type for cache_gen_key()");
 		return NULL;
 	}
 
@@ -1024,7 +1024,7 @@ int cache_insert(char *key, EMessageType msgtype, FT_Wave * fwave)
 
 	key_table = cache_gen_key(msgtype);
 
-	DBG("Cache: Inserting wave with key:'%s' into table '%s'", key,
+	dbg("Cache: Inserting wave with key:'%s' into table '%s'", key,
 	    key_table);
 
 	/* Clean less used cache entries if the size would exceed max. size */
@@ -1078,7 +1078,7 @@ FT_Wave *cache_lookup(const char *key, EMessageType msgtype, int add_counter)
 	key_table = cache_gen_key(msgtype);
 
 	if (add_counter)
-		DBG("Cache: looking up a wave with key '%s' in '%s'", key,
+		dbg("Cache: looking up a wave with key '%s' in '%s'", key,
 		    key_table);
 
 	if (key_table == NULL)
@@ -1093,7 +1093,7 @@ FT_Wave *cache_lookup(const char *key, EMessageType msgtype, int add_counter)
 		return NULL;
 	entry->p_counter_entry->count++;
 
-	DBG("Cache: corresponding wave found: %s", key);
+	dbg("Cache: corresponding wave found: %s", key);
 
 	return entry->fwave;
 }
@@ -1105,16 +1105,16 @@ int init_festival_standalone()
 
 	if ((pipe(module_p.pipe_in) != 0)
 	    || (pipe(module_p.pipe_out) != 0)) {
-		DBG("Can't open pipe! Module not loaded.");
+		dbg("Can't open pipe! Module not loaded.");
 		return -1;
 	}
 
-	DBG("Starting Festival as a child process");
+	dbg("Starting Festival as a child process");
 
 	fr = fork();
 	switch (fr) {
 	case -1:
-		DBG("ERROR: Can't fork! Module not loaded.");
+		dbg("ERROR: Can't fork! Module not loaded.");
 		return -1;
 	case 0:
 		ret = dup2(module_p.pipe_in[0], 0);
@@ -1138,7 +1138,7 @@ int init_festival_standalone()
 				   with the execlp */
 		ret = waitpid(module_p.pid, NULL, WNOHANG);
 		if (ret != 0) {
-			DBG("Can't execute festival. Bad filename in configuration?");
+			dbg("Can't execute festival. Bad filename in configuration?");
 			return -1;
 		}
 
@@ -1164,8 +1164,8 @@ int init_festival_socket()
 	if (r != 0)
 		return -2;
 
-	DBG("FestivalServerHost = %s\n", FestivalServerHost);
-	DBG("FestivalServerPort = %d\n", FestivalServerPort);
+	dbg("FestivalServerHost = %s\n", FestivalServerHost);
+	dbg("FestivalServerPort = %d\n", FestivalServerPort);
 
 	return 0;
 }

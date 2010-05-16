@@ -107,7 +107,7 @@ int module_load(void)
 }
 
 #define ABORT(msg) g_string_append(info, msg); \
-        DBG("FATAL ERROR:", info->str); \
+        dbg("FATAL ERROR:", info->str); \
 	*status_info = info->str; \
 	g_string_free(info, 0); \
 	return -1;
@@ -117,32 +117,32 @@ int module_init(char **status_info)
 	int ret;
 	GString *info;
 
-	DBG("Module init");
+	dbg("Module init");
 
 	*status_info = NULL;
 	info = g_string_new("");
 
 	/* Init Ivona */
 	if (ivona_init_sock(IvonaServerHost, IvonaServerPort)) {
-		DBG("Couldn't init socket parameters");
+		dbg("Couldn't init socket parameters");
 		*status_info = g_strdup("Can't initialize socket. "
 					"Check server host/port.");
 		return -1;
 	}
 	ivona_conf = dumbtts_TTSInit(IvonaSpeakerLanguage);
 
-	DBG("IvonaDelimiters = %s\n", IvonaDelimiters);
+	dbg("IvonaDelimiters = %s\n", IvonaDelimiters);
 
 	ivona_message = g_malloc(sizeof(char *));
 	*ivona_message = NULL;
 
 	ivona_semaphore = module_semaphore_init();
 
-	DBG("Ivona: creating new thread for ivona_speak\n");
+	dbg("Ivona: creating new thread for ivona_speak\n");
 	ivona_speaking = 0;
 	ret = pthread_create(&ivona_speak_thread, NULL, _ivona_speak, NULL);
 	if (ret != 0) {
-		DBG("Ivona: thread failed\n");
+		dbg("Ivona: thread failed\n");
 		*status_info =
 		    g_strdup("The module couldn't initialize threads "
 			     "This could be either an internal problem or an "
@@ -162,7 +162,7 @@ int module_init(char **status_info)
 
 int module_audio_init(char **status_info)
 {
-	DBG("Opening audio");
+	dbg("Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
@@ -178,17 +178,17 @@ VoiceDescription **module_list_voices(void)
 
 int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 {
-	DBG("write()\n");
+	dbg("write()\n");
 
 	if (ivona_speaking) {
-		DBG("Speaking when requested to write");
+		dbg("Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	DBG("Requested data: |%s|\n", data);
+	dbg("Requested data: |%s|\n", data);
 
 	if (*ivona_message != NULL) {
 		g_free(*ivona_message);
@@ -209,21 +209,21 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	ivona_speaking = 1;
 	sem_post(ivona_semaphore);
 
-	DBG("Ivona: leaving write() normally\n\r");
+	dbg("Ivona: leaving write() normally\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
 	int ret;
-	DBG("ivona: stop()\n");
+	dbg("ivona: stop()\n");
 
 	ivona_stop = 1;
 	if (module_audio_id) {
-		DBG("Stopping audio");
+		dbg("Stopping audio");
 		ret = spd_audio_stop(module_audio_id);
 		if (ret != 0)
-			DBG("WARNING: Non 0 value from spd_audio_stop: %d",
+			dbg("WARNING: Non 0 value from spd_audio_stop: %d",
 			    ret);
 	}
 
@@ -232,9 +232,9 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	DBG("pause requested\n");
+	dbg("pause requested\n");
 	if (ivona_speaking) {
-		DBG("Ivona doesn't support pause, stopping\n");
+		dbg("Ivona doesn't support pause, stopping\n");
 
 		module_stop();
 
@@ -247,18 +247,18 @@ size_t module_pause(void)
 void module_close(int status)
 {
 
-	DBG("ivona: close()\n");
+	dbg("ivona: close()\n");
 
-	DBG("Stopping speech");
+	dbg("Stopping speech");
 	if (ivona_speaking) {
 		module_stop();
 	}
 
-	DBG("Terminating threads");
+	dbg("Terminating threads");
 	if (module_terminate_thread(ivona_speak_thread) != 0)
 		exit(1);
 
-	DBG("Closing audio output");
+	dbg("Closing audio output");
 	spd_audio_close(module_audio_id);
 
 	exit(status);
@@ -280,13 +280,13 @@ void *_ivona_speak(void *nothing)
 	char next_icon[64];
 	char next_cache[16];
 
-	DBG("ivona: speaking thread starting.......\n");
+	dbg("ivona: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(ivona_semaphore);
-		DBG("Semaphore on\n");
+		dbg("Semaphore on\n");
 
 		ivona_stop = 0;
 		ivona_speaking = 1;
@@ -295,7 +295,7 @@ void *_ivona_speak(void *nothing)
 
 		module_report_event_begin();
 		msg = *ivona_message;
-		DBG("To say: %s\n", msg);
+		dbg("To say: %s\n", msg);
 		buf = NULL;
 		len = 0;
 		fd = -1;
@@ -304,7 +304,7 @@ void *_ivona_speak(void *nothing)
 		next_icon[0] = 0;
 		while (1) {
 			if (ivona_stop) {
-				DBG("Stop in child, terminating");
+				dbg("Stop in child, terminating");
 				ivona_speaking = 0;
 				module_report_event_stop();
 				break;
@@ -316,7 +316,7 @@ void *_ivona_speak(void *nothing)
 				offset = next_offset;
 				strcpy(icon, next_icon);
 				next_audio = NULL;
-				DBG("Got wave from next_audio");
+				dbg("Got wave from next_audio");
 			} else if (fd >= 0) {
 				audio =
 				    ivona_get_wave_fd(fd, &samples, &offset);
@@ -329,10 +329,10 @@ void *_ivona_speak(void *nothing)
 				}
 
 				fd = -1;
-				DBG("Got wave from fd");
+				dbg("Got wave from fd");
 			} else if (next_icon[0]) {
 				strcpy(icon, next_icon);
-				DBG("Got icon");
+				dbg("Got icon");
 			}
 			if (!audio && !icon[0]) {
 				if (!msg || !*msg
@@ -355,13 +355,13 @@ void *_ivona_speak(void *nothing)
 					audio =
 					    ivona_get_wave(buf, &samples,
 							   &offset);
-					DBG("Got wave from direct");
+					dbg("Got wave from direct");
 				}
 			}
 
 			/* tu mamy audio albo icon, mozna gadac */
 			if (ivona_stop) {
-				DBG("Stop in child, terminating");
+				dbg("Stop in child, terminating");
 				ivona_speaking = 0;
 				module_report_event_stop();
 				break;
@@ -380,7 +380,7 @@ void *_ivona_speak(void *nothing)
 						    ivona_get_wave_from_cache
 						    (buf, &next_samples);
 						if (!next_audio) {
-							DBG("Sending %s to ivona", buf);
+							dbg("Sending %s to ivona", buf);
 							next_cache[0] = 0;
 							if (strlen(buf) <=
 							    IVONA_CACHE_MAX_STRLEN)
@@ -394,7 +394,7 @@ void *_ivona_speak(void *nothing)
 				}
 			}
 			if (ivona_stop) {
-				DBG("Stop in child, terminating");
+				dbg("Stop in child, terminating");
 				ivona_speaking = 0;
 				module_report_event_stop();
 				break;
@@ -414,7 +414,7 @@ void *_ivona_speak(void *nothing)
 				track.sample_rate = IvonaSampleFreq;
 				track.bits = 16;
 				track.samples = ((short *)audio) + offset;
-				DBG("Got %d samples", track.num_samples);
+				dbg("Got %d samples", track.num_samples);
 				spd_audio_play(module_audio_id, track,
 					       SPD_AUDIO_LE);
 				g_free(audio);
@@ -438,7 +438,7 @@ void *_ivona_speak(void *nothing)
 	}
 	ivona_speaking = 0;
 
-	DBG("Ivona: speaking thread ended.......\n");
+	dbg("Ivona: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }

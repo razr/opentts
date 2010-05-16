@@ -122,7 +122,7 @@ void do_pause(void)
 
 	ret = module_pause();
 	if (ret) {
-		DBG("WARNING: Can't pause");
+		dbg("WARNING: Can't pause");
 		return;
 	}
 
@@ -433,11 +433,11 @@ gchar *do_debug(char *cmd_buf)
 		}
 
 		filename = cmd[2];
-		DBG("Additional logging into specific path %s requested",
+		dbg("Additional logging into specific path %s requested",
 		    filename);
 		CustomDebugFile = fopen(filename, "w+");
 		if (CustomDebugFile == NULL) {
-			DBG("ERROR: Can't open custom debug file for logging: %d (%s)", errno, strerror(errno));
+			dbg("ERROR: Can't open custom debug file for logging: %d (%s)", errno, strerror(errno));
 			return g_strdup("303 CANT OPEN CUSTOM DEBUG FILE");
 		}
 		if (Debug == 1)
@@ -445,7 +445,7 @@ gchar *do_debug(char *cmd_buf)
 		else
 			Debug = 2;
 
-		DBG("Additional logging initialized");
+		dbg("Additional logging initialized");
 	} else if (!strcmp(cmd[1], "OFF")) {
 		if (Debug == 3)
 			Debug = 1;
@@ -455,7 +455,7 @@ gchar *do_debug(char *cmd_buf)
 		if (CustomDebugFile != NULL)
 			fclose(CustomDebugFile);
 		CustomDebugFile = NULL;
-		DBG("Additional logging into specific path terminated");
+		dbg("Additional logging into specific path terminated");
 	} else {
 		return g_strdup("302 ERROR BAD SYNTAX");
 	}
@@ -494,7 +494,7 @@ gchar *do_list_voices(void)
 	}
 	g_string_append(voice_list, "200 OK VOICE LIST SENT");
 
-	DBG("Voice prepared to  sens to speechd");
+	dbg("Voice prepared to  sens to speechd");
 
 	return voice_list->str;
 }
@@ -538,7 +538,7 @@ module_get_message_part(const char *message, char *part, unsigned int *pos,
 		if (part[i] == 0) {
 			return i;
 		}
-		// DBG("pos: %d", *pos);
+		// dbg("pos: %d", *pos);
 
 		if ((len - 1 - i) > 2) {
 			if ((message[*pos + 1] == ' ')
@@ -561,8 +561,7 @@ module_get_message_part(const char *message, char *part, unsigned int *pos,
 					if (((message[*pos] == '\r')
 					     && (message[*pos + 1] == '\n'))
 					    && ((message[*pos + 2] == '\r')
-						&& (message[*pos + 3] ==
-						    '\n'))) {
+						&& (message[*pos + 3] == '\n'))) {
 						part[i + 1] = 0;
 						(*pos)++;
 						return i + 1;
@@ -591,7 +590,7 @@ void module_strip_punctuation_some(char *message, char *punct_chars)
 	len = strlen(message);
 	for (i = 0; i <= len - 1; i++) {
 		if (strchr(punct_chars, *p)) {
-			DBG("Substitution %d: char -%c- for whitespace\n", i,
+			dbg("Substitution %d: char -%c- for whitespace\n", i,
 			    *p);
 			*p = ' ';
 		}
@@ -634,7 +633,7 @@ char *module_strip_ssml(char *message)
 		} else if (!omit || i == len)
 			out[n++] = message[i];
 	}
-	DBG("In stripping ssml: |%s|", out);
+	dbg("In stripping ssml: |%s|", out);
 
 	return out;
 }
@@ -662,32 +661,32 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 
 	while (1) {
 		sem_wait(semaphore);
-		DBG("Semaphore on\n");
+		dbg("Semaphore on\n");
 
 		ret = pipe(module_pipe.pc);
 		if (ret != 0) {
-			DBG("Can't create pipe pc\n");
+			dbg("Can't create pipe pc\n");
 			*speaking_flag = 0;
 			continue;
 		}
 
 		ret = pipe(module_pipe.cp);
 		if (ret != 0) {
-			DBG("Can't create pipe cp\n");
+			dbg("Can't create pipe cp\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			*speaking_flag = 0;
 			continue;
 		}
 
-		DBG("Pipes initialized");
+		dbg("Pipes initialized");
 
 		/* Create a new process so that we could send it signals */
 		*process_pid = fork();
 
 		switch (*process_pid) {
 		case -1:
-			DBG("Can't say the message. fork() failed!\n");
+			dbg("Can't say the message. fork() failed!\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			close(module_pipe.cp[0]);
@@ -698,7 +697,7 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 		case 0:
 			/* This is the child. Make it speak, but exit on SIGINT. */
 
-			DBG("Starting child...\n");
+			dbg("Starting child...\n");
 			(*child_function) (module_pipe, maxlen);
 			exit(0);
 
@@ -710,14 +709,14 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 						maxlen, dividers,
 						pause_requested);
 
-			DBG("Waiting for child...");
+			dbg("Waiting for child...");
 			waitpid(*process_pid, &status, 0);
 
 			*speaking_flag = 0;
 
 			module_report_event_end();
 
-			DBG("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
 		}
 	}
 }
@@ -733,7 +732,7 @@ module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
 	int bytes;
 	size_t read_bytes = 0;
 
-	DBG("Entering parent process, closing pipes");
+	dbg("Entering parent process, closing pipes");
 
 	buf = (char *)g_malloc((maxlen + 1) * sizeof(char));
 
@@ -741,42 +740,42 @@ module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
 
 	pos = 0;
 	while (1) {
-		DBG("  Looping...\n");
+		dbg("  Looping...\n");
 
 		bytes =
 		    module_get_message_part(message, buf, &pos, maxlen,
 					    dividers);
 
-		DBG("Returned %d bytes from get_part\n", bytes);
+		dbg("Returned %d bytes from get_part\n", bytes);
 
 		if (*pause_requested) {
-			DBG("Pause requested in parent");
+			dbg("Pause requested in parent");
 			module_parent_dp_close(dpipe);
 			*pause_requested = 0;
 			return 0;
 		}
 
 		if (bytes > 0) {
-			DBG("Sending buf to child:|%s| %d\n", buf, bytes);
+			dbg("Sending buf to child:|%s| %d\n", buf, bytes);
 			module_parent_dp_write(dpipe, buf, bytes);
 
-			DBG("Waiting for response from child...\n");
+			dbg("Waiting for response from child...\n");
 			while (1) {
 				read_bytes =
 				    module_parent_dp_read(dpipe, msg, 8);
 				if (read_bytes == 0) {
-					DBG("parent: Read bytes 0, child stopped\n");
+					dbg("parent: Read bytes 0, child stopped\n");
 					break;
 				}
 				if (msg[0] == 'C') {
-					DBG("Ok, received report to continue...\n");
+					dbg("Ok, received report to continue...\n");
 					break;
 				}
 			}
 		}
 
 		if ((bytes == -1) || (read_bytes == 0)) {
-			DBG("End of data in parent, closing pipes");
+			dbg("End of data in parent, closing pipes");
 			module_parent_dp_close(dpipe);
 			break;
 		}
@@ -790,15 +789,15 @@ int module_parent_wait_continue(TModuleDoublePipe dpipe)
 	char msg[16];
 	int bytes;
 
-	DBG("parent: Waiting for response from child...\n");
+	dbg("parent: Waiting for response from child...\n");
 	while (1) {
 		bytes = module_parent_dp_read(dpipe, msg, 8);
 		if (bytes == 0) {
-			DBG("parent: Read bytes 0, child stopped\n");
+			dbg("parent: Read bytes 0, child stopped\n");
 			return 1;
 		}
 		if (msg[0] == 'C') {
-			DBG("parent: Ok, received report to continue...\n");
+			dbg("parent: Ok, received report to continue...\n");
 			return 0;
 		}
 	}
@@ -840,9 +839,9 @@ module_parent_dp_write(TModuleDoublePipe dpipe, const char *msg, size_t bytes)
 {
 	int ret;
 	assert(msg != NULL);
-	DBG("going to write %ld bytes", bytes);
+	dbg("going to write %ld bytes", bytes);
 	ret = write(dpipe.pc[1], msg, bytes);
-	DBG("written %d bytes", ret);
+	dbg("written %d bytes", ret);
 	return ret;
 }
 
@@ -865,37 +864,37 @@ void module_sigblockall(void)
 	int ret;
 	sigset_t all_signals;
 
-	DBG("Blocking all signals");
+	dbg("Blocking all signals");
 
 	sigfillset(&all_signals);
 
 	ret = sigprocmask(SIG_BLOCK, &all_signals, NULL);
 	if (ret != 0)
-		DBG("Can't block signals, expect problems with terminating!\n");
+		dbg("Can't block signals, expect problems with terminating!\n");
 }
 
 void module_sigunblockusr(sigset_t * some_signals)
 {
 	int ret;
 
-	DBG("UnBlocking user signal");
+	dbg("UnBlocking user signal");
 
 	sigdelset(some_signals, SIGUSR1);
 	ret = sigprocmask(SIG_SETMASK, some_signals, NULL);
 	if (ret != 0)
-		DBG("Can't block signal set, expect problems with terminating!\n");
+		dbg("Can't block signal set, expect problems with terminating!\n");
 }
 
 void module_sigblockusr(sigset_t * some_signals)
 {
 	int ret;
 
-	DBG("Blocking user signal");
+	dbg("Blocking user signal");
 
 	sigaddset(some_signals, SIGUSR1);
 	ret = sigprocmask(SIG_SETMASK, some_signals, NULL);
 	if (ret != 0)
-		DBG("Can't block signal set, expect problems when terminating!\n");
+		dbg("Can't block signal set, expect problems when terminating!\n");
 
 }
 
@@ -908,9 +907,9 @@ void set_speaking_thread_parameters()
 	if (ret == 0) {
 		ret = pthread_sigmask(SIG_BLOCK, &all_signals, NULL);
 		if (ret != 0)
-			DBG("Can't set signal set, expect problems when terminating!\n");
+			dbg("Can't set signal set, expect problems when terminating!\n");
 	} else {
-		DBG("Can't fill signal set, expect problems when terminating!\n");
+		dbg("Can't fill signal set, expect problems when terminating!\n");
 	}
 
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -921,12 +920,12 @@ int module_write_data_ok(char *data)
 {
 	/* Tests */
 	if (data == NULL) {
-		DBG("requested data NULL\n");
+		dbg("requested data NULL\n");
 		return -1;
 	}
 
 	if (data[0] == 0) {
-		DBG("requested data empty\n");
+		dbg("requested data empty\n");
 		return -1;
 	}
 
@@ -939,12 +938,12 @@ int module_terminate_thread(pthread_t thread)
 
 	ret = pthread_cancel(thread);
 	if (ret != 0) {
-		DBG("Cancelation of speak thread failed");
+		dbg("Cancelation of speak thread failed");
 		return 1;
 	}
 	ret = pthread_join(thread, NULL);
 	if (ret != 0) {
-		DBG("join failed!\n");
+		dbg("join failed!\n");
 		return 1;
 	}
 
@@ -959,7 +958,7 @@ sem_t *module_semaphore_init()
 	semaphore = (sem_t *) g_malloc(sizeof(sem_t));
 	ret = sem_init(semaphore, 0, 0);
 	if (ret != 0) {
-		DBG("Semaphore initialization failed");
+		dbg("Semaphore initialization failed");
 		g_free(semaphore);
 		semaphore = NULL;
 	}
@@ -986,7 +985,7 @@ char *module_recode_to_iso(char *data, int bytes, char *language,
 						    NULL, NULL);
 
 	if (recoded == NULL)
-		DBG("festival: Conversion to ISO coding failed\n");
+		dbg("festival: Conversion to ISO coding failed\n");
 
 	return recoded;
 }
@@ -1004,17 +1003,17 @@ int semaphore_post(int sem_id)
 void module_send_asynchronous(char *text)
 {
 	pthread_mutex_lock(&module_stdout_mutex);
-	DBG("Printing reply: %s", text);
+	dbg("Printing reply: %s", text);
 	fprintf(stdout, text);
 	fflush(stdout);
-	DBG("Printed");
+	dbg("Printed");
 	pthread_mutex_unlock(&module_stdout_mutex);
 }
 
 void module_report_index_mark(char *mark)
 {
 	char *reply;
-	DBG("Event: Index mark %s", mark);
+	dbg("Event: Index mark %s", mark);
 	if (mark != NULL)
 		reply = g_strdup_printf("700-%s\n700 INDEX MARK\n", mark);
 	else
@@ -1078,7 +1077,7 @@ void *module_get_ht_option(GHashTable * hash_table, const char *key)
 
 	option = g_hash_table_lookup(hash_table, key);
 	if (option == NULL)
-		DBG("Requested option by key %s not found.\n", key);
+		dbg("Requested option by key %s not found.\n", key);
 
 	return option;
 }
@@ -1117,7 +1116,7 @@ int module_audio_init_spd(char **status_info)
 	gchar **outputs;
 	int i = 0;
 
-	DBG("Openning audio output system");
+	dbg("Openning audio output system");
 	if (NULL == module_audio_pars[0]) {
 		*status_info =
 		    g_strdup
@@ -1132,7 +1131,7 @@ int module_audio_init_spd(char **status_info)
 		    spd_audio_open(outputs[i], (void **)&module_audio_pars[1],
 				   &error);
 		if (module_audio_id) {
-			DBG("Using %s audio output method", outputs[i]);
+			dbg("Using %s audio output method", outputs[i]);
 			g_strfreev(outputs);
 			return 0;
 		}
@@ -1148,29 +1147,55 @@ int module_audio_init_spd(char **status_info)
 
 }
 
-void clean_old_settings_table(){
- msg_settings_old.rate = -101;
- msg_settings_old.pitch = -101;
- msg_settings_old.volume = -101;
- msg_settings_old.punctuation_mode = -1;
- msg_settings_old.spelling_mode = -1;
- msg_settings_old.cap_let_recogn = -1;
- msg_settings_old.language = NULL;
- msg_settings_old.voice = NO_VOICE;
- msg_settings_old.synthesis_voice = NULL;
+void clean_old_settings_table()
+{
+	msg_settings_old.rate = -101;
+	msg_settings_old.pitch = -101;
+	msg_settings_old.volume = -101;
+	msg_settings_old.punctuation_mode = -1;
+	msg_settings_old.spelling_mode = -1;
+	msg_settings_old.cap_let_recogn = -1;
+	msg_settings_old.language = NULL;
+	msg_settings_old.voice = NO_VOICE;
+	msg_settings_old.synthesis_voice = NULL;
 }
 
-void init_settings_tables(){
- module_dc_options = NULL;
- msg_settings.rate = 0;
- msg_settings.pitch = 0;
- msg_settings.volume = 0;
- msg_settings.punctuation_mode = PUNCT_NONE;
- msg_settings.spelling_mode = SPELLING_OFF;
- msg_settings.cap_let_recogn = RECOGN_NONE;
- msg_settings.language = NULL;
- msg_settings.voice = MALE1;
- msg_settings.synthesis_voice = NULL;
- clean_old_settings_table();
+void init_settings_tables()
+{
+	module_dc_options = NULL;
+	msg_settings.rate = 0;
+	msg_settings.pitch = 0;
+	msg_settings.volume = 0;
+	msg_settings.punctuation_mode = PUNCT_NONE;
+	msg_settings.spelling_mode = SPELLING_OFF;
+	msg_settings.cap_let_recogn = RECOGN_NONE;
+	msg_settings.language = NULL;
+	msg_settings.voice = MALE1;
+	msg_settings.synthesis_voice = NULL;
+	clean_old_settings_table();
 }
 
+void dbg(char *fmt, ...)
+{
+	char *tstr;
+	va_list remaining_args;
+
+	if (Debug) {
+		tstr = get_timestamp();
+		fputs(tstr, stderr);
+		va_start(remaining_args, fmt);
+		vfprintf(stderr, fmt, remaining_args);
+		va_end(remaining_args);
+		fputc('\n', stderr);
+		fflush(stderr);
+		if ((Debug == 2) || (Debug == 3)) {
+			fputs(tstr, CustomDebugFile);
+			va_start(remaining_args, fmt);
+			vfprintf(CustomDebugFile, fmt, remaining_args);
+			va_end(remaining_args);
+			fputc('\n', CustomDebugFile);
+			fflush(CustomDebugFile);
+		}
+		g_free(tstr);
+	}
+}

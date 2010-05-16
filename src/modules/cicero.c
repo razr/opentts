@@ -117,7 +117,7 @@ static void mywrite(int fd, const void *buf, int len)
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			else if (errno == EPIPE) {
-				DBG("Broken pipe\n");
+				dbg("Broken pipe\n");
 			} else
 				perror("Pipe write");
 			return;
@@ -150,41 +150,41 @@ int module_init(char **status_info)
 	sigemptyset(&ignore.sa_mask);
 	ignore.sa_handler = SIG_IGN;
 
-	DBG("Module init\n");
+	dbg("Module init\n");
 
 	sigaction(SIGPIPE, &ignore, NULL);
 
-	DBG("call the pipe system call\n");
+	dbg("call the pipe system call\n");
 	if (pipe(fd1) < 0 || pipe(fd2) < 0) {
-		DBG("Error pipe()\n");
+		dbg("Error pipe()\n");
 		return -1;
 	}
-	DBG("Call fork system call\n");
+	dbg("Call fork system call\n");
 
 	stderr_redirect = open(CiceroExecutableLog,
 			       O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (stderr_redirect == -1) {
-		DBG("ERROR: Openning debug file for Cicero binary failed: (error=%d) %s", stderr_redirect, strerror(errno));
+		dbg("ERROR: Openning debug file for Cicero binary failed: (error=%d) %s", stderr_redirect, strerror(errno));
 	} else {
-		DBG("Cicero synthesizer logging to file %s",
+		dbg("Cicero synthesizer logging to file %s",
 		    CiceroExecutableLog);
 	}
 	switch (fork()) {
 	case -1:
 		{
-			DBG("Error fork()\n");
+			dbg("Error fork()\n");
 			return -1;
 		}
 	case 0:
 		{
 			if (dup2(fd2[0], 0) < 0	/* stdin */
 			    || dup2(fd1[1], 1) < 0) {	/* stdout */
-				DBG("Error dup2()\n");
+				dbg("Error dup2()\n");
 				exit(1);
 			}
 			if (stderr_redirect >= 0) {
 				if (dup2(stderr_redirect, 2) < 0)
-					DBG("ERROR: Couldn't redirect stderr, not logging for Cicero synthesizer.");
+					dbg("ERROR: Couldn't redirect stderr, not logging for Cicero synthesizer.");
 			}
 			/*close(2);
 			   close(fd2[1]);
@@ -194,7 +194,7 @@ int module_init(char **status_info)
 				close(i);
 			sigaction(SIGPIPE, &ignore, NULL);
 			execl(CiceroExecutable, CiceroExecutable, (void *)NULL);
-			DBG("Error execl()\n");
+			dbg("Error execl()\n");
 			exit(1);
 		}
 	default:
@@ -203,7 +203,7 @@ int module_init(char **status_info)
 			close(fd2[0]);
 			if (fcntl(fd2[1], F_SETFL, O_NDELAY) < 0
 			    || fcntl(fd1[0], F_SETFL, O_NDELAY) < 0) {
-				DBG("Error fcntl()\n");
+				dbg("Error fcntl()\n");
 				return -1;
 			}
 		}
@@ -214,12 +214,12 @@ int module_init(char **status_info)
 
 	cicero_semaphore = module_semaphore_init();
 
-	DBG("Cicero: creating new thread for cicero_tracking\n");
+	dbg("Cicero: creating new thread for cicero_tracking\n");
 	cicero_speaking = 0;
 	ret =
 	    pthread_create(&cicero_speaking_thread, NULL, _cicero_speak, NULL);
 	if (ret != 0) {
-		DBG("Cicero: thread failed\n");
+		dbg("Cicero: thread failed\n");
 		*status_info =
 		    g_strdup("The module couldn't initialize threads "
 			     "This can be either an internal problem or an "
@@ -247,18 +247,18 @@ VoiceDescription **module_list_voices(void)
 
 int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 {
-	DBG("Module speak\n");
+	dbg("Module speak\n");
 
 	/* The following should not happen */
 	if (cicero_speaking) {
-		DBG("Speaking when requested to write");
+		dbg("Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	DBG("Requested data: |%s|\n", data);
+	dbg("Requested data: |%s|\n", data);
 
 	if (*cicero_message != NULL) {
 		g_free(*cicero_message);
@@ -276,7 +276,7 @@ int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 	cicero_speaking = 1;
 	sem_post(cicero_semaphore);
 
-	DBG("Cicero: leaving module_speak() normaly\n\r");
+	dbg("Cicero: leaving module_speak() normaly\n\r");
 	return bytes;
 }
 
@@ -284,7 +284,7 @@ int module_stop(void)
 {
 	unsigned char c = 1;
 
-	DBG("cicero: stop()\n");
+	dbg("cicero: stop()\n");
 	cicero_stop = 1;
 	mywrite(fd2[1], &c, 1);
 	return 0;
@@ -292,9 +292,9 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	DBG("pause requested\n");
+	dbg("pause requested\n");
 	if (cicero_speaking) {
-		DBG("Pause not supported by cicero\n");
+		dbg("Pause not supported by cicero\n");
 		cicero_pause_requested = 1;
 		module_stop();
 		return -1;
@@ -305,7 +305,7 @@ size_t module_pause(void)
 
 void module_close(int status)
 {
-	DBG("cicero: close()\n");
+	dbg("cicero: close()\n");
 	if (cicero_speaking) {
 		module_stop();
 	}
@@ -329,11 +329,11 @@ void *_cicero_speak(void *nothing)
 	char buf[CiceroMaxChunkLength], l[5], b[2];
 	struct pollfd ufds = { fd1[0], POLLIN | POLLPRI, 0 };
 
-	DBG("cicero: speaking thread starting.......\n");
+	dbg("cicero: speaking thread starting.......\n");
 	set_speaking_thread_parameters();
 	while (1) {
 		sem_wait(cicero_semaphore);
-		DBG("Semaphore on\n");
+		dbg("Semaphore on\n");
 		len = strlen(*cicero_message);
 		cicero_stop = 0;
 		cicero_speaking = 1;
@@ -343,36 +343,36 @@ void *_cicero_speak(void *nothing)
 		while (1) {
 			flag = 0;
 			if (cicero_stop) {
-				DBG("Stop in thread, terminating");
+				dbg("Stop in thread, terminating");
 				cicero_speaking = 0;
 				module_report_event_stop();
 				break;
 			}
 			if (pos >= len) {	/* end of text */
-				DBG("End of text in speaking thread\n");
+				dbg("End of text in speaking thread\n");
 				module_report_event_end();
 				cicero_speaking = 0;
 				break;
 			}
-			DBG("Call get_parts: pos=%d, msg=\"%s\" \n", pos,
+			dbg("Call get_parts: pos=%d, msg=\"%s\" \n", pos,
 			    *cicero_message);
 			bytes =
 			    module_get_message_part(*cicero_message, buf, &pos,
 						    CiceroMaxChunkLength,
 						    ".;?!");
-			DBG("Returned %d bytes from get_part\n", bytes);
+			dbg("Returned %d bytes from get_part\n", bytes);
 			if (bytes < 0) {
-				DBG("ERROR: Can't get message part, terminating");
+				dbg("ERROR: Can't get message part, terminating");
 				cicero_speaking = 0;
 				module_report_event_stop();
 				break;
 			}
 			buf[bytes] = 0;
-			DBG("Text to synthesize is '%s'\n", buf);
+			dbg("Text to synthesize is '%s'\n", buf);
 
 			if (bytes > 0) {
-				DBG("Speaking ...");
-				DBG("Trying to synthesize text");
+				dbg("Speaking ...");
+				dbg("Trying to synthesize text");
 				l[0] = 2;	/* say code */
 				l[1] = bytes >> 8;
 				l[2] = bytes & 0xFF;
@@ -384,7 +384,7 @@ void *_cicero_speak(void *nothing)
 				while (1) {
 					ret = poll(&ufds, 1, 60);
 					if (ret)
-						DBG("poll() system call returned %d, events=%d\n", ret, ufds.events);
+						dbg("poll() system call returned %d, events=%d\n", ret, ufds.events);
 					if (ret < 0) {
 						perror("poll");
 						module_report_event_stop();
@@ -403,7 +403,7 @@ void *_cicero_speak(void *nothing)
 					if (ret == 0)
 						continue;
 					inx = (b[0] << 8 | b[1]);
-					DBG("Tracking: index=%u, bytes=%d\n",
+					dbg("Tracking: index=%u, bytes=%d\n",
 					    inx, bytes);
 					if (inx == bytes) {
 						cicero_speaking = 0;
@@ -423,7 +423,7 @@ void *_cicero_speak(void *nothing)
 		cicero_stop = 0;
 	}
 	cicero_speaking = 0;
-	DBG("cicero: tracking thread ended.......\n");
+	dbg("cicero: tracking thread ended.......\n");
 	pthread_exit(NULL);
 }
 

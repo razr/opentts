@@ -70,11 +70,11 @@ int module_init(char **status_info)
 
 	dummy_semaphore = module_semaphore_init();
 
-	DBG("Dummy: creating new thread for dummy_speak\n");
+	dbg("Dummy: creating new thread for dummy_speak\n");
 	dummy_speaking = 0;
 	ret = pthread_create(&dummy_speak_thread, NULL, _dummy_speak, NULL);
 	if (ret != 0) {
-		DBG("Dummy: thread failed\n");
+		dbg("Dummy: thread failed\n");
 		*status_info = g_strdup("The module couldn't initialize threads"
 					"This can be either an internal problem or an"
 					"architecture problem. If you are sure your architecture"
@@ -84,7 +84,7 @@ int module_init(char **status_info)
 
 	*status_info = g_strdup("Everything ok so far.");
 
-	DBG("Ok, now debugging");
+	dbg("Ok, now debugging");
 
 	return 0;
 }
@@ -103,44 +103,44 @@ VoiceDescription **module_list_voices(void)
 int module_speak(gchar * data, size_t bytes, EMessageType msgtype)
 {
 
-	DBG("speak()\n");
+	dbg("speak()\n");
 
 	if (dummy_speaking) {
-		DBG("Speaking when requested to write");
+		dbg("Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	DBG("Requested data: |%s|\n", data);
+	dbg("Requested data: |%s|\n", data);
 
 	/* Send semaphore signal to the speaking thread */
 	dummy_speaking = 1;
 	sem_post(dummy_semaphore);
 
-	DBG("Dummy: leaving write() normaly\n\r");
+	dbg("Dummy: leaving write() normaly\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	DBG("dummy: stop(), dummy_speaking=%d, dummy_pid=%d\n", dummy_speaking,
+	dbg("dummy: stop(), dummy_speaking=%d, dummy_pid=%d\n", dummy_speaking,
 	    dummy_pid);
 
 	if (dummy_speaking && dummy_pid) {
-		DBG("dummy: stopping process group pid %d\n", dummy_pid);
+		dbg("dummy: stopping process group pid %d\n", dummy_pid);
 		kill(-dummy_pid, SIGKILL);
 	}
-	DBG("Already stopped, no action");
+	dbg("Already stopped, no action");
 	return 0;
 }
 
 size_t module_pause(void)
 {
-	DBG("pause requested\n");
+	dbg("pause requested\n");
 	if (dummy_speaking) {
-		DBG("Dummy module can't pause\n");
+		dbg("Dummy module can't pause\n");
 		return 0;
 	} else {
 		return -1;
@@ -154,7 +154,7 @@ char *module_is_speaking(void)
 
 void module_close(int status)
 {
-	DBG("dummy: close()\n");
+	dbg("dummy: close()\n");
 
 	if (dummy_speaking) {
 		module_stop();
@@ -172,13 +172,13 @@ void *_dummy_speak(void *nothing)
 {
 	int status;
 
-	DBG("dummy: speaking thread starting.......\n");
+	dbg("dummy: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(dummy_semaphore);
-		DBG("Semaphore on\n");
+		dbg("Semaphore on\n");
 		module_report_event_begin();
 
 		/* Create a new process so that we could send it signals */
@@ -186,7 +186,7 @@ void *_dummy_speak(void *nothing)
 
 		switch (dummy_pid) {
 		case -1:
-			DBG("Can't say the message. fork() failed!\n");
+			dbg("Can't say the message. fork() failed!\n");
 			dummy_speaking = 0;
 			continue;
 
@@ -196,9 +196,9 @@ void *_dummy_speak(void *nothing)
 				/* Set this process as a process group leader (so that SIGKILL
 				   is also delivered to the child processes created by system()) */
 				if (setpgid(0, 0) == -1)
-					DBG("Can't set myself as project group leader!");
+					dbg("Can't set myself as project group leader!");
 
-				DBG("Starting child...\n");
+				dbg("Starting child...\n");
 				_dummy_child();
 			}
 			break;
@@ -206,11 +206,11 @@ void *_dummy_speak(void *nothing)
 		default:
 			/* This is the parent. Send data to the child. */
 
-			DBG("Waiting for child...");
+			dbg("Waiting for child...");
 			waitpid(dummy_pid, &status, 0);
 			dummy_speaking = 0;
 
-			DBG("Child exited");
+			dbg("Child exited");
 
 			// Report CANCEL if the process was signal-terminated
 			// and END if it terminated normally
@@ -219,13 +219,13 @@ void *_dummy_speak(void *nothing)
 			else
 				module_report_event_end();
 
-			DBG("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
 		}
 	}
 
 	dummy_speaking = 0;
 
-	DBG("dummy: speaking thread ended.......\n");
+	dbg("dummy: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -240,7 +240,7 @@ void _dummy_child()
 	sigfillset(&some_signals);
 	module_sigunblockusr(&some_signals);
 
-	DBG("Entering child loop\n");
+	dbg("Entering child loop\n");
 	/* Read the waiting data */
 
 	try1 =
@@ -253,23 +253,23 @@ void _dummy_child()
 	    g_strdup("paplay " DATADIR
 		     "/dummy-message.wav > /dev/null 2> /dev/null");
 
-	DBG("child: synth commands = |%s|%s|%s|", try1, try2, try3);
-	DBG("Speaking in child...");
+	dbg("child: synth commands = |%s|%s|%s|", try1, try2, try3);
+	dbg("Speaking in child...");
 	module_sigblockusr(&some_signals);
 
 	ret = system(try1);
-	DBG("Executed shell command '%s' returned with %d", try1, ret);
+	dbg("Executed shell command '%s' returned with %d", try1, ret);
 	if ((ret != 0)) {
-		DBG("Execution failed, trying seccond command");
+		dbg("Execution failed, trying seccond command");
 		ret = system(try2);
-		DBG("Executed shell command '%s' returned with %d", try1, ret);
+		dbg("Executed shell command '%s' returned with %d", try1, ret);
 		if ((ret != 0)) {
-			DBG("Execution failed, trying third command");
+			dbg("Execution failed, trying third command");
 			ret = system(try3);
-			DBG("Executed shell command '%s' returned with %d",
+			dbg("Executed shell command '%s' returned with %d",
 			    try1, ret);
 			if ((ret != 0) && (ret != 256)) {
-				DBG("Failed, giving up.");
+				dbg("Failed, giving up.");
 			}
 		}
 	}
@@ -280,6 +280,6 @@ void _dummy_child()
 	g_free(try2);
 	g_free(try3);
 
-	DBG("Done, exiting from child.");
+	dbg("Done, exiting from child.");
 	exit(0);
 }
