@@ -270,8 +270,8 @@ int speechd_connection_new(int server_socket)
 	/* Check if there is space for server status data; allocate it */
 	if (client_socket >= SpeechdStatus.num_fds - 1) {
 		SpeechdSocket = (TSpeechdSock *) g_realloc(SpeechdSocket,
-							   SpeechdStatus.
-							   num_fds * 2 *
+							   SpeechdStatus.num_fds
+							   * 2 *
 							   sizeof
 							   (TSpeechdSock));
 		SpeechdStatus.num_fds *= 2;
@@ -453,6 +453,10 @@ void speechd_modules_nodebug(void)
 
 void speechd_options_init(void)
 {
+	SpeechdOptions.communication_method = NULL;
+	SpeechdOptions.communication_method_set = 0;
+	SpeechdOptions.socket_name = NULL;
+	SpeechdOptions.socket_name_set = 0;
 	SpeechdOptions.log_level_set = 0;
 	SpeechdOptions.port_set = 0;
 	SpeechdOptions.localhost_access_only_set = 0;
@@ -545,14 +549,12 @@ void speechd_init()
 	if (SpeechdOptions.log_dir == NULL) {
 		if (SpeechdOptions.home_speechd_dir) {
 			SpeechdOptions.log_dir = g_strdup_printf("%s/log/",
-								 SpeechdOptions.
-								 home_speechd_dir);
+								 SpeechdOptions.home_speechd_dir);
 			mkdir(SpeechdOptions.log_dir, S_IRWXU);
 			if (!SpeechdOptions.debug_destination) {
 				SpeechdOptions.debug_destination =
 				    g_strdup_printf("%slog/debug",
-						    SpeechdOptions.
-						    home_speechd_dir);
+						    SpeechdOptions.home_speechd_dir);
 				mkdir(SpeechdOptions.debug_destination,
 				      S_IRWXU);
 			}
@@ -857,7 +859,7 @@ int main(int argc, char *argv[])
 	/* Initialize threading and thread safety in Glib */
 	g_thread_init(NULL);
 
-	init_timestamps();		/* For correct timestamp generation. */
+	init_timestamps();	/* For correct timestamp generation. */
 
 	/* Strip all permisions for 'others' from the files created */
 	umask(007);
@@ -973,19 +975,22 @@ int main(int argc, char *argv[])
 
 	speechd_init();
 
-	/* TODO: Temporary, move into configuration */
-	int USE_INET_SOCKETS = 0;
-	if (USE_INET_SOCKETS) {
+	if (!strcmp(SpeechdOptions.communication_method, "inet_socket")) {
 		MSG(2, "Speech Dispatcher will use inet port %d",
 		    SpeechdOptions.port);
 		/* Connect and start listening on inet socket */
 		server_socket = make_inet_socket(SpeechdOptions.port);
-	} else {
-		/* Determine appropariate socket file name */
+	} else if (!strcmp(SpeechdOptions.communication_method, "unix_socket")) {
+		/* Determine appropriate socket file name */
 		GString *socket_filename;
-		socket_filename = g_string_new("");
-		g_string_printf(socket_filename, "%s/speechd-sock-%d",
-				g_get_tmp_dir(), getuid());
+		if (!strcmp(SpeechdOptions.socket_name, "default")) {
+			socket_filename = g_string_new("");
+			g_string_printf(socket_filename, "%s/speechd-sock-%d",
+					g_get_tmp_dir(), getuid());
+		} else {
+			socket_filename =
+			    g_string_new(SpeechdOptions.socket_name);
+		}
 		MSG(2, "Speech Dispatcher will use local unix socket: %s",
 		    socket_filename->str);
 
@@ -998,6 +1003,8 @@ int main(int argc, char *argv[])
 		/* Connect and start listening on local unix socket */
 		server_socket = make_local_socket(socket_filename->str);
 		g_string_free(socket_filename, 1);
+	} else {
+		FATAL("Unknown communication method");
 	}
 
 	/* Fork, set uid, chdir, etc. */
@@ -1019,10 +1026,7 @@ int main(int argc, char *argv[])
 	SpeechdStatus.max_fd = server_socket;
 
 	/* Now wait for clients and requests. */
-	MSG(1,
-	    "Speech Dispatcher " VERSION
-	    " started on port %d and waiting for clients ...",
-	    SpeechdOptions.port);
+	MSG(1, "Speech Dispatcher started and waiting for clients ...");
 	while (1) {
 		testfds = readfds;
 

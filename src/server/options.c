@@ -36,6 +36,8 @@ static struct option spd_long_options[] = {
 	{"run-daemon", 0, 0, 'd'},
 	{"run-single", 0, 0, 's'},
 	{"log-level", 1, 0, 'l'},
+	{"communication-method", 1, 0, 'c'},
+	{"socket-name", 1, 0, 'S'},
 	{"port", 1, 0, 'p'},
 	{"pid-file", 1, 0, 'P'},
 	{"config-file", 1, 0, 'C'},
@@ -45,21 +47,24 @@ static struct option spd_long_options[] = {
 	{0, 0, 0, 0}
 };
 
-static char *spd_short_options = "dsl:p:P:C:vDh";
+static char *spd_short_options = "dsl:c:S:p:P:C:vDh";
 
 void options_print_help(char *argv[])
 {
 	assert(argv);
 	assert(argv[0]);
 
-	printf("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-p=port] | [-v] | [-h]\n",
-	       argv[0]);
+	printf
+	    ("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n",
+	     argv[0]);
 	printf
 	    ("Speech Dispatcher -- Common interface for Speech Synthesis (GNU GPL)\n\n");
 	printf("-d, --run-daemon     -      Run as a daemon\n"
 	       "-s, --run-single     -      Run as single application\n"
 	       "-l, --log-level      -      Set log level (1..5)\n"
-	       "-p, --port           -      Specify a port number\n"
+	       "-c, --communication-method  Communication method to use (unix_socket or inet_socket)\n"
+	       "-S, --socket-name    -      Socket name to use for 'unix_socket' method (filesystem path or 'default')\n"
+	       "-p, --port           -      Specify a port number for 'inet_socket' method\n"
 	       "-P, --pid-file       -      Set path to pid file\n"
 	       "-C, --config-dir     -      Set path to configuration\n"
 	       "-v, --version        -      Report version of this program\n"
@@ -126,6 +131,12 @@ void options_parse(int argc, char *argv[])
 		case 'l':
 			SPD_OPTION_SET_INT(log_level);
 			break;
+		case 'c':
+			SPD_OPTION_SET_STR(communication_method);
+			break;
+		case 'S':
+			SPD_OPTION_SET_STR(socket_name);
+			break;
 		case 'p':
 			SPD_OPTION_SET_INT(port);
 			break;
@@ -162,8 +173,7 @@ void options_parse(int argc, char *argv[])
 			}
 
 			debug_logfile_path = g_strdup_printf("%s/speechd.log",
-							     SpeechdOptions.
-							     debug_destination);
+							     SpeechdOptions.debug_destination);
 			/* Open logfile for writing */
 			debug_logfile = fopen(debug_logfile_path, "wx");
 			g_free(debug_logfile_path);
