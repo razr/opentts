@@ -110,6 +110,11 @@ typedef enum {
 	SPD_MODE_THREADED = 1
 } SPDConnectionMode;
 
+typedef enum {
+	SPD_METHOD_UNIX_SOCKET = 0,
+	SPD_METHOD_INET_SOCKET = 1
+} SPDConnectionMethod;
+
 typedef void (*SPDCallback) (size_t msg_id, size_t client_id,
 			     SPDNotificationType state);
 typedef void (*SPDCallbackIM) (size_t msg_id, size_t client_id,
@@ -149,6 +154,9 @@ typedef struct {
 SPDConnection *spd_open(const char *client_name,
 			const char *connection_name,
 			const char *user_name, SPDConnectionMode mode);
+SPDConnection *spd_open2(const char *client_name, const char *connection_name,
+			 const char *user_name, SPDConnectionMode mode,
+			 SPDConnectionMethod method);
 
 void spd_close(SPDConnection * connection);
 
