@@ -30,14 +30,7 @@
 #include <getline.h>
 #include "module_utils.h"
 
-AudioID *module_audio_id;
 static char *module_audio_pars[10];
-
-int current_index_mark;
-char *module_index_mark = NULL;
-
-SPDMsgSettings msg_settings;
-SPDMsgSettings msg_settings_old;
 
 void xfree(void *data)
 {

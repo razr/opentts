@@ -38,6 +38,9 @@
 #include "module_utils.h"
 
 AudioID *module_audio_id;
+
+int current_index_mark;
+
 SPDMsgSettings msg_settings;
 SPDMsgSettings msg_settings_old;
 
