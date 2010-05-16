@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 
 	if (configfilename != NULL) {
 		/* Add the LAST option */
-		module_dc_options = add_config_option(module_dc_options,
+		module_dc_options = module_add_config_option(module_dc_options,
 						      &module_num_dc_options,
 						      "", 0, NULL, NULL, 0);
 
