@@ -378,7 +378,7 @@ static eciLocale eciLocales[] = {
 
 int module_load(void)
 {
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	REGISTER_DEBUG();
 
@@ -419,8 +419,6 @@ int module_init(char **status_info)
 	int ibm_sample_rate;
 
 	DBG("Ibmtts: Module init().");
-	INIT_INDEX_MARKING();
-
 	*status_info = NULL;
 	info = g_string_new("");
 	ibmtts_thread_exit_requested = IBMTTS_FALSE;

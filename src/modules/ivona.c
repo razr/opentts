@@ -84,7 +84,7 @@ static struct dumbtts_conf *ivona_conf;
 
 int module_load(void)
 {
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	REGISTER_DEBUG();
 

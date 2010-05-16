@@ -133,7 +133,7 @@ static void mywrite(int fd, const void *buf, int len)
 
 int module_load(void)
 {
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 	REGISTER_DEBUG();
 	MOD_OPTION_1_STR_REG(CiceroExecutable, "/usr/bin/cicero");
 	MOD_OPTION_1_STR_REG(CiceroExecutableLog,

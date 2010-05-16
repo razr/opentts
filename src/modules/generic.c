@@ -98,7 +98,7 @@ static char *generic_msg_punct_str;
 int module_load(void)
 {
 
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	MOD_OPTION_1_STR_REG(GenericExecuteSynth, "");
 

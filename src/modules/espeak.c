@@ -63,6 +63,7 @@ DECLARE_DEBUG()
 	if (Debug && !(e)) {						\
 		DBG("Espeak: Warning:  " msg);			\
 	}
+
 typedef enum {
 	FATAL_ERROR = -1,
 	OK = 0,
@@ -205,7 +206,7 @@ MOD_OPTION_1_INT(EspeakPitchRange)
 /* < Public functions */
 int module_load(void)
 {
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	REGISTER_DEBUG();
 
@@ -242,7 +243,6 @@ int module_init(char **status_info)
 	GString *info;
 
 	DBG("Espeak: Module init().");
-	INIT_INDEX_MARKING();
 	/* Make sure the glib functions are thread safe. */
 	if (!g_thread_supported())
 		g_thread_init(NULL);

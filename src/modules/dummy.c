@@ -57,7 +57,7 @@ static void _dummy_child();
 int module_load(void)
 {
 
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	return 0;
 }

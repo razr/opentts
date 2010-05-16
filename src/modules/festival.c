@@ -202,7 +202,7 @@ pthread_mutex_t sound_output_mutex;
 int module_load(void)
 {
 
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	REGISTER_DEBUG();
 
@@ -244,8 +244,6 @@ int module_init(char **status_info)
 	info = g_string_new("");
 
 	DBG("module_init()");
-
-	INIT_INDEX_MARKING();
 
 	/* Initialize appropriate communication mechanism */
 	FestivalComType = FestivalComunicationType;
@@ -354,7 +352,7 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	if (COM_SOCKET) {
 		if (festival_connection_crashed) {
 			DBG("Recovering after a connection loss");
-			CLEAN_OLD_SETTINGS_TABLE();
+			clean_old_settings_table();
 			festival_info = festivalOpen(festival_info);
 			if (festival_info)
 				festival_connection_crashed = 0;
@@ -375,7 +373,7 @@ int module_speak(char *data, size_t bytes, EMessageType msgtype)
 	    && (msg_settings_old.language != NULL)
 	    && (strcmp(msg_settings.language, msg_settings_old.language))) {
 		DBG("Cleaning old settings table");
-		CLEAN_OLD_SETTINGS_TABLE();
+		clean_old_settings_table();
 	}
 
 	/* Setting voice parameters */

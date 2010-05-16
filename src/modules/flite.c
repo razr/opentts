@@ -76,7 +76,7 @@ MOD_OPTION_1_STR(FliteDelimiters);
 
 int module_load(void)
 {
-	INIT_SETTINGS_TABLES();
+	init_settings_tables();
 
 	REGISTER_DEBUG();
 
@@ -98,8 +98,6 @@ int module_init(char **status_info)
 	GString *info;
 
 	DBG("Module init");
-	INIT_INDEX_MARKING();
-
 	*status_info = NULL;
 	info = g_string_new("");
 

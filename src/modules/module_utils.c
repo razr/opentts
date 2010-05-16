@@ -30,10 +30,14 @@
 #include <getline.h>
 #include "module_utils.h"
 
+AudioID *module_audio_id;
 static char *module_audio_pars[10];
 
-extern char *module_index_mark;
+int current_index_mark;
+char *module_index_mark = NULL;
 
+SPDMsgSettings msg_settings;
+SPDMsgSettings msg_settings_old;
 
 void xfree(void *data)
 {
@@ -398,7 +402,6 @@ gchar *do_loglevel(void)
 					err = 2;
 					continue;
 				}
-				log_level = number;
 				spd_audio_set_loglevel(module_audio_id, number);
 			} else
 				err = 2;	/* Unknown parameter */
@@ -1151,3 +1154,30 @@ int module_audio_init_spd(char **status_info)
 	return -1;
 
 }
+
+void clean_old_settings_table(){
+ msg_settings_old.rate = -101;
+ msg_settings_old.pitch = -101;
+ msg_settings_old.volume = -101;
+ msg_settings_old.punctuation_mode = -1;
+ msg_settings_old.spelling_mode = -1;
+ msg_settings_old.cap_let_recogn = -1;
+ msg_settings_old.language = NULL;
+ msg_settings_old.voice = NO_VOICE;
+ msg_settings_old.synthesis_voice = NULL;
+}
+
+void init_settings_tables(){
+ module_dc_options = NULL;
+ msg_settings.rate = 0;
+ msg_settings.pitch = 0;
+ msg_settings.volume = 0;
+ msg_settings.punctuation_mode = PUNCT_NONE;
+ msg_settings.spelling_mode = SPELLING_OFF;
+ msg_settings.cap_let_recogn = RECOGN_NONE;
+ msg_settings.language = NULL;
+ msg_settings.voice = MALE1;
+ msg_settings.synthesis_voice = NULL;
+ clean_old_settings_table();
+}
+

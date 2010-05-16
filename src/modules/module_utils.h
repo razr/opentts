@@ -48,7 +48,6 @@
 #include <timestamp.h>
 #include "spd_audio.h"
 
-int log_level;
 
 extern AudioID *module_audio_id;
 
@@ -63,29 +62,8 @@ extern pthread_mutex_t module_stdout_mutex;
 extern configoption_t *module_dc_options;
 extern int module_num_dc_options;
 
-#define CLEAN_OLD_SETTINGS_TABLE()\
- msg_settings_old.rate = -101;\
- msg_settings_old.pitch = -101;\
- msg_settings_old.volume = -101;\
- msg_settings_old.punctuation_mode = -1;\
- msg_settings_old.spelling_mode = -1;\
- msg_settings_old.cap_let_recogn = -1;\
- msg_settings_old.language = NULL;	\
- msg_settings_old.voice = NO_VOICE;\
- msg_settings_old.synthesis_voice = NULL;
-
-#define INIT_SETTINGS_TABLES()\
- module_dc_options = NULL;\
- msg_settings.rate = 0;\
- msg_settings.pitch = 0;\
- msg_settings.volume = 0;\
- msg_settings.punctuation_mode = PUNCT_NONE;\
- msg_settings.spelling_mode = SPELLING_OFF;\
- msg_settings.cap_let_recogn = RECOGN_NONE;\
- msg_settings.language = NULL;\
- msg_settings.voice = MALE1;\
- msg_settings.synthesis_voice = NULL;\
- CLEAN_OLD_SETTINGS_TABLE()
+void clean_old_settings_table();
+void init_settings_tables();
 
 #define DBG(arg...) \
   if (Debug){ \
@@ -116,7 +94,6 @@ extern int module_num_dc_options;
 
 int module_load(void);
 int module_init(char **status_info);
-int module_audio_init_spd(char **status_info);
 VoiceDescription **module_list_voices(void);
 int module_speak(char *data, size_t bytes, EMessageType msgtype);
 int module_stop(void);
@@ -184,6 +161,7 @@ char *module_strip_ssml(char *buf);
 void module_sigblockall(void);
 void module_sigblockusr(sigset_t * signal_set);
 void module_sigunblockusr(sigset_t * signal_set);
+void module_signal_end(void);
 
 gchar *do_message(EMessageType msgtype);
 gchar *do_speak(void);
@@ -219,18 +197,12 @@ size_t module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
 
 int module_parent_wait_continue(TModuleDoublePipe dpipe);
 
-void set_speaking_thread_parameters();
 int module_write_data_ok(char *data);
 int module_terminate_thread(pthread_t thread);
 sem_t *module_semaphore_init();
 char *module_recode_to_iso(char *data, int bytes, char *language,
 			   char *fallback);
 int semaphore_post(int sem_id);
-void module_signal_end(void);
-configoption_t *module_add_config_option(configoption_t * options,
-					 int *num_options, char *name, int type,
-					 dotconf_callback_t callback,
-					 info_t * info, unsigned long context);
 
 void *module_get_ht_option(GHashTable * hash_table, const char *key);
 
@@ -384,13 +356,6 @@ configoption_t *add_config_option(configoption_t * options,
 
 #define INDEX_MARK_BODY_LEN 6
 #define INDEX_MARK_BODY "__spd_"
-
-char *module_index_mark;
-
-/* This macro must be placed at the initialization of the module so that the
-   later functions are possible to use */
-
-#define INIT_INDEX_MARKING() module_index_mark = NULL;
 
 void module_report_index_mark(char *mark);
 void module_report_event_begin(void);
