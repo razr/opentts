@@ -74,6 +74,8 @@
 
 #include "module_utils.h"
 
+int festival_connection_crashed;
+
 /* For testing endianness */
 int fapi_endian_loc = 1;
 
