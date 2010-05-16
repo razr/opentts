@@ -43,7 +43,7 @@
 
 int sockk;
 
-#ifdef __SUNPRO_C
+#ifndef HAVE_STRCASESTR
 /* Added by Willie Walker - strcasestr is a gcc-ism
  */
 char *strcasestr(const char *a, const char *b)
@@ -57,7 +57,7 @@ char *strcasestr(const char *a, const char *b)
 			return (a + l);
 	return NULL;
 }
-#endif /* __SUNPRO_C */
+#endif /* HAVE_STRCASESTR */
 
 char *send_data(int fd, char *message, int wfr)
 {

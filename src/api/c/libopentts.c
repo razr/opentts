@@ -75,7 +75,7 @@ static void *spd_events_handler(void *);
 
 pthread_mutex_t spd_logging_mutex;
 
-#ifdef __SUNPRO_C
+#ifndef HAVE_STRNDUP
 /* Added by Willie Walker - strndup is a gcc-ism */
 char *strndup(const char *s, size_t n)
 {
@@ -95,7 +95,7 @@ char *strndup(const char *s, size_t n)
 
 	return p;
 }
-#endif /* __SUNPRO_C */
+#endif /* HAVE_STRNDUP */
 
 #define INITIAL_BUF_SIZE 120
 #define GETLINE_FAILURE -1
