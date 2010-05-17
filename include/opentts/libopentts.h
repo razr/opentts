@@ -156,7 +156,7 @@ SPDConnection *spd_open(const char *client_name,
 			const char *user_name, SPDConnectionMode mode);
 SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 			 const char *user_name, SPDConnectionMode mode,
-			 SPDConnectionMethod method);
+			 SPDConnectionMethod method, int autospawn);
 
 void spd_close(SPDConnection * connection);
 
