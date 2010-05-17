@@ -251,8 +251,12 @@ int serve(int fd)
 		int buflen = BUF_SIZE;
 		gchar *buf = (gchar *) g_malloc(buflen + 1);
 
-		/* Read data from socket */
-		/* Read exactly one complete line, the `parse' routine relies on it */
+		/*
+		 * Read exactly one complete line, the `parse' routine
+		 * relies on it.
+		 * Note that for the purposes of SSIP, a complete line
+		 * ends in CRLF.
+		 */
 		{
 			while (1) {
 				int n = read(fd, buf + bytes, 1);
@@ -260,7 +264,9 @@ int serve(int fd)
 					g_free(buf);
 					return -1;
 				}
-				if (buf[bytes] == '\n') {
+				/* Note, bytes is a 0-based index into buf. */
+				if ((buf[bytes] == '\n')
+				    && (bytes >= 1) && (buf[bytes - 1] == '\r')) {
 					buf[++bytes] = '\0';
 					break;
 				}
