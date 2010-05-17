@@ -684,14 +684,14 @@ int create_pid_file()
 		/* If there is a lock, exit, otherwise remove the old file */
 		ret = fcntl(pid_fd, F_GETLK, &lock);
 		if (ret == -1) {
-			fprintf(stderr,
-				"Can't check lock status of an existing pid file.\n");
+			MSG(1,
+			    "Can't check lock status of an existing pid file.\n");
 			return -1;
 		}
 
 		fclose(pid_file);
 		if (lock.l_type != F_UNLCK) {
-			fprintf(stderr, "Speech Dispatcher already running.\n");
+			MSG(1, "Speech Dispatcher already running.\n");
 			return -1;
 		}
 
@@ -701,9 +701,9 @@ int create_pid_file()
 	/* Create a new pid file and lock it */
 	pid_file = fopen(SpeechdOptions.pid_file, "w");
 	if (pid_file == NULL) {
-		fprintf(stderr,
-			"Can't create pid file in %s, wrong permissions?\n",
-			SpeechdOptions.pid_file);
+		MSG(1,
+		    "Can't create pid file in %s, wrong permissions?\n",
+		    SpeechdOptions.pid_file);
 		return -1;
 	}
 	fprintf(pid_file, "%d\n", getpid());
@@ -717,7 +717,7 @@ int create_pid_file()
 
 	ret = fcntl(pid_fd, F_SETLK, &lock);
 	if (ret == -1) {
-		fprintf(stderr, "Can't set lock on pid file.\n");
+		MSG(1, "Can't set lock on pid file.\n");
 		return -1;
 	}
 
@@ -919,6 +919,14 @@ int main(int argc, char *argv[])
 		    g_strdup_printf("%s/speechd.conf", SpeechdOptions.conf_dir);
 	}
 
+	/*
+	 * If no PID file exists, create it and proceed.  Otherwise,
+	 * exit, since openttsd is already running.
+	 */
+	if (create_pid_file() != 0)
+		exit(1);
+
+	/* Handle --spawn request */
 	if (SpeechdOptions.spawn) {
 		/* Check whether spawning is not disabled */
 		gchar *config_contents;
@@ -954,9 +962,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Mutex initialization failed");
 		exit(1);
 	}
-
-	if (create_pid_file() != 0)
-		exit(1);
 
 	/* Register signals */
 	sig.sa_handler = speechd_quit;
