@@ -39,6 +39,52 @@ AC_SUBST(LIB_SDAUDIO_CURRENT)
 AC_SUBST(LIB_SDAUDIO_REVISION)
 AC_SUBST(LIB_SDAUDIO_AGE)
 
+# command line arguments
+AC_ARG_WITH([alsa],
+	[AS_HELP_STRING([--with-alsa], [include ALSA support])],
+	[],
+	[with_alsa=check])
+
+AC_ARG_WITH([libao],
+	[AS_HELP_STRING([--with-libao], [include libao support])],
+	[],
+	[with_libao=check])
+
+AC_ARG_WITH([nas],
+	[AS_HELP_STRING([--with-nas], [include network audio system (nas) support])],
+	[],
+	[with_nas=check])
+
+AC_ARG_WITH([oss],
+	[AS_HELP_STRING([--with-oss], [include oss support])],
+	[],
+	[with_oss=check])
+
+AC_ARG_WITH([pulse],
+	[AS_HELP_STRING([--with-pulse], [include pulseaudio support])],
+	[],
+	[with_pulse=check])
+
+AC_ARG_WITH([espeak],
+	[AS_HELP_STRING([--with-espeak], [include espeak support])],
+	[],
+	[with_espeak=check])
+
+AC_ARG_WITH([flite],
+	[AS_HELP_STRING([--with-flite], [include Festival Lite (Flite) support])],
+	[],
+	[with_flite=check])
+
+AC_ARG_WITH([ibmtts],
+	[AS_HELP_STRING([--with-ibmtts], [include IBM TTS support])],
+	[],
+	[with_ibmtts=check])
+
+AC_ARG_WITH([ivona],
+	[AS_HELP_STRING([--with-ivona], [include ivona support])],
+	[],
+	[with_ivona=check])
+
 # checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -68,36 +114,28 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([dup2 gethostbyname gettimeofday memmove memset mkdir select socket strcasecmp strchr strcspn strdup strerror strncasecmp strndup strstr strcasestr strtol])
 
 # Checks for libraries.
-AC_CHECK_LIB(m,
-        sqrt, echo "",
-        echo "*** Required math library missing! See INSTALL .";exit 1)
-AC_CHECK_LIB(dl,
-        dlopen, echo "",
-        echo "*** Required dl library missing! See INSTALL .";exit 1)
-AC_CHECK_LIB(pthread,
-        pthread_create, echo "",
-        echo "*** Required pthread library missing! See INSTALL .";exit 1)
-AC_CHECK_LIB([ltdl], [lt_dlopen], [], [
-        AC_MSG_ERROR(libltdl3-dev is required for plugin loading)])
+AC_SEARCH_LIBS([sqrt], [m])
+AC_SEARCH_LIBS([pthread_create], [pthread])
+AC_SEARCH_LIBS([lt_dlopen], [ltdl])
 
-PKG_CHECK_MODULES(GLIB,glib-2.0,,exit)
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
-PKG_CHECK_MODULES(GTHREAD,gthread-2.0,,exit)
+PKG_CHECK_MODULES([GTHREAD], [gthread-2.0])
 AC_SUBST(GTHREAD_CFLAGS)
 AC_SUBST(GTHREAD_LIBS)
 
-PKG_CHECK_MODULES(GMODULE,gmodule-2.0,,exit)
+PKG_CHECK_MODULES([GMODULE], [gmodule-2.0])
 AC_SUBST(GMODULE_CFLAGS)
 AC_SUBST(GMODULE_LIBS)
 
-PKG_CHECK_MODULES(DOTCONF,dotconf,,exit)
+PKG_CHECK_MODULES([DOTCONF], [dotconf])
 AC_SUBST(DOTCONF_CFLAGS)
 AC_SUBST(DOTCONF_LIBS)
 
 # Check for libsndfile.
-PKG_CHECK_MODULES(SNDFILE, sndfile >= 1.0.2, ac_cv_sndfile=1, ac_cv_sndfile=0)
+PKG_CHECK_MODULES([SNDFILE], [sndfile >= 1.0.2], [ac_cv_sndfile=1], [ac_cv_sndfile=0])
 
 AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
         [Set to 1 if you have libsndfile.])
@@ -107,235 +145,145 @@ AC_SUBST(SNDFILE_LIBS)
 
 # Audio subsystem part
 AUDIO_DLOPEN_MODULES=
-AC_CHECK_HEADER(sys/soundcard.h, oss_aud="true";echo "Compiling with OSS support", oss_aud="false";echo "*** OSS missing. Compiling without OSS support! See INSTALL.")
-AC_ARG_WITH(oss, AS_HELP_STRING(--with-oss, Compile with OSS support),
-		 if test $withval = "no"; then
-		    echo "Forced compilation without OSS support.";
-		    oss_aud="false";
-		 else
-		    if test $oss_aud = "false"; then
-		       echo "OSS support is not available. Sorry."; exit 1;
-		    fi
-                 fi
-		 echo "")
 
-AM_CONDITIONAL(oss_support, test $oss_aud = "true")
-if test $oss_aud = "yes"; then
-        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_oss.la"
-fi
+AS_IF([test $with_alsa != "no"],
+	[PKG_CHECK_MODULES([ALSA], [alsa],
+		[with_alsa=yes;
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_alsa.la"],
+		[AS_IF([test $with_alsa = "yes"],
+			[AC_MSG_FAILURE([ALSA support not available on this system])])])])
 
-AC_CHECK_LIB(audio,
-        AuOpenServer,
-	nas_aud="true";echo "Compiling with NAS support.";,
-        nas_aud="false";echo "*** NAS Audio library missing. Compiling without NAS support! See INSTALL.";,
-	-L/usr/X11R6/lib -lXau)
+AC_SUBST(ALSA_CFLAGS)
+AC_SUBST(ALSA_LIBS)
+AM_CONDITIONAL(alsa_support, test $with_alsa = "yes")
 
-AC_ARG_WITH(nas, AS_HELP_STRING(--with-nas, Compile with Network Audio System (NAS) support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without NAS support.";
-		    nas_aud="false";
-		 else 
-		    if test $nas_aud = "false"; then
-		       echo "NAS support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
+AS_IF([test $with_libao != "no"],
+	[AC_CHECK_LIB([ao],
+		[ao_play],
+		[with_libao=yes;
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la";
+		LIBAO_LIBS="-lao";],
+		[AS_IF([test $with_libao = "yes"],
+			[AC_MSG_FAILURE([libao is not available])])])])
 
-AM_CONDITIONAL(nas_support, test $nas_aud = "true")
-if test $nas_aud = "true"; then
-        NAS_LIBS="-L/usr/X11R6/lib -lXau -laudio"
-        AC_SUBST(NAS_LIBS)
-        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_nas.la"
-fi
+AC_SUBST(LIBAO_LIBS)
+AM_CONDITIONAL(libao_support, test $with_libao = "yes")
 
-AC_CHECK_LIB(ao,
-        ao_play,
-	libao_aud="true";echo "Compiling with libao support.";,
-        libao_aud="false";echo "*** libao library missing. Compiling without libao support! See INSTALL.";)
+AS_IF([test $with_nas != "no"],
+	[AC_CHECK_LIB([audio],
+		[AuOpenServer],
+		[with_nas=yes;
+		NAS_LIBS="-L/usr/X11R6/lib -lXau -laudio";
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_nas.la"],
+		[AS_IF([test $with_nas = "yes"],
+			[AC_MSG_FAILURE([nas is not available])])],
+		[-L/usr/X11R6/lib -lXau])])
 
-AC_ARG_WITH(libao, AS_HELP_STRING(--with-libao, Compile with libao support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without libao support.";
-		    libao_aud="false";
-		 else 
-		    if test $libao_aud = "false"; then
-		       echo "libao support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
+AC_SUBST(NAS_LIBS)
+AM_CONDITIONAL(nas_support, test $with_nas = "yes")
 
-AM_CONDITIONAL(libao_support, test $libao_aud = "true")
-if test $libao_aud = "true"; then
-        LIBAO_LIBS="-lao"
-        AC_SUBST(LIBAO_LIBS)
-        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la"
-fi
+AS_IF([test $with_oss != "no"],
+	[AC_CHECK_HEADER([sys/soundcard.h],
+		[with_oss=yes;
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_oss.la"],
+		[AS_IF([test $with_oss = "yes"],
+			[AC_MSG_FAILURE([oss is not available])])])])
 
-        PKG_CHECK_MODULES(ALSA,alsa,
-	alsa_aud="true";echo "Compiling with ALSA support.";,
-        alsa_aud="false";echo "*** ALSA C API library missing. Compiling without ALSA support! See INSTALL.";)
+AM_CONDITIONAL(oss_support, test $with_oss = "yes")
 
-AC_ARG_WITH(alsa, AS_HELP_STRING(--with-alsa, Compile with ALSA support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without ALSA support.";
-		    alsa_aud="false";
-		 else 
-		    if test $alsa_aud = "false"; then
-		       echo "ALSA support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
+AS_IF([test $with_pulse != "no"],
+	[PKG_CHECK_MODULES([PULSE], [libpulse-simple],
+		[with_pulse=yes;
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_pulse.la"],
+		[AS_IF([test $with_pulse = "yes"],
+			[AC_MSG_FAILURE([pulseaudio is not available on this system])])])])
 
-AM_CONDITIONAL(alsa_support, test $alsa_aud = "true")
-if test $alsa_aud = "true"; then
-        AC_SUBST(ALSA_CFLAGS)
-        AC_SUBST(ALSA_LIBS)
-        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_alsa.la"
-fi
-
-PKG_CHECK_MODULES(PULSE,libpulse-simple,
-	pulse_aud="true";echo "Compiling with PulseAudio support.";,
-        pulse_aud="false";echo "*** PulseAudio library missing. Compiling without PulseAudio support! See INSTALL.";)
-
-AC_ARG_WITH(pulse, AS_HELP_STRING(--with-pulse, Compile with PulseAudio support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without PulseAudio support.";
-		    pulse_aud="false";
-		 else 
-		    if test $pulse_aud = "false"; then
-		       echo "PulseAudio support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(pulse_support, test $pulse_aud = "true")
-if test $pulse_aud = "true"; then
-        AC_SUBST(PULSE_CFLAGS)
-        AC_SUBST(PULSE_LIBS)
-        AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_pulse.la"
-fi
+AC_SUBST(PULSE_CFLAGS)
+AC_SUBST(PULSE_LIBS)
+AM_CONDITIONAL(pulse_support, test $with_pulse = "yes")
 
 AC_SUBST(AUDIO_DLOPEN_MODULES)
 
-# Check for Flite (currently required)
-AC_CHECK_LIB(flite,
-        flite_init, echo "",
-        echo "",
-	-lm)
-
-AC_CHECK_LIB(flite_cmulex,
-        cmu_lex_init, echo "",
-        echo "",
-	-lflite -lm)
-
-AC_CHECK_LIB(flite_usenglish,
-        usenglish_init, echo "",
-        echo "",
-	-lflite -lm)
-
-flite_basic="-lflite_cmulex -lflite_usenglish -lflite -lm";
-
-AC_CHECK_LIB(flite_cmu_us_kal16,
-        register_cmu_us_kal, flite_ok="true";flite_kal="-lflite_cmu_us_kal16";echo "16-bit Kal Flite voice found. Flite support enabled.", 
-        	AC_CHECK_LIB(flite_cmu_us_kal,	
-        	register_cmu_us_kal, flite_ok="true";flite_kal="-lflite_cmu_us_kal";
-		echo "8-bit Kal Flite voice found. Flite support enabled.", 
-        	flite_ok="false"; echo "Flite libraries missing. Compiling without Flite support!",
-		-lflite_cmulex -lflite_usenglish -lflite -lm),
-	-lflite_cmulex -lflite_usenglish -lflite -lm)
-
-AC_SUBST(flite_basic)
-AC_SUBST(flite_kal)
-
-AC_ARG_WITH(flite, AS_HELP_STRING(--with-flite, Compile with Festival Lite (Flite) support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without Flite support."; 
-		    flite_ok="false";
-		 else 
-		    if test $flite_ok = "false"; then
-		       echo "Flite support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(flite_support, test $flite_ok = "true")
-
-# Check for IBM TTS
-AC_CHECK_LIB(ibmeci,
-        eciStop,
-        ibmtts_ok="true";ibmtts_include="-I/opt/IBM/ibmtts/inc/"; echo "Compiling with IBM TTS support.",
-        ibmtts_ok="false";ibmtts_include=""; echo "*** IBM TTS ECI library missing. Compiling without IBM TTS support! See INSTALL.";,
-	-libmeci)
-
-AC_ARG_WITH(ibmtts, AS_HELP_STRING(--with-ibmtts, Compile with IBM TTS support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without IBMTTS support."; 
-		    ibmtts_ok="false";
-		 else 
-		    if test $ibmtts_ok = "false"; then
-		       echo "IBM TTS support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-
-AM_CONDITIONAL(ibmtts_support, test $ibmtts_ok = "true")
-
-AC_SUBST(ibmtts_include)
-
+# speech synthesizers
+#
 # Additional library check added by Willie Walker to account
 # for how the SunStudio CC compiler works.
 #
 # check for espeak support
-if test "$GCC" = yes; then
-    EXTRA_ESPEAK_LIBS="-lpthread -lm"
-else
-    EXTRA_ESPEAK_LIBS="-lpthread -lm -lCstd -lCrun"
+if test "$GCC" != yes; then
+	EXTRA_ESPEAK_LIBS="-lCstd -lCrun"
 fi
 AC_SUBST(EXTRA_ESPEAK_LIBS)
 
-AC_CHECK_LIB(espeak,
-espeak_Synth,
-		espeak_ok="true"; echo "Compiling with espeak support.",
-		espeak_ok="false"; echo "Espeak not found.",
-		$EXTRA_ESPEAK_LIBS)
+AS_IF([test $with_espeak != "no"],
+	[AC_CHECK_LIB([espeak],
+		[espeak_Synth],
+		[with_espeak=yes],
+		[AS_IF([test $with_espeak = "yes"],
+			[AC_MSG_FAILURE([Espeak is not available])])]
+		[$EXTRA_ESPEAK_LIBS])])
 
-AC_ARG_WITH(espeak, AS_HELP_STRING(--with-espeak, Compile with espeak support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without espeak support."; 
-		    espeak_ok="false";
-		 else 
-		    if test $espeak_ok = "false"; then
-		       echo "Espeak support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
+AM_CONDITIONAL(espeak_support, test $with_espeak = "yes")
 
-AM_CONDITIONAL(espeak_support, test $espeak_ok = "true")
+AS_IF([test $with_flite != "no"],
+	[AC_CHECK_LIB([flite],
+		[flite_init],
+		[flite_basic="-lflite"],
+		[AS_IF([test $with_flite = "yes"],
+			[AC_MSG_FAILURE([libflite is not available])])],
+		[-lm])
+	AC_CHECK_LIB([flite_usenglish],
+		[usenglish_init],
+		[flite_basic="-lflite_usenglish ${flite_basic}"],
+		[AS_IF([test $with_flite = "yes"],
+			[AC_MSG_FAILURE([libflite_usenglish is not available])])],
+		[-lflite -lm])
+	AC_CHECK_LIB([flite_cmulex],
+		[cmu_lex_init],
+		[flite_basic="-lflite_cmulex ${flite_basic}"],
+		[AS_IF([test $with_flite = "yes"],
+			[AC_MSG_FAILURE([libflite_cmulex is not available])])],
+		[-lflite -lm])
+	AC_CHECK_LIB([flite_cmu_us_kal16],
+		[register_cmu_us_kal],
+		[with_flite=yes;
+		flite_kal="-lflite_cmu_us_kal16"],
+		[AC_CHECK_LIB([flite_cmu_us_kal],
+			[register_cmu_us_kal],
+			[with_flite=yes;
+			flite_kal="-lflite_cmu_us_kal"],
+			[AS_IF([test $with_flite = "yes"],
+				[AC_MSG_FAILURE([no flite voices found])])],
+		[-lflite_cmulex -lflite_usenglish -lflite -lm])],
+	[-lflite_cmulex -lflite_usenglish -lflite -lm])])
+
+AC_SUBST(flite_basic)
+AC_SUBST(flite_kal)
+AM_CONDITIONAL(flite_support, test $with_flite = "yes")
+
+# Check for IBM TTS
+AS_IF([test $with_ibmtts != "no"],
+	[AC_CHECK_LIB([ibmeci],
+		[eciStop],
+		[with_ibmtts=yes;
+		ibmtts_include="-I/opt/IBM/ibmtts/inc/"],
+		[AS_IF([test $with_ibmtts = "yes"],
+			[AC_MSG_FAILURE([IBMTTS is not available])])])])
+
+AC_SUBST(ibmtts_include)
+AM_CONDITIONAL(ibmtts_support, test $with_ibmtts = "yes")
 
 # check for dumbtts support
-AC_CHECK_LIB(dumbtts,
-	dumbtts_TTSInit,
-	ivona_ok="true"; echo "Compiling with Ivona support.";,
-	ivona_ok="false"; echo "Dumbtts library not found. Not installing Ivona.";,
-	-ldumbtts)
+AS_IF([test $with_ivona != "no"],
+	[AC_CHECK_LIB([dumbtts],
+		[dumbtts_TTSInit],
+		[with_ivona=yes],
+		[AS_IF([test $with_ivona = "yes"],
+			[AC_MSG_FAILURE([ivona is not available])])])])
 
-AC_ARG_WITH(ivona, AS_HELP_STRING(--with-ivona, Compile with ivona support),
-		 if test $withval = "no"; then 
-		    echo "Forced compilation without ivona support."; 
-		    ivona_ok="false";
-		 else 
-		    if test $ivona_ok = "false"; then
-		       echo "Ivona support is not available. Sorry."; exit 1;
-		    fi
-                 fi
- 		 echo "")
-	
-AM_CONDITIONAL(ivona_support, test $ivona_ok = "true")
+AM_CONDITIONAL(ivona_support, test $with_ivona = "yes")
 
 AC_SUBST(datadir)
-
-SPEECHD_DEFAULT_PORT=`grep SPEECHD_DEFAULT_PORT src/common/def.h | awk '{print $3}'`
-AC_SUBST(SPEECHD_DEFAULT_PORT)
 
 spdconfdir='${sysconfdir}/opentts'
 AC_SUBST(spdconfdir)
@@ -352,7 +300,6 @@ clientconforigdir='${spdconforigdir}/clients'
 AC_SUBST(clientconforigdir)
 spddesktopconforigdir='${spdconforigdir}/desktop'
 AC_SUBST(spddesktopconforigdir)
-
 
 snddatadir='${datadir}/sounds/opentts'
 AC_SUBST(snddatadir)
