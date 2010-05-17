@@ -342,9 +342,9 @@ AC_SUBST(bashprofiledir)
 
 AC_ARG_WITH([system-speechd-start-cmd],
             AC_HELP_STRING([--with-system-speechd-start-cmd=COMMAND],
-                           [Specify the command that you want used when spawning the speech-dispatcher server as a system process (default is /etc/init.d/speech-dispatcher start)]),
+                           [Specify the command that you want used when spawning the opentts server as a system process (default is /etc/init.d/opentts start)]),
             with_system_speechd_start_cmd=$withval,
-            with_system_speechd_start_cmd="/etc/init.d/speech-dispatcher start")
+            with_system_speechd_start_cmd="/etc/init.d/opentts start")
 SPEECHD_SYSTEM_START_CMD=$with_system_speechd_start_cmd
 AC_SUBST(SPEECHD_SYSTEM_START_CMD)
 
