@@ -8,8 +8,5 @@ openttsd_LDFLAGS = @RDYNAMIC@
 inc_local = -I$(top_srcdir)/src/common/
 
 openttsd_CFLAGS = @ERROR_CFLAGS@
-openttsd_CPPFLAGS = $(inc_local) $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) $(GTHREAD_CFLAGS) -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" -DMODULEBINDIR=\"@modulebindir@\" -DPIDPATH=\"@pidpath@\"
+openttsd_CPPFLAGS = $(inc_local) $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) $(GTHREAD_CFLAGS) -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" -DMODULEBINDIR=\"@modulebindir@\"
 
-if ENABLE_SESSION
-openttsd_CPPFLAGS += -DENABLE_SESSION
-endif

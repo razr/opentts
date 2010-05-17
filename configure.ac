@@ -326,28 +326,6 @@ AM_CONDITIONAL(ivona_support, test $ivona_ok = "true")
 
 AC_SUBST(datadir)
 
-AC_ARG_ENABLE([session-integration],
-		AS_HELP_STRING([--enable-session-integration], [build with user session integration support]),
-		[], [enable_session_integration=no])
-
-AM_CONDITIONAL([ENABLE_SESSION], [test x$enable_session_integration = xyes])
-
-AC_ARG_WITH([bash-profile-dir],
-            AC_HELP_STRING([--with-bash-profile-dir=PATH],
-                           [choose directory for session integration shell file (default=SYSCONFDIR/profile.d)]),
-            with_bash_profile_dir=$withval,
-            with_bash_profile_dir=$sysconfdir/profile.d)
-bashprofiledir=$with_bash_profile_dir
-AC_SUBST(bashprofiledir)
-
-AC_ARG_WITH([system-speechd-start-cmd],
-            AC_HELP_STRING([--with-system-speechd-start-cmd=COMMAND],
-                           [Specify the command that you want used when spawning the opentts server as a system process (default is /etc/init.d/opentts start)]),
-            with_system_speechd_start_cmd=$withval,
-            with_system_speechd_start_cmd="/etc/init.d/opentts start")
-SPEECHD_SYSTEM_START_CMD=$with_system_speechd_start_cmd
-AC_SUBST(SPEECHD_SYSTEM_START_CMD)
-
 SPEECHD_DEFAULT_PORT=`grep SPEECHD_DEFAULT_PORT src/common/def.h | awk '{print $3}'`
 AC_SUBST(SPEECHD_DEFAULT_PORT)
 
@@ -375,7 +353,6 @@ AC_SUBST(modulebindir)
 audiodir='${libdir}/opentts/audio'
 AC_SUBST(audiodir)
 
-AC_ARG_VAR(pidpath, Absolute path to a pid file)
 
 # Extra libraries for sockets added by Willie Walker
 # based upon how SunStudio libraries work.  Also
