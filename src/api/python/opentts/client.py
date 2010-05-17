@@ -30,9 +30,9 @@ import socket, sys, os, subprocess, time, tempfile
 
 # IF session integration has been enabled, the spawn module will be available.
 try:
-    import spawn
+    import opentts.spawn as spawn_mod
 except:
-    spawn = None
+    spawn_mod = None
 
 try:
     import threading
@@ -120,8 +120,6 @@ class _SSIP_Connection:
                           704: CallbackType.PAUSE,
                           705: CallbackType.RESUME,
                           }
-    if spawn:
-        speechd_server_pid = ''
 
     def __init__(self, method, socket_name, host, port, autospawn):
         """Init connection: open the socket to server,
@@ -130,8 +128,8 @@ class _SSIP_Connection:
 
         """
 
-        if autospawn:
-            self.speechd_server_pid = self.speechd_server_spawn()
+        if autospawn and spawn_mod:
+            self.speechd_server_spawn()
             time.sleep(0.5)
 
         if method == 'unix_socket':
@@ -337,10 +335,12 @@ class _SSIP_Connection:
 
     def speechd_server_spawn(self):
         """Attempts to spawn the speech-dispatcher server."""
-        if os.path.exists(spawn.SPD_SPAWN_CMD):
-            speechd_server = subprocess.Popen([spawn.SPD_SPAWN_CMD],
+        if os.path.exists(spawn_mod.SPD_SPAWN_CMD):
+            speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD],
                         stdin=None, stdout=subprocess.PIPE, stderr=None)
             return speechd_server.communicate()[0].rstrip('\n')
+        else:
+            raise "Can't find openttsd spawn command %s" % (spawn_mod.SPD_SPAWN_CMD,)
 
 class Scope(object):
     """An enumeration of valid SSIP command scopes.
@@ -410,7 +410,7 @@ class SSIPClient(object):
     """Default port number for server connections."""
     
     def __init__(self, name, component='default', user='unknown', host=None,
-                 port=None, method='unix_socket', socket_name=None, autospawn=True):
+                 port=None, method='unix_socket', socket_name=None, autospawn=None):
         """Initialize the instance and connect to the server.
 
         Arguments:
@@ -448,6 +448,13 @@ class SSIPClient(object):
                 port = int(os.environ.get('SPEECHD_PORT'))
             except (ValueError, TypeError):
                 port = self.DEFAULT_SPEECHD_PORT
+
+        # If autospawn is not specified, use system default
+        if autospawn is None:
+            if spawn_mod and spawn_mod.SPD_SPAWN_CMD != "":
+                autospawn = True
+            else:
+                autospawn = False
 
         self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
                                              host=host, port=port, autospawn=autospawn)
