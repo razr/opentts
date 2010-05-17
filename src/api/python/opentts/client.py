@@ -130,7 +130,6 @@ class _SSIP_Connection:
 
         if autospawn and spawn_mod:
             self.speechd_server_spawn()
-            time.sleep(0.5)
 
         if method == 'unix_socket':
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -337,8 +336,10 @@ class _SSIP_Connection:
         """Attempts to spawn the speech-dispatcher server."""
         if os.path.exists(spawn_mod.SPD_SPAWN_CMD):
             speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD, '--spawn'],
-                        stdin=None, stdout=subprocess.PIPE, stderr=None)
-            return speechd_server.communicate()[0].rstrip('\n')
+                        stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # Todo: log output from stdout.
+            time.sleep(0.5)
+            return speechd_server.pid
         else:
             raise "Can't find openttsd spawn command %s" % (spawn_mod.SPD_SPAWN_CMD,)
 
