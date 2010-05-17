@@ -201,6 +201,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 	char *conn_name;
 	char *usr_name;
 	char *env_port;
+	char *env_socket;
 	int port;
 	int ret;
 	char tcp_no_delay = 1;
@@ -285,10 +286,21 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 	} else if (method == SPD_METHOD_UNIX_SOCKET) {
 		struct sockaddr_un address_unix;
 		GString *socket_filename;
+/* Determine address for the unix socket */
+		env_socket = getenv("SPEECHD_SOCKET");
+		if (env_socket) {
+			socket_filename = g_string_new(env_socket);
+		} else {
+			const char *homedir = g_getenv("HOME");
+			if (!homedir)
+				homedir = g_get_home_dir();
+			socket_filename = g_string_new("");
+			g_string_printf(socket_filename,
+					"%s/.speech-dispatcher/speechd.sock",
+					homedir);
+		}
+/* Create the unix socket */
 		address_unix.sun_family = AF_UNIX;
-		socket_filename = g_string_new("");
-		g_string_printf(socket_filename, "%s/speechd-sock-%d",
-				g_get_tmp_dir(), getuid());
 		strncpy(address_unix.sun_path, socket_filename->str,
 			sizeof(address_unix.sun_path));
 		address_unix.sun_path[sizeof(address_unix.sun_path) - 1] = '\0';
