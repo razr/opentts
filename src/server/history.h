@@ -25,7 +25,7 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
-#include "speechd.h"
+#include "openttsd.h"
 
 char *history_get_client_list();
 char *history_get_message_list(guint client_id, int from, int num);

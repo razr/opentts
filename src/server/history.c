@@ -26,7 +26,7 @@
 #include <config.h>
 #endif
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "msg.h"
 #include "set.h"
 #include "server.h"

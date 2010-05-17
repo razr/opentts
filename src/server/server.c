@@ -28,7 +28,7 @@
 
 #include <glib.h>
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "server.h"
 #include "set.h"
 #include "speaking.h"

@@ -27,7 +27,7 @@
 
 #include <dotconf.h>
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "configuration.h"
 #include <fdsetconv.h>
 

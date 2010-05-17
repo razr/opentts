@@ -22,7 +22,7 @@
  * $Id: index_marking.h,v 1.5 2006-07-11 16:12:27 hanke Exp $
  */
 
-#include "speechd.h"
+#include "openttsd.h"
 
 #ifndef INDEX_MARKING_H
 #define INDEX_MARKING_H

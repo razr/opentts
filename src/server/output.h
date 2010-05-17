@@ -21,7 +21,7 @@
  * $Id: output.h,v 1.9 2008-06-27 12:28:50 hanke Exp $
  */
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "speaking.h"
 
 OutputModule *get_output_module(const TSpeechDMessage * message);

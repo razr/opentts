@@ -25,7 +25,7 @@
 #ifndef SET_H
 #define SET_H
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "history.h"
 
 TFDSetElement *get_client_settings_by_uid(int uid);

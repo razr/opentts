@@ -26,7 +26,7 @@
 #include <config.h>
 #endif
 
-#include "speechd.h"
+#include "openttsd.h"
 #include "sem_functions.h"
 
 void speaking_semaphore_post(void)

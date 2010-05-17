@@ -27,7 +27,7 @@
 
 #include <ctype.h>
 
-#include "speechd.h"
+#include "openttsd.h"
 
 #include "set.h"
 #include "history.h"

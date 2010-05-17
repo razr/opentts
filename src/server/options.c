@@ -28,7 +28,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 
-#include "speechd.h"
+#include "openttsd.h"
 
 #include "options.h"
 

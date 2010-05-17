@@ -28,7 +28,7 @@
 
 #include <glib.h>
 #include <poll.h>
-#include "speechd.h"
+#include "openttsd.h"
 #include "server.h"
 #include "index_marking.h"
 #include "module.h"

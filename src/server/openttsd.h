@@ -1,6 +1,6 @@
 
 /*
- * speechd.h - Speech Dispatcher header
+ * openttsd.h - openttsd header
  *
  * Copyright (C) 2001, 2002, 2003, 2006, 2007 Brailcom, o.p.s.
  *
@@ -18,8 +18,6 @@
  * along with this package; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
- *
- * $Id: speechd.h,v 1.64 2008-06-27 12:29:07 hanke Exp $
  */
 
 #ifndef SPEECHDH

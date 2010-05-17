@@ -27,7 +27,7 @@
 #endif
 
 #include <glib.h>
-#include "speechd.h"
+#include "openttsd.h"
 #include "compare.h"
 
 /* Pointers to compare_message_fd and compare_message_uid */

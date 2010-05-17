@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 
 #include <timestamp.h>
-#include "speechd.h"
+#include "openttsd.h"
 
 /* Declare dotconf functions and data structures*/
 #include "configuration.h"
@@ -853,16 +853,16 @@ int main(int argc, char *argv[])
 		if (SpeechdOptions.home_speechd_dir) {
 			char *temp = NULL;
 			SpeechdOptions.pid_file =
-			    g_strdup_printf("%s/pid/speech-dispatcher.pid",
+			    g_strdup_printf("%s/pid/openttsd.pid",
 					    SpeechdOptions.home_speechd_dir);
 			temp = g_path_get_dirname(SpeechdOptions.pid_file);
 			mkdir(temp, S_IRWXU);
 		} else if (!strcmp(PIDPATH, ""))
 			SpeechdOptions.pid_file =
-			    g_strdup("/var/run/speech-dispatcher.pid");
+			    g_strdup("/var/run/openttsd.pid");
 		else
 			SpeechdOptions.pid_file =
-			    g_strdup(PIDPATH "speech-dispatcher.pid");
+			    g_strdup(PIDPATH "openttsd.pid");
 	}
 
 	if (SpeechdOptions.conf_dir == NULL) {

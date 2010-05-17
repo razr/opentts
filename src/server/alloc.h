@@ -1,5 +1,5 @@
 
-#include "speechd.h"
+#include "openttsd.h"
 
 #ifndef ALLOC_H
 #define ALLOC_H

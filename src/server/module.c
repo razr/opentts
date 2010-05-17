@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <getline.h>
-#include "speechd.h"
+#include "openttsd.h"
 #include "output.h"
 
 void destroy_module(OutputModule * module)
