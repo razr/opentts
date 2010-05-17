@@ -107,12 +107,20 @@ AC_SUBST(SNDFILE_LIBS)
 
 # Audio subsystem part
 AUDIO_DLOPEN_MODULES=
-AC_ARG_WITH(oss, AS_HELP_STRING(--with-oss, [Compile with OSS support (default)]),
-        AS_IF([test "x$with_oss" = xno], AC_MSG_WARN(Forced compilation without OSS support.)),
-        [with_oss=yes])
+AC_CHECK_HEADER(sys/soundcard.h, oss_aud="true";echo "Compiling with OSS support", oss_aud="false";echo "*** OSS missing. Compiling without OSS support! See INSTALL.")
+AC_ARG_WITH(oss, AS_HELP_STRING(--with-oss, Compile with OSS support),
+		 if test $withval = "no"; then
+		    echo "Forced compilation without OSS support.";
+		    oss_aud="false";
+		 else
+		    if test $oss_aud = "false"; then
+		       echo "OSS support is not available. Sorry."; exit 1;
+		    fi
+                 fi
+		 echo "")
 
-AM_CONDITIONAL(oss_support, test $with_oss = "yes")
-if test $with_oss = "yes"; then
+AM_CONDITIONAL(oss_support, test $oss_aud = "true")
+if test $oss_aud = "yes"; then
         AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_oss.la"
 fi
 
