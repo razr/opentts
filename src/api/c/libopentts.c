@@ -212,7 +212,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 
 	/* Autospawn related */
 	const char *pidof_speechd[] = { "pidof", "speech-dispatcher", NULL };
-	const char *speechd_cmd[] = { SPD_SPAWN_CMD, NULL };
+	const char *speechd_cmd[] = { SPD_SPAWN_CMD, "--spawn", NULL };
 	gchar *speechd_pid = NULL;
 	GError *error = NULL;
 	gint exit_status;
@@ -255,7 +255,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 				     G_SPAWN_STDOUT_TO_DEV_NULL |
 				     G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL,
 				     NULL, NULL, &exit_status, &error);
-			sleep(0.5);
+			sleep(1);
 		}
 	}
 

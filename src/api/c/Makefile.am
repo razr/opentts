@@ -9,5 +9,5 @@ libopentts_la_LDFLAGS = -version-info @LIBOPENTTS_CURRENT@:@LIBOPENTTS_REVISION@
 libopentts_la_LIBADD = -lpthread $(GLIB_LIBS)
 
 if ENABLE_SESSION
-libopentts_la_CPPFLAGS += -DENABLE_SESSION -DSPD_SPAWN_CMD=\"@prefix@/bin/speechd-server-spawn\"
+libopentts_la_CPPFLAGS += -DENABLE_SESSION -DSPD_SPAWN_CMD=\""@prefix@/bin/openttsd"\"
 endif

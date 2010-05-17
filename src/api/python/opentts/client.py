@@ -336,7 +336,7 @@ class _SSIP_Connection:
     def speechd_server_spawn(self):
         """Attempts to spawn the speech-dispatcher server."""
         if os.path.exists(spawn_mod.SPD_SPAWN_CMD):
-            speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD],
+            speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD, '--spawn'],
                         stdin=None, stdout=subprocess.PIPE, stderr=None)
             return speechd_server.communicate()[0].rstrip('\n')
         else:

@@ -417,9 +417,6 @@ AC_CONFIG_FILES([Makefile
                  src/common/Makefile
                  src/modules/Makefile
                  src/server/Makefile
-                 src/session/Makefile
-                 src/session/speechd-server-spawn
-                 src/session/speechd-user-port.sh
                  src/tests/Makefile])
 AC_OUTPUT
 
