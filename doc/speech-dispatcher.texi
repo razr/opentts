@@ -2185,16 +2185,16 @@ deadlocks in SSIP communication.
 @node Guile API, Common Lisp API, Python API, Client Programming
 @section Guile API
 
-The Guile API can be found @file{src/guile/} in
+The Guile API can be found under @file{src/api/guile/} in
 the source tree, however it's still considered to be
-at the experimental stage. Please read @file{src/guile/README}.
+at the experimental stage. Please read @file{src/api/guile/README}.
 
 @node Common Lisp API,  , Guile API, Client Programming
 @section Common Lisp API
 
-The Common Lisp API can be found @file{src/cl/} in
+The Common Lisp API can be found @file{src/api/cl/} in
 the source tree, however it's still considered to be
-at the experimental stage. Please read @file{src/cl/README}.
+at the experimental stage. Please read @file{src/api/cl/README}.
 
 
 @node Server Programming, Download and Contact, Client Programming, Top
