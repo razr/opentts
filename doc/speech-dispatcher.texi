@@ -218,21 +218,12 @@ implemented and we believe it is now useful for applications as a
 device independent Text-to-Speech layer and an accessibility message
 coordination layer.
 
-Currently, one of the most advanced applications that works with
-Speech Dispatcher is @code{speechd-el}. This is a client for Emacs,
-targeted primarily for blind people. It is similar to Emacspeak,
-however the two take a bit different approach and serve different user
-needs. You can find speechd-el on
-@uref{http://www.freebsoft.org/speechd-el/}. speechd-el provides
-speech output when using nearly any GNU/Linux text interface, like
-editing text, reading email, browsing the web, etc.
-
 It's possible to use Speakup, the kernel-based screen reader, with
 software speech using the @code{ospeakup} package and openttsd.
 
-Orca, the primary screen reader for the Gnome Desktop, supports Speech
-Dispatcher directly since its version 2.19.0.  See
-@uref{http://live.gnome.org/Orca/SpeechDispatcher} for more
+Orca, the primary screen reader for the Gnome Desktop, supports
+OpenTTS directly, as of recent versions.  See
+@uref{http://live.gnome.org/Orca} for more
 information.
 
 We also provide a shared C library, a Python library and a Common Lisp
@@ -255,7 +246,7 @@ currently only support English. Flite (Festival Light) is a
 lightweight free software TTS synthesizer intended to run on systems
 with limited resources. At this time, it has only one English voice
 and porting voices from Festival looks rather difficult.  With the
-caching mechanism provided by Speech Dispatcher, Festival is even
+caching mechanism provided by openttsd, Festival is even
 faster than Flite in many situations.  See
 @uref{http://www.speech.cs.cmu.edu/flite/}. eSpeak is a newer very
 lightweight free software engine with a good quality of voice at high
@@ -300,7 +291,7 @@ please @xref{Top,,,ssip, SSIP Documentation}.
 @menu
 * Multiple Output Modules::     Using various speech synthesizers on one system.
 * Client Specific Default Configuration::  Managing multiple speaking applications.
-* Security::                    Speech Dispatcher protects the privacy of users.
+* Security::                    openttsd protects the privacy of users.
 @end menu
 
 @node Multiple Output Modules, Client Specific Default Configuration, Features, Features
@@ -455,11 +446,11 @@ client connection.
 All the messages sent by a given user are accessible to that user.
 
 @item
-@cindex @code{speechd} user
-@cindex @code{speechd} group
-All the messages sent by the user @code{speechd} are accessible to all
-users on the system running the Speech Dispatcher instance present in the
-group @code{speechd}.
+@cindex @code{openttsd} user
+@cindex @code{openttsd} group
+All the messages sent by the user @code{openttsd} are accessible to all
+users on the system running the openttsd instance present in the
+group @code{openttsd}.
 
 @item
 No other messages are accessible.
@@ -508,7 +499,7 @@ support in OpenTTS , you might want to start with eSpeak, a
 lightweight multi-lingual feature-complete synthesizer, to get all the
 key components working and perhaps only then switch to
 Festival. Installation of eSpeak should be easier and the default
-configuration of Speech Dispatcher is set up for eSpeak for this
+configuration of openttsd is set up for eSpeak for this
 reason. 
 
 You can of course also start with Epos or any other supported synthesizer.
@@ -671,7 +662,7 @@ under the appropriate user and answer some basic questions.
 
 @example
 $ otts-conf
-Speech Dispatcher configuration tool
+OpenTTS configuration tool
 Do you want to setup a completely new configuration? [yes] :
 >
 Do you want to create/setup a 'user' or 'system' configuration [user] :
@@ -713,8 +704,8 @@ order of their priority.
 
 The default communication port between openttsd and user
 applications is 6560 and all applications know this port number as the
-default to contact Speech Dispatcher. If you want to change it
-however, you can do it in the configuration file speechd.conf or
+default to contact openttsd. If you want to change it
+however, you can do it in the configuration file openttsd.conf or
 through a command line option when executing the openttsd
 binary. In such a case, it will also be necessary to influence the
 port used by the client applications (ospeakup, Orca, speechd-el,
@@ -739,8 +730,8 @@ otts-conf -d
 
 @item
 Check the appropriate logfile in
-@file{~/.opentts/logs/speechd.log} for user openttsd
-or in @file{/var/log/opentts/speechd.log}. Look
+@file{~/.opentts/logs/openttsd.log} for user openttsd
+or in @file{/var/log/opentts/openttsd.log}. Look
 for lines containing the string 'ERROR' and their surrounding
 contents. If you hear no speech, restart openttsd and look
 near the end of the log file -- before any attempts for synthesis of
@@ -854,7 +845,7 @@ remove the comment symbol @code{#}.
 @subsection Audio Output Configuration
 
 Audio output method (ALSA, Pulse etc.) can be configured centrally
-from the main configuration file @code{speechd.conf}. The option
+from the main configuration file @code{openttsd.conf}. The option
 @code{AudioOutputMethod} selects the desired audio method and further
 options labeled as @code{AudioALSA...} or @code{AudioPulse...} provide
 a more detailed configuration of the given audio output method.
@@ -915,13 +906,13 @@ can be switched in their own configuration files under
 @code{etc/opentts/modules/}.
 
 @menu
-* Loading Modules in speechd.conf::  
+* Loading Modules in openttsd.conf::  
 * Configuration files of output modules::  
 * Configuration of the Generic Output Module::  
 @end menu
 
-@node Loading Modules in speechd.conf, Configuration files of output modules, Output Modules Configuration, Output Modules Configuration
-@subsubsection Loading Modules in speechd.conf
+@node Loading Modules in openttsd.conf, Configuration files of output modules, Output Modules Configuration, Output Modules Configuration
+@subsubsection Loading Modules in openttsd.conf
 
 @anchor{AddModule}
 Each module that should be run when openttsd starts must be loaded
@@ -944,7 +935,7 @@ to @file{bin/opentts-modules/}.
 this output module is stored. It can be either absolute or relative
 to @file{etc/opentts/modules/}. This parameter is optional.
 
-@node Configuration files of output modules, Configuration of the Generic Output Module, Loading Modules in speechd.conf, Output Modules Configuration
+@node Configuration files of output modules, Configuration of the Generic Output Module, Loading Modules in openttsd.conf, Output Modules Configuration
 @subsubsection Configuration Files of Output Modules
 
 Each output module is different and therefore has different
@@ -1138,9 +1129,9 @@ so on.)
 @node Log Levels,  , Output Modules Configuration, Configuration
 @subsection Log Levels
 
-There are 6 different verbosity levels of Speech Dispatcher logging.
+There are 6 different verbosity levels of openttsd logging.
 0 means no logging, while 5 means that nearly all the information
-about Speech Dispatcher's operation is logged.
+about openttsd's operation is logged.
 
 @itemize @bullet
 
@@ -1188,13 +1179,13 @@ of data. Use with caution.)
 @node Tools,  , Configuration, User's Documentation
 @section Tools
 
-Several small tools are distributed together with Speech Dispatcher.
+OpenTTS includes several small utility programs.
 @code{otts-say} is a small client that allows you to send messages to
-Speech Dispatcher in an easy way and have them spoken, or cancel
+openttsd in an easy way and have them spoken, or cancel
 speech from other applications.
 
 @menu
-* otts-say::                     Say a given text or cancel messages in Dispatcher.
+* otts-say::                     Say a given text or cancel messages in openttsd.
 * otts-conf::                    Configuration, diagnostics and troubleshooting tool
 * otts-send::                    Direct SSIP communication from command line.
 @end menu
@@ -1239,8 +1230,8 @@ otts-send is a small client/server application that allows you to
 establish a connection to openttsd and then use a simple
 command line tool to send and receive SSIP protocol communication.
 
-Please see @file{src/c/clients/otts-say/README} in the Speech
-Dispatcher's source tree for more information.
+Please see @file{src/clients/otts-say/README} in the
+OpenTTS source tree for more information.
 
 @node Client Programming, Server Programming, User's Documentation, Top
 @chapter Client Programming
@@ -1248,11 +1239,11 @@ Dispatcher's source tree for more information.
 Clients communicate with openttsd via the Speech Synthesis
 Internet Protocol (SSIP) @xref{Top, , , ssip, Speech Synthesis
 Internet Protocol documentation}.  The protocol is the actual
-interface to Speech Dispatcher.
+interface to openttsd.
 
 Usually you don't need to use SSIP directly.  You can use one of the supplied
 libraries, which wrap the SSIP interface.  This is the
-recommended way of communicating with Speech Dispatcher.  We try so support as
+recommended way of communicating with openttsd.  We try to support as
 many programming environments as possible.  This manual (except SSIP) contains
 documentation for the C, Python and Guile  libraries, however there are also other
 libraries developed as external projects.  Please contact us for information
@@ -1289,7 +1280,7 @@ about current external client libraries.
 @findex spd_open()
 
 Opens a new connection to openttsd and returns a socket file
-descriptor you will use to communicate with Speech Dispatcher. The
+descriptor which you will use to communicate with the daemon. The
 socket file descriptor is a parameter used in all the other
 functions. It reads openttsd's port number from the
 environment variable @var{SPEECHD_PORT}.
@@ -1315,7 +1306,7 @@ your program, their @code{client_name}s should be the same, but @code{connection
 should differ. For example: ``buffer'', ``command_line'', ``text'', ``menu''.
 
 @code{username} should be set to the name of the user. Normally, you should
-get this string from the system. If set to NULL, libspeechd will try to
+get this string from the system. If set to NULL, libopentts will try to
 determine it automatically by g_get_user_name().
 
 @code{connection_mode} has two possible values: @code{SPD_MODE_SINGLE}
@@ -2112,17 +2103,17 @@ For example (simplified by not checking and freeing the returned strings):
 @node Python API, Guile API, C API, Client Programming
 @section Python API
 
-There is a full Python API available in @file{src/python/speechd/} in
+There is a full Python API available in @file{src/api/python/opentts/} in
 the source tree.  Please see the Python docstrings for full reference
 about the available objects and methods.
 
 Simple Python client:
 @example
-import speechd
-client = speechd.SSIPClient('test')
+import opentts
+client = opentts.SSIPClient('test')
 client.set_output_module('festival')
 client.set_language('en')
-client.set_punctuation(speechd.PunctuationMode.SOME)
+client.set_punctuation(opentts.PunctuationMode.SOME)
 client.speak("Hello World!")
 client.close()
 @end example 
@@ -2139,9 +2130,9 @@ event occurs for the corresponding message.
 
 Callback example:
 @example
-import speechd, time
+import opentts, time
 called = []
-client = speechd.SSIPClient('callback-test')
+client = opentts.SSIPClient('callback-test')
 client.speak("Hi!", callback=lambda cb_type: called.append(cb_type))
 time.sleep(2) # Wait for the events to happen.
 print "Called callbacks:", called
@@ -2156,24 +2147,24 @@ information within the callback function.
 
 Callback context example:
 @example
-import speechd, time
+import opentts, time
 
 class CallbackExample(object):
     def __init__(self):
-        self._client = speechd.SSIPClient('callback-test')
+        self._client = opentts.SSIPClient('callback-test')
 
     def speak(self, text):
         def callback(callback_type):
-            if callback_type == speechd.CallbackType.BEGIN:
+            if callback_type == opentts.CallbackType.BEGIN:
                 print "Speech started:", text
-            elif callback_type == speechd.CallbackType.END:
+            elif callback_type == opentts.CallbackType.END:
                 print "Speech completed:", text
-            elif callback_type == speechd.CallbackType.CANCEL:
+            elif callback_type == opentts.CallbackType.CANCEL:
                 print "Speech interupted:", text
         self._client.speak(text, callback=callback,
-                           event_types=(speechd.CallbackType.BEGIN,
-                                        speechd.CallbackType.CANCEL,
-                                        speechd.CallbackType.END))
+                           event_types=(opentts.CallbackType.BEGIN,
+                                        opentts.CallbackType.CANCEL,
+                                        opentts.CallbackType.END))
 
     def go(self):
         self.speak("Hi!")
@@ -2184,9 +2175,10 @@ class CallbackExample(object):
 CallbackExample().go()
 @end example 
 
-@emph{Important notice:} The callback is called in Speech Dispatcher
-listener thread.  No subsequent Speech Dispatcher interaction is
-allowed from within the callback invocation.  If you need to do
+@emph{Important notice:} The callback is called in
+the thread which listens to the openttsd server.
+Your callback @emph{must not}
+attempt to communicate with openttsd. If you need to do
 something more complicated, do it in another thread to prevent
 deadlocks in SSIP communication.
 
@@ -2238,9 +2230,9 @@ Additionally, synchronization of the speaking part from both sides
 After switching to the daemon mode (if required), it reads configuration
 files and initializes the speaking part. Then it opens the socket
 and waits for incoming data. This is implemented mainly in
-@file{src/server/speechd.c} and @file{src/server/server.c}.
+@file{src/server/openttsd.c} and @file{src/server/server.c}.
 
-There are three types of events: new client connects to speechd,
+There are three types of events: new client connects to openttsd,
 old client disconnects, or a client sends some data. In the third
 case, the data is passed to the @code{parse()} function defined
 in @file{src/server/parse.c}.
@@ -2280,7 +2272,7 @@ a message from the queue and sending it to the desired output
 module (synthesizer), but sometimes it's handling the pause
 or resume requests, and sometimes it's doing nothing.
 
-As said before, this is the part of Speech Dispatcher that
+As said before, this is the part of openttsd that
 talks to the output modules. It does so by using the output
 interface defined in @file{src/server/output.c}.
 
@@ -2300,7 +2292,7 @@ interface defined in @file{src/server/output.c}.
 @node Basic Structure, Communication Protocol for Output Modules, Output Modules, Output Modules
 @subsection Basic Structure
 
-Speech Dispatcher output modules are independent applications that,
+OpenTTS's output modules are independent applications that,
 using a simple common communication protocol, read commands from
 standard input and then output replies on standard output,
 communicating the requests to the particular software or hardware
@@ -2310,15 +2302,15 @@ of the communication protocol. Additionally, standard error output
 is used for logging of the modules.
 
 Output module binaries are usually located in
-@file{bin/speechd-modules/} and are loaded automatically when Speech
-Dispatcher starts, according to configuration.  Their standard
-input/output/error output is redirected to a pipe to Speech Dispatcher
+@file{/usr/lib/opentts/modules/} and are loaded automatically when
+openttsd starts, according to configuration.  Their standard
+input/output/error output is redirected to a pipe to openttsd
 and this way both sides can communicate.
 
 When the modules start, they are passed the name of a configuration file
 that should be used for this particular output module. 
 
-Each output module is started by Speech Dispatcher as:
+Each output module is started by openttsd as:
 
 @example
 my_module "configfile"
@@ -2335,8 +2327,8 @@ input/output is based on @ref{Top,,SSIP,ssip, SSIP
 Documentation}, although it is highly simplified and a little bit
 modified for the different purpose here. Another difference
 is that event notification is obligatory in modules communication,
-while in SSIP, this is an optional feature. This is because Speech
-Dispatcher has to know all the events happening in the output modules
+while in SSIP, this is an optional feature. This is because openttsd
+has to know all the events happening in the output modules
 for the purpose of synchronization of various messages.
 
 Since it's very similar to SSIP, @ref{Top,,General Rules,ssip, SSIP
@@ -2395,10 +2387,10 @@ module is supposed to start synthesizing it and take care of
 delivering it to an audio device. When (or just before) the first
 synthesized samples are delivered to the audio and start playing, the
 output module must send the @code{BEGIN} event over the communication
-socket to Speech Dispatcher, @xref{Events notification and index
+socket to openttsd, @xref{Events notification and index
 marking}. After the audio stops playing, the event @code{STOP},
-@code{PAUSE} or @code{END} must be delivered to Speech
-Dispatcher. Additionally, if supported by the given synthesizer, the
+@code{PAUSE} or @code{END} must be delivered to
+openttsd. Additionally, if supported by the given synthesizer, the
 output module can issue events associated with the included SSML index
 marks when they are reached in the audio output.
 
@@ -2539,7 +2531,7 @@ QUIT
 Each output module must take care of sending asynchronous
 notifications whenever the synthesizer (or the module) starts or stops
 output audio on the speakers. Additionally, whenever possible, the
-output module should report back to Speech Dispatcher index marks
+output module should report back to openttsd index marks
 found in the incoming SSML text whenever they are reached while
 speaking. See SSML specifications for more details about the
 @code{mark} element
@@ -2547,7 +2539,7 @@ speaking. See SSML specifications for more details about the
 Event and index mark notifications are reported by simply writing them
 to the standard output. An event notification must never get in
 between synchronous commands (those which require a reply) and their
-reply. Before Speech Dispatcher sends any new requests (like
+reply. Before openttsd sends any new requests (like
 @code{SET}, @code{SPEAK} etc.) it waits for the previous request to be
 terminated by the output module by signalling @code{STOP}, @code{END}
 or @code{PAUSE} index marks. So the only thing the output module must
@@ -2725,7 +2717,7 @@ here. It will expand into a dotconf callback and declaration of the
 variable.
 
 (You will later have to actually register these options for
-Speech Dispatcher in @code{module_load()})
+openttsd in @code{module_load()})
 
 There are currently 4 types of possible configuration options:
 
@@ -2875,8 +2867,8 @@ Now you have to define all the synthesis control functions
 Functions}. 
 
 At the end, this simple include provides the main() function and all
-the functionality related to being an output module of Speech
-Dispatcher (parsing argv[] parameters, communicating on stdin/stdout,
+the functionality related to being an output module of
+openttsd (parsing argv[] parameters, communicating on stdin/stdout,
 ...). It's recommended to study this file carefully and try to
 understand what exactly it does, as it will be part of the source code
 of your output module.
@@ -2897,7 +2889,7 @@ wrong, fix it and then warn others in this manual.
 @findex module_speak()
 
 This is the function where the actual speech output is produced. It is
-called every time Speech Dispatcher decides to send a message to
+called every time openttsd decides to send a message to
 synthesis. The data of length @var{bytes} are passed in
 a NULL terminated string @var{data}.  The argument @var{msgtype}
 defines what type of message it is (different types should be handled
@@ -2937,7 +2929,7 @@ Example from festival:
 This function should return 0 if it fails and 1 if the delivery
 to the synthesizer is successful. It should return immediately,
 because otherwise, it would block stopping, priority handling
-and other important things in Speech Dispatcher.
+and other important things in openttsd.
 
 If there is a need to stay longer, you should create a separate thread
 or process. This is for example the case of some software synthesizers
@@ -2955,7 +2947,7 @@ module_utils.c.  Call it at the beginning of the thread code.
 This function should stop the synthesis of the currently spoken message
 immediately and throw away the rest of the message.
 
-This function should return immediately.  Speech Dispatcher will
+This function should return immediately.  openttsd will
 not send another command until module_report_event_stop() is called.
 Note that you cannot call module_report_event_stop() from within
 the call to module_stop().  The best thing to do is emit
@@ -2969,14 +2961,14 @@ It should return 0 on success, -1 otherwise.
 
 This function should stop speaking on the synthesizer (or sending
 data to soundcard) just after sending an @code{__spd_} index
-mark so that Speech Dispatcher knows the position of stop.
+mark so that openttsd knows the position of stop.
 
 The pause can wait for a short time until
 an index mark is reached. However, if it's not possible to determine
 the exact position, this function should have the same effect
 as @code{module_stop}.
 
-This function should return immediately.  Speech Dispatcher will
+This function should return immediately.  Openttsd will
 not send another command until module_report_event_pause() is called.
 Note that you cannot call module_report_event_pause() from within
 the call to module_pause().  The best thing to do is emit
@@ -2998,7 +2990,7 @@ Note there is no module_resume() function.  The semantics of
 your module should stop after reaching a @code{__spd_} index mark.
 Just like @code{module_stop()}, it should discard the rest of the
 message after pausing.  On the next @code{module_speak()} call,
-Speech Dispatcher will resend the rest of the message after the
+openttsd will resend the rest of the message after the
 index mark.
 @end deffn
 
@@ -3209,11 +3201,11 @@ way to do this is to emit the events from another thread.
 @deffn {Output module function}  {int module_close(int status)} (void)
 @findex module_close()
 
-This function is called when Speech Dispatcher terminates.  The output
+This function is called when openttsd terminates.  The output
 module should terminate all threads and processes, free all resources,
 close all sockets etc.  Never assume this function is called only when
-Speech Dispatcher terminates and exit(0) will do the work for you.  It's
-perfectly ok for Speech Dispatcher to load, unload or reload output modules
+openttsd terminates and exit(0) will do the work for you.  It's
+perfectly ok for openttsd to load, unload or reload output modules
 in the middle of its run.
 
 If the parameter @code{status} is non-zero, the process should
@@ -3420,14 +3412,14 @@ if data isn't NULL before calling @code{free()}.
 @subsection Index Marks in Output Modules
 
 Output modules need to provide some kind of synchronization and they have to
-give Speech Dispatcher back some information about what part of the message
+give openttsd some information about what part of the message
 is currently being said. On the other hand, output modules are not able to tell
 the exact position in the text because various conversions and message processing take place
 (sometimes punctuation and spelling substitution, the message needs to be
 recoded from multibyte to unibyte coding etc.) before the text reaches
 the synthesizer.
 
-For this reason, Speech Dispatcher places so-called index marks in
+For this reason, openttsd places so-called index marks in
 the text it sends to its output modules. They have the form:
 
 @example
@@ -3445,7 +3437,7 @@ within a message looks like
 @end example
 
 When an index mark is reached, its identifier should be stored
-so that the output module is able to tell Speech Dispatcher the identifier
+so that the output module is able to tell openttsd the identifier
 of the last index mark. Also, index marks are the best place to stop
 when the module is requested to pause (although it's ok to stop at
 some place close by and report the last index mark).
@@ -3455,24 +3447,22 @@ Notice that index marks are in SSML format using the @code{mark} tag.
 @node Download and Contact, Reporting Bugs, Server Programming, Top
 @chapter Download
 
-You can download Speech Dispatcher's latest release source code from
-@uref{http://www.freebsoft.org/speechd}. There is also information
-on how to set up anonymous access to our CVS.
-
-However, you may prefer to download Speech Dispatcher in a binary
+You can download the latest release of the OpenTTS source code from
+@url{http://opentts.org/}.
+However, you may prefer to download OpenTTS in a binary
 package for your system. We don't distribute such packages ourselves.
 
-If you want to contact us, please look at
-@uref{http://www.freebsoft.org/contact} 
-or use the email @email{users@@lists.freebsoft.org}.
+The best way to contact the OpenTTS developers is via our mailing lists.
+Please see @url{http://lists.opentts.org/} for information about the
+opentts-users and opentts-dev lists.
 
 @node Reporting Bugs, How You Can Help, Download and Contact, Top
 @chapter Reporting Bugs
 
-If you believe you found a bug in Speech Dispatcher, we will be very
-grateful if you let us know about it. Please do it by email on the
-address @email{speechd@@bugs.freebsoft.org}, but please don't send us
-messages larger than half a megabyte unless we ask you.
+If you believe you found a bug in OpenTTS, we will be very
+grateful if you let us know about it.
+Please report it on our bug tracker, found at
+@url{http://opentts.org/project/issues}.
 
 To report a bug in a way that is useful for the developers is not
 as easy as it may seem. Here are some hints that you should follow in
@@ -3486,7 +3476,7 @@ if it's a general bug that happens in many situations, please try to
 describe at least one case in as much detail, as possible.
 
 Also, please specify the versions of programs that you use when
-the bug happens. This is not only Speech Dispatcher, but also
+the bug happens. This is not only openttsd, but also
 the client application you use (speechd-el, say, etc.) and
 the synthesizer name and version.
 
@@ -3498,10 +3488,10 @@ best 5, so that it's useful for debugging purposes. You can do so in
 @file{etc/opentts/openttsd.conf} by modifying the variable
 @code{LogLevel}. Also, you may want to modify the log destination with
 variable @code{LogFile}. After modifying these options, please restart
-Speech Dispatcher and repeat the situation in which the bug
+openttsd and repeat the situation in which the bug
 happens. After it happened, please take the log and attach it to the
 bug report, preferably compressed using @code{gzip}. But note, that
-when logging with level 5, all the data that come from Speech Dispatcher
+when logging with level 5, all the data that come from openttsd
 is also recorded, so make sure there is no sensitive information
 when you are reproducing the bug. Please make sure you switch back
 to priority 3 or lower logging, because priority 4 or 5 produces
@@ -3520,7 +3510,7 @@ valuable, but if you are not familiar with gdb, don't bother with
 that, we may ask you to do it later.
 
 Finally, you may also send us a guess of what you think
-happens in Speech Dispatcher that causes the bug, but this is
+happens in OpenTTS that causes the bug, but this is
 usually not very helpful. If you are able to provide additional technical
 information instead, please do so.
 
