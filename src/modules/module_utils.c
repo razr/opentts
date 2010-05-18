@@ -544,7 +544,7 @@ module_get_message_part(const char *message, char *part, unsigned int *pos,
 			if ((message[*pos + 1] == ' ')
 			    || (message[*pos + 1] == '\n')
 			    || (message[*pos + 1] == '\r')) {
-				for (n = 0; n <= num_dividers; n++) {
+				for (n = 0; n < num_dividers; n++) {
 					if ((part[i] == dividers[n])) {
 						part[i + 1] = 0;
 						(*pos)++;
