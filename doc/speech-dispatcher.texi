@@ -185,31 +185,6 @@ The module for each synthysizer is a stand alone executable, so that multiple sy
 
 @image{figures/architecture,155mm,,Speech Dispatcher architecture}
 
-@heading Future Design
-
-Speech Dispatcher currently mixes two important features: common
-low-level interface to multiple speech synthesizers and message
-management (including priorities and history). This became even more
-evident when we started thinking about handling messages intended for
-output on braille devices.  Such messages of course need to be
-synchronized with speech messages and there is little reason why the
-accessibility tools should send the same message twice for
-these two different kinds of output used by blind people (often
-simultaneously).
-
-In near future, we would like to split Speech Dispatcher into two
-independent components: one providing a low-level interface to
-speech synthesis drivers, which we now call TTS API Provider, and the
-second doing message managemenet, some Message Dispatcher. This will
-allow Message Dispatcher to also output on Braille.
-
-While a good API and its implementation for Braille are already
-existent in the form of BrlAPI, the API for speech is now under active
-developement. Please see another architecture diagram showing how we
-imagine Message Dispatcher in the future.
-
-@image{figures/architecture-future,155mm,,Speech Dispatcher architecture}
-
 See also the detailed description @ref{Client Programming} interfaces, and
 @ref{Server Programming} documentation.
 
