@@ -1136,7 +1136,7 @@ void clean_old_settings_table()
 	msg_settings_old.spelling_mode = -1;
 	msg_settings_old.cap_let_recogn = -1;
 	msg_settings_old.language = NULL;
-	msg_settings_old.voice = NO_VOICE;
+	msg_settings_old.voice = SPD_NO_VOICE;
 	msg_settings_old.synthesis_voice = NULL;
 }
 
@@ -1146,11 +1146,11 @@ void init_settings_tables()
 	msg_settings.rate = 0;
 	msg_settings.pitch = 0;
 	msg_settings.volume = 0;
-	msg_settings.punctuation_mode = PUNCT_NONE;
-	msg_settings.spelling_mode = SPELLING_OFF;
-	msg_settings.cap_let_recogn = RECOGN_NONE;
+	msg_settings.punctuation_mode = SPD_PUNCT_NONE;
+	msg_settings.spelling_mode = SPD_SPELL_OFF;
+	msg_settings.cap_let_recogn = SPD_CAP_NONE;
 	msg_settings.language = NULL;
-	msg_settings.voice = MALE1;
+	msg_settings.voice = SPD_MALE1;
 	msg_settings.synthesis_voice = NULL;
 	clean_old_settings_table();
 }
