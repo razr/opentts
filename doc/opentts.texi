@@ -1,6 +1,6 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
-@setfilename speech-dispatcher.info
+@setfilename opentts.info
 @settitle OpenTTS 
 @finalout
 @c @setchapternewpage odd
@@ -16,7 +16,7 @@
 @dircategory Development
 
 @direntry
-* Speech Dispatcher: (speech-dispatcher).       Speech Dispatcher.
+* OpenTTS: (opentts).       OpenTTS.
 @end direntry
 
 @titlepage
