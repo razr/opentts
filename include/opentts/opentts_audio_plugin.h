@@ -1,5 +1,5 @@
 /*
- * spd_audio_plugin.h -- The SPD Audio Plugin Header
+ * audio_plugin.h -- The OpenTTS Audio Plugin Header
  *
  * Copyright (C) 2004 Brailcom, o.p.s.
  * Copyright (C) 2010 OpenTTS Developers
@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef __SPD_AUDIO_PLUGIN_H
-#define __SPD_AUDIO_PLUGIN_H
+#ifndef __OPENTTS_AUDIO_PLUGIN_H
+#define __OPENTTS_AUDIO_PLUGIN_H
 
 #define SPD_AUDIO_PLUGIN_ENTRY_STR "spd_audio_plugin_get"
 

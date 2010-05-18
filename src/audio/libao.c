@@ -33,7 +33,7 @@
 #include <timestamp.h>
 
 #define SPD_AUDIO_PLUGIN_ENTRY otts_libao_LTX_spd_audio_plugin_get
-#include "spd_audio_plugin.h"
+#include <opentts/opentts_audio_plugin.h>
 
 /* send a packet of XXX bytes to the sound device */
 #define AO_SEND_BYTES 256

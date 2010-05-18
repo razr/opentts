@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <libopentts.h>
+#include <opentts/libopentts.h>
 #include <def.h>
 
 int main()

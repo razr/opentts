@@ -1,7 +1,5 @@
 
-inc_local = "-I$(top_srcdir)/src/common/"
-
-include_HEADERS = libopentts.h
+inc_local = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common/"
 
 lib_LTLIBRARIES = libopentts.la
 libopentts_la_SOURCES = libopentts.c

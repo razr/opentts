@@ -45,7 +45,7 @@
 
 #include <def.h>
 #include <getline.h>
-#include "libopentts.h"
+#include <opentts/libopentts.h>
 
 /* Comment/uncomment to switch debugging on/off */
 // #define LIBSPEECHD_DEBUG 1

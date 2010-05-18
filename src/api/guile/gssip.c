@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include <libguile.h>
-#include <libopentts.h>
+#include <opentts/libopentts.h>
 
 #include "gssip.h"
 

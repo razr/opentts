@@ -34,7 +34,7 @@
 #include <pthread.h>
 
 #define SPD_AUDIO_PLUGIN_ENTRY otts_nas_LTX_spd_audio_plugin_get
-#include "spd_audio_plugin.h"
+#include <opentts/opentts_audio_plugin.h>
 
 typedef struct {
 	AudioID id;

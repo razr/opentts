@@ -403,6 +403,7 @@ AC_CONFIG_FILES([Makefile
                  config/clients/Makefile
                  config/modules/Makefile
                  doc/Makefile
+                 include/Makefile
                  src/Makefile
                  src/api/Makefile
                  src/api/c/Makefile

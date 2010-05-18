@@ -1,8 +1,8 @@
 
-inc_local = "-I$(top_srcdir)/src/common"
+inc_local = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common"
 c_api = $(top_srcdir)/src/api/c
 
-AM_CFLAGS = -I$(c_api) $(inc_local) -I../audio/
+AM_CFLAGS = $(inc_local)
 
 check_PROGRAMS = long_message clibrary clibrary2 run_test connection_recovery
 

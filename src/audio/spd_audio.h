@@ -25,7 +25,7 @@
 #ifndef __SPD_AUDIO_H
 #define __SPD_AUDIO_H
 
-#include "spd_audio_plugin.h"
+#include <opentts/opentts_audio_plugin.h>
 
 #define OTTS_AUDIO_LIB_PREFIX "otts_"
 

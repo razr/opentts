@@ -21,8 +21,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef _LIBSPEECHD_H
-#define _LIBSPEECHD_H
+#ifndef _LIBOPENTTS_H
+#define _LIBOPENTTS_H
 
 #include <stdio.h>
 #include <stddef.h>
@@ -274,4 +274,4 @@ char *spd_send_data_wo_mutex(SPDConnection * connection,
 }
 #endif				/* __cplusplus */
 /* *INDENT-ON* */
-#endif /* ifndef _LIBSPEECHD_H */
+#endif /* ifndef _LIBOPENTTS_H */
