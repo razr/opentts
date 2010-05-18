@@ -560,20 +560,20 @@ the file @code{INSTALL} in the source tree.
 @item Configure OpenTTS
 
 The easiest way to configure and test OpenTTS is
-through the @code{spd-conf} configuration script. It will guide you
+through the @code{otts-conf} configuration script. It will guide you
 through the basic configuration. It will also subsequently perform
 some diagnostics test and offer some limited help with
 troubleshooting. Just execute
 
 @example
-spd-conf
+otts-conf
 @end example
 
-under an ordinary user or system user like 'speech-dispatcher'
+under an ordinary user or system user like 'openttsd'
 depending on whether you'd like to setup openttsd as a user or
 system service respectively. You might also want to explore the
 offered options or run some of its subsystems manually, type
-@code{spd-conf -h} for help.
+@code{otts-conf -h} for help.
 
 If you do not want to use this script, it doesn't work in your case
 or it doesn't provide enough configuration flexibility, please
@@ -601,13 +601,13 @@ default value.
 @item Test openttsd 
 
 The simplest way to test openttsd is through 
-@code{spd-conf -d} or through the @code{spd-say} tool.
+@code{otts-conf -d} or through the @code{otts-say} tool.
 
 Example:
 @example
-spd-conf -d
-spd-say "Hello!"
-spd-say -l cs -r 90 "Ahoj"
+otts-conf -d
+otts-say "Hello!"
+otts-say -l cs -r 90 "Ahoj"
 @end example
 
 If you don't hear anything, please @xref{Troubleshooting}.
@@ -636,7 +636,7 @@ Restart openttsd and in your client, select
 test it with the following command
 
 @example
-spd-say -o espeak-mbrola-generic -l cs Testing
+otts-say -o espeak-mbrola-generic -l cs Testing
 @end example
 
 @node Running, Troubleshooting, Installation, User's Documentation
@@ -674,7 +674,7 @@ When running openttsd as a system wide service, it is
 recommended to start it using an /etc/init.d/ script under a special
 user and group, like 'opentts'. This user must have read/write
 permissions to access the PID directory (typically
-/var/run/speech-dispatcher/), read permissions to the configuration
+/var/run/), read permissions to the configuration
 directory (typically /etc/opentts/) and read/write permissions
 to the logfile directory (typically /var/log/opentts/).  The
 listed typical path are prefixed with /usr/local/ when compiling the
@@ -691,11 +691,11 @@ Before running openttsd under an ordinary user account, a
 directory @file{.opentts/conf/} should be created in the users
 home directory and all the configuration files and directories should be
 put here. If OpenTTS is already installed, this
-is most easily done with the @code{spd-conf} configuration utility
+is most easily done with the @code{otts-conf} configuration utility
 under the appropriate user and answer some basic questions.
 
 @example
-$ spd-conf
+$ otts-conf
 Speech Dispatcher configuration tool
 Do you want to setup a completely new configuration? [yes] :
 >
@@ -704,7 +704,7 @@ Do you want to create/setup a 'user' or 'system' configuration [user] :
 [...]
 @end example
 
-If you do not want to use the @code{spd-conf} tool,
+If you do not want to use the @code{otts-conf} tool,
 you can achieve the same result manually as described bellow:
 
 @example
@@ -756,10 +756,10 @@ If you are experiencing problems when running opentsd, please:
 @itemize
 
 @item
-Use @code{spd-conf} to run diagnostics:
+Use @code{otts-conf} to run diagnostics:
 
 @example
-spd-conf -d
+otts-conf -d
 @end example
 
 @item
@@ -776,7 +776,7 @@ suggested solution can be found in the log file.
 @item
 If this doesn't reveal the problem, please run
 @example
-spd-conf -D
+otts-conf -D
 @end example
 
 Which will genereate a very detailed logfile archive
@@ -785,12 +785,12 @@ a request for help.
 
 @item
 You can also try to say some message directly through the utility
-@code{spd-say}.
+@code{otts-say}.
 
 Example:
 @example
-        spd-say "Hello, does it work?"
-        spd-say --language=cs --rate=20 "Everything ok?"
+        otts-say "Hello, does it work?"
+        otts-say --language=cs --rate=20 "Everything ok?"
 @end example
 
 @item
@@ -1021,7 +1021,7 @@ the comments in the configuration file under the appropriate AddModule
 section for more info.
 
 For example our current definition of voices for Epos (file
-@code{/etc/speech-dispatcher/modules/generic-epos.conf} looks like
+@code{/etc/opentts/modules/generic-epos.conf} looks like
 this:
 
 @example
@@ -1214,57 +1214,57 @@ of data. Use with caution.)
 @section Tools
 
 Several small tools are distributed together with Speech Dispatcher.
-@code{spd-say} is a small client that allows you to send messages to
+@code{otts-say} is a small client that allows you to send messages to
 Speech Dispatcher in an easy way and have them spoken, or cancel
 speech from other applications.
 
 @menu
-* spd-say::                     Say a given text or cancel messages in Dispatcher.
-* spd-conf::                    Configuration, diagnostics and troubleshooting tool
-* spd-send::                    Direct SSIP communication from command line.
+* otts-say::                     Say a given text or cancel messages in Dispatcher.
+* otts-conf::                    Configuration, diagnostics and troubleshooting tool
+* otts-send::                    Direct SSIP communication from command line.
 @end menu
 
-@node spd-say, spd-conf, Tools, Tools
-@subsection spd-say
+@node otts-say, otts-conf, Tools, Tools
+@subsection otts-say
 
-spd-say is documented in its own manual. @xref{Top,,,spd-say, Spd-say
+otts-say is documented in its own manual. @xref{Top,,,otts-say, otts-say
 Documentation}.
 
-@node spd-conf, spd-send, spd-say, Tools
-@subsection spd-conf
+@node otts-conf, otts-send, otts-say, Tools
+@subsection otts-conf
 
-spd-conf is a tool for creating basic configuration, initial setup of
+otts-conf is a tool for creating basic configuration, initial setup of
 some basic settings (output module, audio method), diagnostics and
 automated debugging with a possibility to send the debugging output to
 the developers with a request for help.
 
 The available command options are self-documented through
-@code{spd-say -h}. In any working mode, the tool asks the user about
+@code{otts-say -h}. In any working mode, the tool asks the user about
 future actions and prefered configuration of the basic options.
 
 Most useful ways of execution are:
 @itemize @bullet
-@item @code{spd-conf}
+@item @code{otts-conf}
 Create new configuration and setup basic settings according to user
 answers. Run diagnostics and if some problems occur, run debugging
 and offer to send a request for help to the developers.
 
-@item @code{spd-conf -d}
+@item @code{otts-conf -d}
 Run diagnostics of problems.
 
-@item @code{spd-conf -D}
+@item @code{otts-conf -D}
 Run debugging and offer to send a request for help to the developers.
 
 @end itemize
 
-@node spd-send,  , spd-conf, Tools
-@subsection spd-send
+@node otts-send,  , otts-conf, Tools
+@subsection otts-send
 
-spd-send is a small client/server application that allows you to
+otts-send is a small client/server application that allows you to
 establish a connection to openttsd and then use a simple
 command line tool to send and receive SSIP protocol communication.
 
-Please see @file{src/c/clients/spd-say/README} in the Speech
+Please see @file{src/c/clients/otts-say/README} in the Speech
 Dispatcher's source tree for more information.
 
 @node Client Programming, Server Programming, User's Documentation, Top
@@ -3486,10 +3486,6 @@ on how to set up anonymous access to our CVS.
 
 However, you may prefer to download Speech Dispatcher in a binary
 package for your system. We don't distribute such packages ourselves.
-If you run Debian GNU/Linux, it should be in the central repository
-under the name @code{speech-dispatcher} or @code{speechd}. If you run
-an rpm-based distribution like RedHat, Mandrake or SuSE Linux, please
-try to look at @uref{http://www.rpmfind.net/}.
 
 If you want to contact us, please look at
 @uref{http://www.freebsoft.org/contact} 
@@ -3524,7 +3520,7 @@ is very useful, because otherwise, we may not be able to reproduce the
 bug with our configuration and program versions that differ from
 yours. Configuration must be set to logging priority at least 4, but
 best 5, so that it's useful for debugging purposes. You can do so in
-@file{etc/speech-dispatcher/speechd.conf} by modifying the variable
+@file{etc/opentts/openttsd.conf} by modifying the variable
 @code{LogLevel}. Also, you may want to modify the log destination with
 variable @code{LogFile}. After modifying these options, please restart
 Speech Dispatcher and repeat the situation in which the bug
@@ -3540,8 +3536,8 @@ If you are a programmer and you find a bug that is reproducible in
 SSIP, you can send us the sequence of SSIP commands that lead to the
 bug (preferably from starting the connection). You can also try to
 reproduce the bug in a simple test-script under
-@file{speech-dispatcher/src/tests} in the source tree. Please check
-@file{speech-dispatcher/src/tests/README} and see the other tests
+@file{src/tests} in the source tree. Please check
+@file{src/tests/README} and see the other tests
 scripts there for an example.
 
 When the bug is a SEGMENTATION FAULT, a backtrace from gdb is also
