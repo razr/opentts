@@ -224,15 +224,16 @@ int main(int argc, char **argv)
 	} else {
 		/* Say the message with priority "text" */
 		assert(argv[argc - 1]);
-		if (argv[argc - 1][0] != '-')
+		if (argv[argc - 1][0] != '-') {
 			err =
 			    spd_sayf(conn, spd_priority,
 				     (char *)argv[argc - 1]);
-		else
+			if (err == -1)
+				FATAL
+				    ("Speech Dispatcher failed to say message");
+		} else {
 			wait_till_end = 0;
-
-		if (err == -1)
-			FATAL("Speech Dispatcher failed to say message");
+		}
 
 		/* Wait till the callback is called */
 		if (wait_till_end)
