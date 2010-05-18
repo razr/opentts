@@ -142,10 +142,10 @@ a Braille display).
 
 There are different speech synthesizers with different capabilities.
 Some of them are hardware, some of them are software.  Some of them
-are Free Software and are are available on the Internet.  Programmers
+are Free Software and are available on the Internet.  Programmers
 have a really hard time when they want to make their program speak
 because they have to solve three problems.
-First most synthysizers have their own protocall or API.
+First most synthesizers have their own protocol or API.
 Second, various messages have to be scheduled, (should a given message be skipped, stopped, or paused to allow another to be spoken).
 Finaly, The programmer has to deal with other applications possibly wanting to share the synthysizer.
 They often need to write output device drivers for these programs or
@@ -176,12 +176,12 @@ be a long way until we achieve this state of things.
 @cindex Design
 
 @heading Current Design        
-The goal of the OpenTTS project is that there will be a uniform interface to use any synthysizer on any POSIX operating system.
+The goal of the OpenTTS project is to provide a uniform interface to use any synthesizer on any POSIX operating system.
 We implement this with a library libopentts, which is used by an application that wants to provide speech.
 This library provides functions like say, stop, speak character, speak key etc.
-The libopentts library communicates with a server named openttsd, over TCP/IP using a protocall @code{SSIP}.
-The openttsd server enqueues the message, and then speaks it using a module for the current synthysizer with the settings and priority set by the client.
-The module for each synthysizer is a stand alone executable, so that multiple synthysizers can be available at the same time, and be switched on the fly.
+The libopentts library communicates with a server named openttsd, over TCP/IP using a protocol @code{SSIP}.
+The openttsd server enqueues the message, and then speaks it using a module for the current synthesizer with the settings and priority set by the client.
+The module for each synthesizer is a stand alone executable, so that multiple synthesizers can be available at the same time, and be switched on the fly.
 
 @image{figures/architecture,155mm,,Speech Dispatcher architecture}
 
@@ -262,7 +262,7 @@ no other choices for your language. Configuration files for
 Espeak+MBROLA, Epos, Dectalk software, Cepstral Swift and
 (experimental) LiaPhon are shipped with OpenTTS.
 
-openttsd does not yet support hardware synthysizers, however there are plans to implement modules for these synthysizers.
+openttsd does not yet support hardware synthesizers, however there are plans to implement modules for these synthesizers.
 
 @node User's Documentation, Client Programming, Introduction, Top
 @chapter User's Documentation
@@ -2487,7 +2487,7 @@ corresponding SSIP commands, except that they are written with small
 letters. @xref{Top,,Parameter Setting Commands,ssip, SSIP
 Documentation}.  The conversion between these string values and the
 corresponding C enum variables can be easily done using
-@file{intl/fdsetconv.c}.
+@file{common/fdsetconv.c}.
 
 Not all of these parameters must be set and the value of the string
 arguments can also be @code{NULL}. If some of the parameters aren't
@@ -2670,23 +2670,23 @@ in order for us to be in a better legal position against possible intruders.
 @node The Skeleton of an Output Module, Output Module Functions, How to Write New Output Module, Output Modules
 @subsection The Skeleton of an Output Module 
 
-Each output module should include @file{intl/fdset.h} where the
+Each output module should include @file{src/modules/module_utils.h} where the
 SPDMsgSettings structure is defined to be able to handle the different
 speech synthesis settings.
 
 @example
-#include "fdset.h"
+#include "module_utils.h"
 @end example
 
-Additionally, it's also reccomended to include @file{module_utils.h}
-which provides many tools to help writing output modules and make the
-code simpler. If your plugin needs the audio tools (if you take
+Additionally, @file{module_utils.h}  provides many tools to help authors of
+output modules and make the code simpler.
+If your plugin needs the audio tools (if you take
 care of the output to the soundcard instead of the synthesizer),
-you also have to include @file{spd_audio.h}
+you also have to include @file{audio.h}
 
 @example
 #include "module_utils.h"
-#include "spd_audio.c"
+#include "audio.h"
 @end example
 
 The definition of macros @code{MODULE_NAME} and @code{MODULE_VERSION}
@@ -2866,15 +2866,13 @@ Now you have to define all the synthesis control functions
 @code{module_speak}, @code{module_stop} etc.  See @ref{Output Module
 Functions}. 
 
-At the end, this simple include provides the main() function and all
-the functionality related to being an output module of
-openttsd (parsing argv[] parameters, communicating on stdin/stdout,
-...). It's recommended to study this file carefully and try to
-understand what exactly it does, as it will be part of the source code
-of your output module.
+module_main.c contains main() function which is generic to all modules.
+This file will be compiled with your binary if you add
+$(common_sources) to your module in Makefile.am
 
 @example
-#include "module_main.c"
+cicero_SOURCES = cicero.c $(common_sources)
+cicero_LDADD = $(common_libs) -lpthread $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS)
 @end example
 
 If it doesn't work, it's most likely not your fault. Complain!  This
@@ -2885,7 +2883,7 @@ wrong, fix it and then warn others in this manual.
 @node Output Module Functions, Module Utils Functions and Macros, The Skeleton of an Output Module, Output Modules
 @subsection Output Module Functions
 
-@deffn {Output Module Functions} int module_speak (char *data, size_t bytes, EMessageType msgtype)
+@deffn {Output Module Functions} int module_speak (char *data, size_t bytes, SPDMessageType msgtype)
 @findex module_speak()
 
 This is the function where the actual speech output is produced. It is
@@ -2897,7 +2895,7 @@ differently, if the synthesizer supports it).
 
 Each output module should take care of setting the output device to
 the parameters from msg_settings (defined in module_utils.h) (See
-SPDMsgSettings in @file{intl/fdset.h}). However, it is not an error if
+SPDMsgSettings in @file{src/modules/module_utils.h}). However, it is not an error if
 some of these values are ignored. At least rate, pitch and language
 should be set correctly.
 
@@ -2910,7 +2908,7 @@ the name of the language according to RFC 1776 (en, cs, fr, ...). If the
 requested language is not supported by this synthesizer, it's ok to abort
 and return 0, because that's an error in user settings.
 
-Other parameters are defined in @code{SPDMsgSettings} in @file{intl/fdset.h}.
+Other parameters are defined in @code{SPDMsgSettings} in @file{src/modules/module_utils.h}.
 
 An easy way to set the parameters is using the UPDATE_PARAMETER() and
 UPDATE_STRING_PARAMETER() macros. @xref{Module Utils Functions and
@@ -3079,7 +3077,7 @@ festival_set_rate(signed int rate)
 }
 [...]
 int
-module_speak(char *data, size_t bytes, EMessageType msgtype)
+module_speak(char *data, size_t bytes, SPDMessageType msgtype)
 {
     [...]
     UPDATE_PARAMETER(rate, festival_set_rate);
