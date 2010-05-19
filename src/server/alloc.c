@@ -4,12 +4,6 @@
 
 #include "alloc.h"
 
-void spd_free(void *data)
-{
-	if (data != NULL)
-		free(data);
-}
-
 TSpeechDQueue *speechd_queue_alloc()
 {
 	TSpeechDQueue *new;

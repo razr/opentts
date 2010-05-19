@@ -4,10 +4,6 @@
 #ifndef ALLOC_H
 #define ALLOC_H
 
-/* Like free(), but don't try to free NULL data. After freeing
-   the data, fill the pointer with NULL. */
-void spd_free(void *data);
-
 TSpeechDQueue *speechd_queue_alloc();
 
 /* Copy a message */

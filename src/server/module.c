@@ -185,9 +185,9 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 			output_close(module);
 			return NULL;
 		} else {
-			char *rep_line = malloc(1024);
+			char *rep_line = NULL;
 			FILE *f;
-			size_t n = 1024;
+			size_t n = 0;
 			char s;
 			GString *reply;
 
@@ -199,6 +199,8 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 					MSG(1,
 					    "ERROR: Bad syntax from output module %s 1",
 					    module->name);
+					if (rep_line != NULL)
+						free(rep_line);
 					return NULL;
 				}
 				assert(rep_line != NULL);
@@ -208,6 +210,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 					MSG(1,
 					    "ERROR: Bad syntax from output module %s 2",
 					    module->name);
+					free(rep_line);
 					return NULL;
 				}
 
@@ -215,7 +218,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 					g_string_append(reply, rep_line + 4);
 				else {
 					s = rep_line[0];
-					spd_free(rep_line);
+					free(rep_line);
 					break;
 				}
 
