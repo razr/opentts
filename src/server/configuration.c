@@ -320,6 +320,7 @@ DOTCONF_CB(cb_AddModule)
 	output_modules_list =
 	    g_list_append(output_modules_list, g_strdup(module_name));
 
+	g_free(module_dbgfile);
 	g_free(module_name);
 
 	return NULL;
