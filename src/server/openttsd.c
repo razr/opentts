@@ -866,7 +866,7 @@ int main(int argc, char *argv[])
 	MSG(1, "Speech Dispatcher " VERSION " starting");
 
 	/* By default, search for configuration options and put everything
-	 * in a .speech-dispatcher directory  in user's home directory. */
+	 * in a .opentts directory  in user's home directory. */
 	{
 		const char *user_home_dir;
 
@@ -878,7 +878,7 @@ int main(int argc, char *argv[])
 		if (user_home_dir) {
 			/* Setup a ~/.speechd-dispatcher/ directory or create a new one */
 			SpeechdOptions.home_speechd_dir =
-			    g_strdup_printf("%s/.speech-dispatcher",
+			    g_strdup_printf("%s/.opentts",
 					    user_home_dir);
 			MSG(4, "Home dir found, trying to find %s",
 			    SpeechdOptions.home_speechd_dir);
@@ -914,7 +914,7 @@ int main(int argc, char *argv[])
 					else
 						SpeechdOptions.conf_dir =
 						    g_strdup
-						    ("/etc/speech-dispatcher/");
+						    ("/etc/opentts/");
 				}
 			}
 		} else {
