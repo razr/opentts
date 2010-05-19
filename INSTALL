@@ -2,37 +2,38 @@
 The requirements:
 =================
 
-You will need these components to compile Speech Dispatcher:  
+You will need these components to compile OpenTTS:  
  - glib 2.0  (http://www.gtk.org)
  - libdotconf 1.0 (http://www.azzit.de/dotconf/)
  - pthreads
  - gcc and GNU make (http://www.gnu.org)
- - festival-freebsoft-utils 0.3+ (optional)
-	(http://www.freebsoft.org/festival-freebsoft-utils)
 
-Only if you are building from CVS, you also need these:
+Only if you are building from Git, you also need these:
  - automake 1.7+, autoconf, pkg-config and libtool
 
 We recommend to also install these packages:
  - ALSA (http://www.alsa-project.org)
  - Festival (http://www.cstr.ed.ac.uk/projects/festival/)
  - Espeak (http://espeak.sourceforge.net/)
+ - festival-freebsoft-utils 0.3+
+	(http://www.freebsoft.org/festival-freebsoft-utils)
+    - Python 2.4+ (http://www.python.org)
 
-These packages are known to work with Speech Dispatcher:
+
+These packages are known to work with OpenTTS:
  Software synthesizers:
  - Festival (http://www.cstr.ed.ac.uk/projects/festival/) -- an extensible
      speech synthesis engine with support for various languages (English,
      Spanish, Italian, Finnish, Czech, Russian, Hindi, some African languages
      and others)
  - Espeak (http://espeak.sourceforge.net/) -- a light and fast multi-lingual
-     synthesizer with very good support for various Speech Dispatcher
-     features.
+     synthesizer with very good support for various      OpenTTS features.
  - Flite, Cicero, IBM TTS, Dectalk Software, Ivona
  - Pulse Audio (http://www.pulseaudio.org/)
 
  User applications:
- - Orca (http://www.gnome.org/projects/orca/) -- AT-SPI screen reader (Gnome)
- - speechd-up (http://www.freebsoft.org/) -- Speakup console screen
+ - Orca (http://www.gnome.org/projects/orca/) -- AT-SPI screen reader (Gnome), you will need Python support availabe
+ - ospeakup (http://www.opentts.org/) -- Speakup console screen
    reader interface
  - speechd-el (http://www.freebsoft.org/) -- Emacs speech interface
  - Linux Screen Reader (LSR (http://live.gnome.org/LSR)
@@ -40,46 +41,46 @@ These packages are known to work with Speech Dispatcher:
  - BrlTTY (http://mielke.cc/brltty/)
  - ...
 
-Building Speech Dispatcher:
+Building OpenTTS:
 ===========================
 
-(for instructions about how to build from CVS or CVS snapshot see bellow)
+(for instructions about how to build from Git see bellow)
 
-If you want to use Speech Dispatcher with Festival (recommended), you
+If you want to use OpenTTS with Festival, you
 also need to install festival-freebsoft-utils version 0.3 or higher!
 
-If you want to use Speech Dispatcher with Ivona, you need to install
+If you want to use OpenTTS with Ivona, you need to install
 libdumbtts
 
-To compile the whole project, including Speech Dispatcher server, all modules
+To compile the whole project, including The openttsd server, all modules
 and clients, simply extract the distribution archive and change to 
-speech-dispatcher-<version> directory and run "make all" command as follows:
+opentts-<version> directory and run "make all" command as follows:
 
- $ tar -xzvf speech-dispatcher-0.6.7.tar.gz
- $ cd speech-dispatcher-0.6.7
+ $ tar -xzvf opentts-0.1.tar.gz
+ $ cd opentts-0.1
 
 
 Notes about ALSA, Pulse, OSS and NAS support
 ============================================
 
-Speech Dispatcher's default audio output system is the ALSA (Advanced
+OpenTTS's default audio output system is the ALSA (Advanced
 Linux Sound Architecture system). It's also possible to build it with
 Network Audio System and/or OSS support and then switch between these
 two audio systems in the output module configuration files
 (e.g. festival.conf). If you have NAS and/or OSS and all the necessary
 developement libraries installed (audio and Xau for NAS), it will be
-detected automatically when running ./configure and Speech Dispatcher
+detected automatically when running ./configure and OpenTTS
 will be compiled with NAS and/or OSS support.  Please make sure the
 libraries are installed correctly. Please examine ./configure output
 for possible problems.
 
 We strongly recommend to use ALSA if possible on your system to avoid
 problems with mixing sound streams from multiple applications while
-using a stable and well-tested audio output method for Speech Dispatcher.
+using a stable and well-tested audio output method for OpenTTS.
 
 Pulse Audio is a very promising sound output server, the whole setup
 is however a bit more difficult to do by hand and the support is still
-in an experimental stage. You will need to run a separate Speech Dispatcher
+in an experimental stage. You will need to run a separate openttsd
 and Pulse Audio for each user in the gnome-session.
 
 We would like to warn you, that the version of NAS 1.7 available to us
@@ -97,7 +98,7 @@ those libraries in a different package (libespeak1 and libespeak-dev).
 Notes about Flite support
 =========================
 
-You don't need to do anything special to compile Speech Dispatcher
+You don't need to do anything special to compile OpenTTS
 with Flite support, Flite will be detected automatically when running
 ./configure. However, make sure that you have correctly installed
 flite libraries and examine the output of ./configure carefully.
@@ -106,7 +107,7 @@ You should have configured flite with
     ./configure --enable-shared
 to be able to use the flite plug-in. If you aren't sure if you have done this,
 check for example for libflite_cmu_us_kal.so in your library directory.
-(It's also possible to use Speech Dispatcher with Flite static libraries,
+(It's also possible to use OpenTTS with Flite static libraries,
 but it is generally not a good way unless you know what you are doing.)
 
 Notes about IBM TTS support
@@ -140,7 +141,7 @@ You will also need libsndfile in order to enable sound icon emulation with the
 ibmtts output module.  (As of Apr 2006, the Debian packages you need are
 libsndfile1 and libsndfile1-dev.)
 
-Continue building Speech Dispatcher
+Continue building OpenTTS
 ===================================
 
 On some systems, before running make, you have to set the environment variable
@@ -156,23 +157,23 @@ path by running (as root):
 
  $ make install
 
-If it doesn't work, please see "Building from CVS" if this is your case. If
-not, you can ask us on users@lists.freebsoft.org or report possible bugs on
-speechd@bugs.freebsoft.org .
+If it doesn't work, please see "Building from Git" if this is your case. If
+not, you can ask us on opentts-dev@lists.opentts.ord.
 
-Building from CVS
+Building from Git
 =================
 
-If you are building directly from CVS or from some CVS tarball snapshot, you
+If you are building directly from Git or from some Git tarball snapshot, you
 must first create the ./configure file. Please make sure you have all the
 necessary tools listed in the requirements at the beginning of this README
 in their appropriate versions. Automake and autoconf are especially version
 sensitive.
 
-Then please do:
+Then please do, assuming that you have an opentts dir with your checkout or uncopressed tarball:
 
- $ cd speech-dispatcher-0.6.5
+ $ cd opentts
  $ autoreconf -i
+
 
 You will see messages about creating an m4 sub directory, but those
 can be disregarded.
@@ -180,7 +181,7 @@ can be disregarded.
 Now the configure file should be created and you can proceed like with
 an ordinary instalation.
 
-Installing Festival Speech Dispatcher interface:
+Installing Festival OpenTTS interface:
 ================================================
 
 You need to install the new version of festival-freebsoft-utils (0.3
@@ -201,17 +202,17 @@ in festival.scm:
 Testing
 =======
 
-You can try to execute Speech Dispatcher by
- $ speech-dispatcher
+You can try to execute OpenTTS by
+ $ openttsd
 
-If Speech Dispatcher is running, you can test if it's working by:
+If the opentts daemon is running, you can test if it's working by:
  (on some other console)
- $ cd speech-dispatcher-0.6.5/src/tests
+ $ cd opentts/src/tests
  $ ./run_test basic.test
 (You can also try other tests, if you like.)
 
 Also try
- $ speech-dispatcher --help
+ $ openttsd --help
 to see how you can run it as a standalone program and possibly see
 what's wrong.
 
@@ -220,10 +221,10 @@ Troubleshooting
 
 If you think something is missing, try additionally:
 
- $ mkdir PREFIX/etc/speech-dispatcher
- $ cp -r config PREFIX/etc/speech-dispatcher
+ $ mkdir PREFIX/etc/sopentts
+ $ cp -r config PREFIX/etc/opentts
  $ mkdir PREFIX/include
- $ cp clients/libspeechd.h PREFIX/include/
+ $ cp clients/libopents.h PREFIX/include/
 
 where PREFIX is your installation path prefix (defaulting to /usr/local).
 
@@ -236,9 +237,9 @@ These are:
 
     - doc ........ build documentation in all supported formats
                    (see doc/README for more information)
-    - src/server ..... build speachd server - this is the same as
+    - src/server ..... build openttsd server - this is the same as
                    cd src/server; make all
-    - src/modules .... build all speachd modules - this is the same as
+    - src/modules .... build all openttsd modules - this is the same as
                    cd src/modules; make all
     - src/clients .... build all clients - this is the same as
                    cd src/clients; make all
@@ -246,7 +247,7 @@ These are:
                    clean documentation)
     - all ........ build server, modules and clients
 
-If you are building directly from CVS or from some CVS tarball snapshot, you
+If you are building directly from Git or from some Git tarball snapshot, you
 must first create the ./configure file. Please make sure you have all the
 necessary tools listed in the requirements at the beginning of this README
 in their appropriate versions. Automake and autoconf are especially version
@@ -254,11 +255,11 @@ sensitive.
 
 Then please do:
 
- $ cd speech-dispatcher-0.6.7
- $ ./build.sh
+ $ cd opentts
+ $ autoreconf -i
 
 Now the configure file should be created and you can proceed like with
 an ordinary instalation.
 
 
-    
+
