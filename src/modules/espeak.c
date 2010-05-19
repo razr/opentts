@@ -43,7 +43,7 @@
 
 /* Speech Dispatcher includes. */
 #include "config.h"
-#include "spd_audio.h"
+#include "audio.h"
 #include <fdset.h>
 #include "module_utils.h"
 

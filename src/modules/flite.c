@@ -27,7 +27,7 @@
 #endif
 
 #include <flite/flite.h>
-#include "spd_audio.h"
+#include "audio.h"
 
 #include <fdset.h>
 

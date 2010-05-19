@@ -1,13 +1,14 @@
 inc_local = "-I$(top_srcdir)/src/common" "-I$(top_srcdir)/src/audio" "-I$(top_srcdir)/include"
-common_sources = module_main.c module_utils.c module_utils.h 
-local_libs = $(top_srcdir)/src/common/libcommon.la $(top_srcdir)/src/audio/libsdaudio.la
+common_sources = module_main.c module_utils.c module_utils.h  audio.c audio.h
+local_libs = $(top_srcdir)/src/common/libcommon.la
 common_libs = $(local_libs) @AUDIO_DLOPEN_MODULES@
 
 SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
 SNDFILE_LIBS = @SNDFILE_LIBS@
 
 AM_CFLAGS = @ERROR_CFLAGS@ 
-AM_CPPFLAGS = -DDATADIR=\"$(snddatadir)\" $(inc_local) $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) $(ibmtts_include) @SNDFILE_CFLAGS@ -D_GNU_SOURCE
+AM_CPPFLAGS = -DDATADIR=\"$(snddatadir)\" $(inc_local) $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) $(ibmtts_include) @SNDFILE_CFLAGS@ \
+-DPLUGIN_DIR="\"@audiodir@\"" -D_GNU_SOURCE
 
 modulebin_PROGRAMS = cicero dummy festival generic
 

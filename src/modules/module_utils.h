@@ -46,7 +46,7 @@
 
 #include <fdset.h>
 #include <timestamp.h>
-#include "spd_audio.h"
+#include "audio.h"
 
 extern AudioID *module_audio_id;
 

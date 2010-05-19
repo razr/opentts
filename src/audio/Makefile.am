@@ -4,11 +4,6 @@ inc_local = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common"
 local_libs = $(top_srcdir)/src/common/libcommon.la
 common_libs = $(local_libs) $(GLIB_LIBS)
 AM_CPPFLAGS = $(GLIB_CFLAGS) $(inc_local)
-lib_LTLIBRARIES = libsdaudio.la
-libsdaudio_la_CPPFLAGS = $(AM_CPPFLAGS)  -DPLUGIN_DIR="\"@audiodir@\""
-libsdaudio_la_LDFLAGS = -version-info @LIB_SDAUDIO_CURRENT@:@LIB_SDAUDIO_REVISION@:@LIB_SDAUDIO_AGE@
-libsdaudio_la_LIBADD = $(common_libs)
-libsdaudio_la_SOURCES = spd_audio.c spd_audio.h
 
 audio_LTLIBRARIES = 
 if oss_support

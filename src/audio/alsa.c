@@ -368,7 +368,7 @@ int wait_for_poll(spd_alsa_id_t * id, struct pollfd *alsa_poll_fds,
     _alsa_close(alsa_id); \
     return -1;
 
-/* Play the track _track_ (see spd_audio.h) using the id->alsa_pcm device and
+/* Play the track _track_ (see opentts_audio_plugin.h) using the id->alsa_pcm device and
  id-hw_params parameters. This is a blocking function, however, it's possible
  to interrupt playing from a different thread with alsa_stop(). alsa_play
  returns after and immediatelly after the whole sound was played on the

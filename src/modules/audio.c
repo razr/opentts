@@ -1,8 +1,9 @@
 
 /*
- * spd_audio.c -- Spd Audio Output Library
+ * audio.c -- interface between the modules and the audio backends.
  *
  * Copyright (C) 2004, 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
@@ -19,11 +20,10 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *
- * $Id: spd_audio.c,v 1.21 2008-06-09 10:29:12 hanke Exp $
  */
 
 /* 
- * spd_audio is a simple realtime audio output library with the capability of
+ * This is a simple realtime audio output library with the capability of
  * playing 8 or 16 bit data, immediate stop and synchronization. This library
  * currently provides OSS, NAS, ALSA and PulseAudio backend. The available backends are
  * specified at compile-time using the directives WITH_OSS, WITH_NAS, WITH_ALSA, 
@@ -34,7 +34,7 @@
 #include <config.h>
 #endif
 
-#include "spd_audio.h"
+#include "audio.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -136,7 +136,7 @@ AudioID *spd_audio_open(char *name, void **pars, char **error)
 
    Arguments:
    id -- the AudioID* of the device returned by spd_audio_open
-   track -- a track to play (see spd_audio.h)
+   track -- a track to play (see opentts_audio_plugin.h)
 
    Return value:
    0 if everything is ok, a non-zero value in case of failure.

@@ -28,7 +28,7 @@
 #endif
 
 #include <libdumbtts.h>
-#include "spd_audio.h"
+#include "audio.h"
 
 #include <fdset.h>
 

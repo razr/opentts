@@ -1,8 +1,9 @@
 
 /*
- * spd_audio.h -- The SPD Audio Library Header
+ * audio.h -- Interface between the modules and the audio subsystem.
  *
  * Copyright (C) 2004 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
@@ -19,7 +20,6 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *
- * $Id: spd_audio.h,v 1.21 2008-10-15 17:28:17 hanke Exp $
  */
 
 #ifndef __SPD_AUDIO_H
