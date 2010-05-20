@@ -151,7 +151,7 @@ AUDIO_DLOPEN_MODULES=
 AS_IF([test $with_alsa != "no"],
 	[PKG_CHECK_MODULES([ALSA], [alsa],
 		[with_alsa=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/alsa.la"],
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_alsa.la"],
 		[AS_IF([test $with_alsa = "yes"],
 			[AC_MSG_FAILURE([ALSA support not available on this system])])])])
 
@@ -163,7 +163,7 @@ AS_IF([test $with_libao != "no"],
 	[AC_CHECK_LIB([ao],
 		[ao_play],
 		[with_libao=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/libao.la";
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la";
 		LIBAO_LIBS="-lao";],
 		[AS_IF([test $with_libao = "yes"],
 			[AC_MSG_FAILURE([libao is not available])])])])
@@ -176,7 +176,7 @@ AS_IF([test $with_nas != "no"],
 		[AuOpenServer],
 		[with_nas=yes;
 		NAS_LIBS="-L/usr/X11R6/lib -lXau -laudio";
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/nas.la"],
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_nas.la"],
 		[AS_IF([test $with_nas = "yes"],
 			[AC_MSG_FAILURE([nas is not available])])],
 		[-L/usr/X11R6/lib -lXau])])
@@ -187,7 +187,7 @@ AM_CONDITIONAL(nas_support, test $with_nas = "yes")
 AS_IF([test $with_oss != "no"],
 	[AC_CHECK_HEADER([sys/soundcard.h],
 		[with_oss=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/oss.la"],
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_oss.la"],
 		[AS_IF([test $with_oss = "yes"],
 			[AC_MSG_FAILURE([oss is not available])])])])
 
@@ -196,7 +196,7 @@ AM_CONDITIONAL(oss_support, test $with_oss = "yes")
 AS_IF([test $with_pulse != "no"],
 	[PKG_CHECK_MODULES([PULSE], [libpulse-simple],
 		[with_pulse=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/pulse.la"],
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_pulse.la"],
 		[AS_IF([test $with_pulse = "yes"],
 			[AC_MSG_FAILURE([pulseaudio is not available on this system])])])])
 

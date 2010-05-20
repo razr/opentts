@@ -27,6 +27,7 @@
 
 #include <opentts/opentts_audio_plugin.h>
 
+#define OTTS_AUDIO_LIB_PREFIX "otts_"
 
 AudioID *spd_audio_open(char *name, void **pars, char **error);
 
