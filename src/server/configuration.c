@@ -34,6 +34,14 @@
 
 static TFDSetClientSpecific *cl_spec_section;
 
+/* Work around a limitation of the FATAL macro. */
+static void cfg_fatal(const char *errmsg)
+{
+	fatal_error();
+	MSG(0, "Aborting: %s", errmsg);
+	exit(EXIT_FAILURE);
+}
+
 /* == CONFIGURATION MANAGEMENT FUNCTIONS */
 
 /* Add dotconf configuration option */
@@ -91,23 +99,6 @@ void free_config_options(configoption_t * opts, int *num)
    { \
        int val = cmd->data.value; \
        if (!(cond)) FATAL(str); \
-       if (!cl_spec_section) \
-           GlobalFDSet.arg = val; \
-       else \
-           cl_spec_section->val.arg = val; \
-       return NULL; \
-   }
-
-#define GLOBAL_FDSET_OPTION_CB_SPECIAL(name, arg, type, fconv) \
-   DOTCONF_CB(cb_ ## name) \
-   { \
-       char *val_str; \
-       type val; \
-       val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str)); \
-       if (val_str == NULL) FATAL("Invalid parameter in configuration"); \
-       val = fconv(val_str); \
-       g_free(val_str); \
-       if (val == -1) FATAL("Invalid parameter in configuration."); \
        if (!cl_spec_section) \
            GlobalFDSet.arg = val; \
        else \
@@ -191,15 +182,6 @@ GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPriority, priority, SPDPriority,
-			       str2priority)
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultVoiceType, voice, SPDVoiceType,
-			       str2voice)
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultPunctuationMode, punctuation_mode,
-			       SPDPunctuation,
-			       str2punct)
-GLOBAL_FDSET_OPTION_CB_SPECIAL(DefaultCapLetRecognition, cap_let_recogn,
-			       SPDCapitalLetters, str2recogn)
 SPEECHD_OPTION_CB_STR(CommunicationMethod, communication_method)
 SPEECHD_OPTION_CB_STR(SocketName, socket_name)
 SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
@@ -214,6 +196,94 @@ GLOBAL_SET_LOGLEVEL(LogLevel,
 								    "Invalid log (verbosity) level!")
 SPEECHD_OPTION_CB_INT(MaxHistoryMessages, max_history_messages, val >= 0,
 		      "Invalid parameter!")
+
+DOTCONF_CB(cb_DefaultCapLetRecognition)
+{
+	char *errmsg = g_strdup_printf
+	    ("Invalid value %s for the DefaultCapLetRecognition parameter in the configuration file.",
+	     cmd->data.str);
+	SPDCapitalLetters val;
+	char *val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str));
+	if (val_str == NULL)
+		cfg_fatal(errmsg);
+	val = str2recogn(val_str);
+	if (val == SPD_CAP_ERR)
+		cfg_fatal(errmsg);
+	g_free(errmsg);
+	g_free(val_str);
+	if (!cl_spec_section)
+		GlobalFDSet.cap_let_recogn = val;
+	else
+		cl_spec_section->val.cap_let_recogn = val;
+	return NULL;
+}
+
+DOTCONF_CB(cb_DefaultPunctuationMode)
+{
+	char *errmsg =
+	    g_strdup_printf
+	    ("Invalid value %s for the DefaultPunctuationMode parameter in the configuration file.",
+	     cmd->data.str);
+	SPDPunctuation val;
+	char *val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str));
+	if (val_str == NULL)
+		cfg_fatal(errmsg);
+	val = str2punct(val_str);
+	if (val == SPD_PUNCT_ERR)
+		cfg_fatal(errmsg);
+	g_free(errmsg);
+	g_free(val_str);
+	if (!cl_spec_section)
+		GlobalFDSet.punctuation_mode = val;
+	else
+		cl_spec_section->val.punctuation_mode = val;
+	return NULL;
+}
+
+DOTCONF_CB(cb_DefaultVoiceType)
+{
+	char *errmsg =
+	    g_strdup_printf
+	    ("Invalid value %s for the DefaultVoiceType parameter in the configuration file.",
+	     cmd->data.str);
+	SPDVoiceType val;
+	char *val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str));
+	if (val_str == NULL)
+		cfg_fatal(errmsg);
+	val = str2voice(val_str);
+	if (val == SPD_VOICETYPE_ERR)
+		cfg_fatal(errmsg);
+	g_free(errmsg);
+	g_free(val_str);
+	if (!cl_spec_section)
+		GlobalFDSet.voice = val;
+	else
+		cl_spec_section->val.voice = val;
+	return NULL;
+}
+
+DOTCONF_CB(cb_DefaultPriority)
+{
+	char *errmsg =
+	    g_strdup_printf
+	    ("Invalid value %s for the DefaultPriority parameter in the configuration file.",
+	     cmd->data.str);
+	SPDPriority val;
+	char *val_str = g_ascii_strdown(cmd->data.str, strlen(cmd->data.str));
+	if (val_str == NULL)
+		cfg_fatal(errmsg);
+	val = str2priority(val_str);
+	if (val == SPD_PRIORITY_ERR)
+		cfg_fatal(errmsg);
+	g_free(errmsg);
+	g_free(val_str);
+	if (!cl_spec_section)
+		GlobalFDSet.priority = val;
+	else
+		cl_spec_section->val.priority = val;
+	return NULL;
+}
+
 DOTCONF_CB(cb_LanguageDefaultModule)
 {
 	char *key;

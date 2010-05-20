@@ -678,16 +678,20 @@ static void espeak_set_pitch(signed int pitch)
 static void espeak_set_punctuation_mode(SPDPunctuation punct_mode)
 {
 	espeak_PUNCT_TYPE espeak_punct_mode = espeakPUNCT_SOME;
+
 	switch (punct_mode) {
-		case SPD_PUNCT_ALL:
-			espeak_punct_mode = espeakPUNCT_ALL;
-			break;
-		case SPD_PUNCT_SOME:
-			espeak_punct_mode = espeakPUNCT_SOME;
-			break;
-		case SPD_PUNCT_NONE:
-			espeak_punct_mode = espeakPUNCT_NONE;
-			break;
+	case SPD_PUNCT_ALL:
+		espeak_punct_mode = espeakPUNCT_ALL;
+		break;
+	case SPD_PUNCT_SOME:
+		espeak_punct_mode = espeakPUNCT_SOME;
+		break;
+	case SPD_PUNCT_NONE:
+		espeak_punct_mode = espeakPUNCT_NONE;
+		break;
+	case SPD_PUNCT_ERR:
+		/* Do nothing.  This code should never be reached. */
+		break;
 	}
 
 	espeak_ERROR ret =
@@ -711,6 +715,9 @@ static void espeak_set_cap_let_recogn(SPDCapitalLetters cap_mode)
 		break;
 	case SPD_CAP_ICON:
 		espeak_cap_mode = 1;
+		break;
+	case SPD_CAP_ERR:
+		/* Not reached.  Do nothing. */
 		break;
 	}
 
@@ -757,6 +764,9 @@ static void espeak_set_language_and_voice(char *lang, SPDVoiceType voice_code)
 		break;
 	case SPD_CHILD_FEMALE:
 		overlay = 14;
+		break;
+	case SPD_VOICETYPE_ERR:
+		/* Do nothing.  This code should never be reached. */
 		break;
 	}
 

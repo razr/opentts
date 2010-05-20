@@ -88,6 +88,8 @@ SPDVoiceType str2voice(char *str)
 		voice = SPD_CHILD_MALE;
 	else if (!strcmp(str, "child_female"))
 		voice = SPD_CHILD_FEMALE;
+	else
+		voice = SPD_VOICETYPE_ERR;
 
 	return voice;
 }
@@ -123,6 +125,8 @@ SPDPunctuation str2punct(char *str)
 		punct = SPD_PUNCT_ALL;
 	else if (!strcmp(str, "some"))
 		punct = SPD_PUNCT_SOME;
+	else
+		punct = SPD_PUNCT_ERR;
 
 	return punct;
 }
@@ -153,6 +157,8 @@ SPDSpelling str2spell(char *str)
 		spell = SPD_SPELL_ON;
 	else if (!strcmp(str, "off"))
 		spell = SPD_SPELL_OFF;
+	else
+		spell = SPD_SPELL_ERR;
 
 	return spell;
 }
@@ -188,6 +194,8 @@ SPDCapitalLetters str2recogn(char *str)
 		recogn = SPD_CAP_SPELL;
 	else if (!strcmp(str, "icon"))
 		recogn = SPD_CAP_ICON;
+	else
+		recogn = SPD_CAP_ERR;
 
 	return recogn;
 }
@@ -206,6 +214,8 @@ SPDPriority str2priority(char *str)
 		priority = SPD_NOTIFICATION;
 	else if (!strcmp(str, "progress"))
 		priority = SPD_PROGRESS;
+	else
+		priority = SPD_PRIORITY_ERR;
 
 	return priority;
 }

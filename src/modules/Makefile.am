@@ -8,7 +8,7 @@ SNDFILE_LIBS = @SNDFILE_LIBS@
 
 AM_CFLAGS = @ERROR_CFLAGS@ 
 AM_CPPFLAGS = -DDATADIR=\"$(snddatadir)\" $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) $(ibmtts_include) @SNDFILE_CFLAGS@ \
--DPLUGIN_DIR="\"@audiodir@\"" -D_GNU_SOURCE
+-DPLUGIN_DIR="\"@audiodir@\"" -D_GNU_SOURCE -DOPENTTS_INTERNAL
 
 modulebin_PROGRAMS = cicero dummy festival generic
 

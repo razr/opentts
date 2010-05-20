@@ -1009,7 +1009,7 @@ GList *speaking_get_queue(SPDPriority priority)
 {
 	GList *queue = NULL;
 
-	assert(priority > 0 && priority <= 5);
+	assert(priority != SPD_PRIORITY_ERR);
 
 	check_locked(&element_free_mutex);
 	switch (priority) {
@@ -1028,6 +1028,9 @@ GList *speaking_get_queue(SPDPriority priority)
 	case SPD_PROGRESS:
 		queue = MessageQueue->p5;
 		break;
+	case SPD_PRIORITY_ERR:
+		/* Should never get here.  See above assertion. */
+		break;
 	}
 
 	return queue;
@@ -1035,7 +1038,7 @@ GList *speaking_get_queue(SPDPriority priority)
 
 void speaking_set_queue(SPDPriority priority, GList * queue)
 {
-	assert(priority > 0 && priority <= 5);
+	assert(priority != SPD_PRIORITY_ERR);
 
 	check_locked(&element_free_mutex);
 	switch (priority) {
@@ -1053,6 +1056,9 @@ void speaking_set_queue(SPDPriority priority, GList * queue)
 		break;
 	case SPD_PROGRESS:
 		MessageQueue->p5 = queue;
+		break;
+	case SPD_PRIORITY_ERR:
+		/* Not reached.  See previous assertion. */
 		break;
 	}
 }

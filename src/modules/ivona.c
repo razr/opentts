@@ -461,6 +461,9 @@ static void ivona_set_cap_let_recogn(SPDCapitalLetters cap_mode)
 	case SPD_CAP_SPELL:
 		ivona_cap_mode = 2;
 		break;
+	case SPD_CAP_ERR:
+		/* Do nothing.  This code should never be reached. */
+		break;
 	}
 	if (ivona_cap_mode < IvonaMinCapLet) {
 		ivona_cap_mode = IvonaMinCapLet;
@@ -479,6 +482,9 @@ static void ivona_set_punctuation_mode(SPDPunctuation punct_mode)
 		break;
 	case SPD_PUNCT_ALL:
 		ivona_punct_mode = 2;
+		break;
+	case SPD_PUNCT_ERR:
+		/* Do nothing.  This code should never be reached. */
 		break;
 	}
 }

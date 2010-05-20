@@ -210,25 +210,25 @@ gchar *do_set(void)
 							  -100, 100);
 			} else if (!strcmp(cur_item, "punctuation_mode")) {
 				ret = str2punct(cur_value);
-				if (ret != -1)
+				if (ret != SPD_PUNCT_ERR)
 					msg_settings.punctuation_mode = ret;
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "spelling_mode")) {
 				ret = str2spell(cur_value);
-				if (ret != -1)
+				if (ret != SPD_SPELL_ERR)
 					msg_settings.spelling_mode = ret;
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "cap_let_recogn")) {
 				ret = str2recogn(cur_value);
-				if (ret != -1)
+				if (ret != SPD_CAP_ERR)
 					msg_settings.cap_let_recogn = ret;
 				else
 					err = 2;
 			} else if (!strcmp(cur_item, "voice")) {
 				ret = str2voice(cur_value);
-				if (ret != -1)
+				if (ret != SPD_VOICETYPE_ERR)
 					msg_settings.voice = ret;
 				else
 					err = 2;

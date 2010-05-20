@@ -22,25 +22,42 @@
 #ifndef _OPENTTS_TYPES_H
 #define _OPENTTS_TYPES_H
 
+/*
+ * Constants surrounded by #ifdef OPENTTS_INTERNAL are not meant for use
+ * by clients.
+ */
+
 typedef enum {
+#ifdef OPENTTS_INTERNAL
+	SPD_PUNCT_ERR = -1,
+#endif
 	SPD_PUNCT_ALL = 0,
 	SPD_PUNCT_NONE = 1,
 	SPD_PUNCT_SOME = 2
 } SPDPunctuation;
 
 typedef enum {
+#ifdef OPENTTS_INTERNAL
+	SPD_CAP_ERR = -1,
+#endif
 	SPD_CAP_NONE = 0,
 	SPD_CAP_SPELL = 1,
 	SPD_CAP_ICON = 2
 } SPDCapitalLetters;
 
 typedef enum {
+#ifdef OPENTTS_INTERNAL
+	SPD_SPELL_ERR = -1,
+#endif
 	SPD_SPELL_OFF = 0,
 	SPD_SPELL_ON = 1
 } SPDSpelling;
 
 typedef enum {
+#ifdef OPENTTS_INTERNAL
+	SPD_VOICETYPE_ERR = -1,
 	SPD_NO_VOICE = 0,
+#endif
 	SPD_MALE1 = 1,
 	SPD_MALE2 = 2,
 	SPD_MALE3 = 3,
@@ -52,13 +69,15 @@ typedef enum {
 } SPDVoiceType;
 
 typedef struct {
-	char *name;	/* Name of the voice (id) */
-	char *language;	/* 2-letter ISO language code */
-	char *variant;	/* a not-well defined string describing dialect etc. */
+	char *name;		/* Name of the voice (id) */
+	char *language;		/* 2-letter ISO language code */
+	char *variant;		/* a not-well defined string describing dialect etc. */
 } SPDVoice;
 
 typedef enum {
+#ifdef OPENTTS_INTERNAL
 	SPD_NOTHING = 0,
+#endif
 	SPD_BEGIN = 1,
 	SPD_END = 2,
 	SPD_INDEX_MARKS = 4,
@@ -82,6 +101,9 @@ typedef enum {
 } SPDDataMode;
 
 typedef enum {
+#ifdef OPENTTS_INTERNAL
+	SPD_PRIORITY_ERR = -1,
+#endif
 	SPD_IMPORTANT = 1,
 	SPD_MESSAGE = 2,
 	SPD_TEXT = 3,
@@ -89,6 +111,7 @@ typedef enum {
 	SPD_PROGRESS = 5
 } SPDPriority;
 
+#ifdef OPENTTS_INTERNAL
 typedef enum {
 	SPD_MSGTYPE_TEXT = 0,
 	SPD_MSGTYPE_SOUND_ICON = 1,
@@ -96,5 +119,6 @@ typedef enum {
 	SPD_MSGTYPE_KEY = 3,
 	SPD_MSGTYPE_SPELL = 99
 } SPDMessageType;
+#endif /* #ifdef OPENTTS_INTERNAL */
 
 #endif /* ifndef _OPENTTS_TYPES_H */

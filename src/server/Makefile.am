@@ -7,5 +7,7 @@ openttsd_LDADD = $(top_srcdir)/src/common/libcommon.la $(DOTCONF_LIBS) $(GLIB_LI
 openttsd_LDFLAGS = @RDYNAMIC@
 
 openttsd_CFLAGS = @ERROR_CFLAGS@
-openttsd_CPPFLAGS = $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) $(GTHREAD_CFLAGS) -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" -DMODULEBINDIR=\"@modulebindir@\"
+openttsd_CPPFLAGS = $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) \
+$(GTHREAD_CFLAGS) -DSYS_CONF=\"@spdconfdir@\" -DSND_DATA=\"@snddatadir@\" \
+-DMODULEBINDIR=\"@modulebindir@\" -DOPENTTS_INTERNAL
 
