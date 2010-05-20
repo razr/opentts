@@ -90,7 +90,7 @@ AudioID *spd_audio_open(char *name, void **pars, char **error)
 		return (AudioID *) NULL;
 	}
 
-	libname = g_strdup_printf(OTTS_AUDIO_LIB_PREFIX "%s", name);
+	libname = g_strdup_printf("%s", name);
 	lt_h = lt_dlopenext(libname);
 	g_free(libname);
 	if (NULL == lt_h) {
