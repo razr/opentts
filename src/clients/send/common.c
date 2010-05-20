@@ -29,7 +29,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "spdsend.h"
+#include "otts-send.h"
 
 const long CONNECTION_ID_MIN = 1;
 const long CONNECTION_ID_MAX = 1000;

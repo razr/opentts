@@ -25,7 +25,7 @@
 #include <config.h>
 #endif
 
-#include "spdsend.h"
+#include "otts-send.h"
 
 #ifndef USE_THREADS
 #define USE_THREADS 1

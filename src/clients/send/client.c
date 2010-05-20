@@ -25,7 +25,7 @@
 #include <config.h>
 #endif
 
-#include "spdsend.h"
+#include "otts-send.h"
 
 #include <stddef.h>
 #include <stdio.h>

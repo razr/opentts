@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "spdsend.h"
+#include "otts-send.h"
 
 const char *const SPDSEND_VERSION = "0.0.0";
 
