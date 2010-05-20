@@ -1,26 +1,29 @@
-This is a simple command line client to Speech Dispatcher.  It may be useful in
-programs, which don't want to use direct socket communication with Speech
-Dispatcher for some reason.
+This is a simple command line client to  openttsd.  It may be useful in
+programs, which don't want to use direct socket communication with openttsd for some reason.
 
 To compile the program, just run `make'.  To install it, run `make install'.
 
 The following operations are supported:
 
-$ spdsend --open HOST PORT
+$ otts-send --open HOST PORT
 
-  Open new connection to Speech Dispatcher running at HOST:PORT and print the
+  Open new connection to openttsd running at HOST:PORT and print the
   connection identifier on the standard output.
 
-$ spdsend --close CONNECTION
+$ otts-send --close CONNECTION
 
-  Close the given Speech Dispatcher CONNECTION.
+  Close the given openttsd CONNECTION.
 
-$ spdsend --send CONNECTION
+$ otts-send --send CONNECTION
 
-  Read an SSIP command from standard input, forward it to Speech Dispatcher
+  Read an SSIP command from standard input, forward it to openttsd over the connection
   CONNECTION and print the answer on the standard output.
 
 You can send your bug reports, patches, suggestions, etc. to the mailing list
-speechd@lists.freebsoft.org.
+opentts-dev@lists.opentts.org
 
+original author
 -- Milan Zamazal <pdm@freebsoft.org>
+
+modified by
+-- Trevor Saunders trev.saunders@gmail.com for the opentts project
