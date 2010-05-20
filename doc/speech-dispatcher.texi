@@ -731,7 +731,7 @@ values.
 @subsection Running Under Ordinary Users
 
 Before running Speech Dispatcher under an ordinary user account, a
-directory @file{.speech-dispatcher/conf/} should be created in the users
+directory @file{.opentts/conf/} should be created in the users
 home folder and all the configuration files and directories should be
 put here. If Speech Dispatcher is already installed, this
 is most easily done with the @code{spd-conf} configuration utility
@@ -751,15 +751,15 @@ If you do not want to use the @code{spd-conf} tool,
 you can achieve the same result manually as described bellow:
 
 @example
-# mkdir ~/.speech-dispatcher
-# mkdir ~/.speech-dispatcher/conf/
-# cp -r /usr/share/speech-dispatcher/conf/* ~/.speech-dispatcher/conf/
+# mkdir ~/.opentts
+# mkdir ~/.opentts/conf/
+# cp -r /usr/share/speech-dispatcher/conf/* ~/.opentts/conf/
 @end example
 
-If @file{~/.speech-dispatcher/} is found by Speech Dispatcher on
+If @file{~/.opentts/} is found by Speech Dispatcher on
 startup, it will use the configuration placed here and ignore the
 system-wide configuration. Also, it will create the @file{log/} and
-@file{pid/} subdirectories in @file{~/.speech-dispatcher/} and use them
+@file{pid/} subdirectories in @file{~/.opentts/} and use them
 for its log files and pid files respectively. This behavior can only
 be overriden directly by the command line options.
 
@@ -807,7 +807,7 @@ spd-conf -d
 
 @item
 Check the appropriate logfile in
-@file{~/.speech-dispatcher/logs/speechd.log} for user Speech
+@file{~/.opentts/logs/speechd.log} for user Speech
 Dispatcher or in @file{/var/log/speech-dispatcher/speechd.log}. Look
 for lines containing the string 'ERROR' and their surrounding
 contents. If you hear no speech, restart Speech Dispatcher and look
@@ -862,7 +862,7 @@ Speech Dispatcher can be configured on several different levels.  You
 can configure the global settings through the server configuration file,
 which can be placed either in the Speech Dispatcher default
 configuration system path like /etc/speech-dispatcher/ or in your home
-in ~/.speech-dispatcher, if you are running Dispatcher under an ordinary
+in ~/.opentts, if you are running Dispatcher under an ordinary
 user.  There is also support for per-client configuration, this is,
 specifying different default values for different client applications.
 

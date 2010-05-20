@@ -56,7 +56,7 @@ LogLevel  3
 # (status information, error messages, etc.).  Specify "stdout" for
 # standard console output or a directory path. 'default' means that
 # the logs are written to the default destination (e.g. a preconfigured
-# system directory or the home directory if .speech-dispatcher is present)
+# system directory or the home directory if .opentts is present)
 # DO NOT COMMENT OUT THIS OPTION, SET IT TO "default" if you do not
 # want to influence it.
 

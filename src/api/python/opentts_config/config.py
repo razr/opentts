@@ -267,7 +267,7 @@ class Tests:
 
     def user_speechd_dir(self):
         """Return user Speech Dispatcher configuration and logging directory"""
-        return os.path.expanduser(os.path.join('~', '.speech-dispatcher'))
+        return os.path.expanduser(os.path.join('~', '.opentts'))
 
     def user_speechd_dir_exists(self):
         """Determine whether user speechd directory exists"""

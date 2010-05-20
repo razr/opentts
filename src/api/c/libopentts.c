@@ -296,7 +296,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 				homedir = g_get_home_dir();
 			socket_filename = g_string_new("");
 			g_string_printf(socket_filename,
-					"%s/.speech-dispatcher/speechd.sock",
+					"%s/.opentts/speechd.sock",
 					homedir);
 		}
 /* Create the unix socket */
