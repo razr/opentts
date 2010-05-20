@@ -90,10 +90,10 @@ AudioID *spd_audio_open(char *name, void **pars, char **error)
 		return (AudioID *) NULL;
 	}
 
-	libname = g_strdup_printf(OTTS_AUDIO_LIB_PREFIX "%s", name);
+	libname = g_strdup(name);
 	lt_h = lt_dlopenext(libname);
 	g_free(libname);
-	if (NULL == lt_h) {
+	if (lt_h == NULL) {
 		*error =
 		    (char *)g_strdup_printf("Cannot open plugin %s. error: %s",
 					    name, lt_dlerror());
@@ -101,7 +101,7 @@ AudioID *spd_audio_open(char *name, void **pars, char **error)
 	}
 
 	fn = lt_dlsym(lt_h, SPD_AUDIO_PLUGIN_ENTRY_STR);
-	if (NULL == fn) {
+	if (fn == NULL) {
 		*error = (char *)g_strdup_printf("Cannot find symbol %s",
 						 SPD_AUDIO_PLUGIN_ENTRY_STR);
 		return (AudioID *) NULL;
