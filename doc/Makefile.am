@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-info_TEXINFOS = ssip.texi opentts.texi spd-say.texi
+info_TEXINFOS = ssip.texi opentts.texi otts-say.texi
 noinst_info_TEXINFOS = speech-dispatcher-cs.texi
 
 opentts_TEXINFOS = gpl.texi fdl.texi

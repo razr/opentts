@@ -1,11 +1,11 @@
-This is the Speech Dispatcher project (speech-dispatcher). It is a part of the
-Free(b)soft project, which is intended to allow blind and visually impaired
+This is the OpenTTS project (opentts). It is a part of the
+OpenTTS project, which is intended to allow blind and visually impaired
 people to work with computer and Internet based on free software.
 
-To build and install speech-dispatcher and all of it's components, read the
+To build and install opentts and all of it's components, read the
 file INSTALL
 
-Complete documentation may be found in doc directory. Read doc/README for more
+Complete documentation may be found in the doc directory. Read doc/README for more
 information.
 
 
