@@ -59,13 +59,13 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	module = (OutputModule *) g_malloc(sizeof(OutputModule));
 
 	module->name = (char *)g_strdup(mod_name);
-	module->filename = (char *)spd_get_path(mod_prog, MODULEBINDIR);
+	module->filename = get_path(mod_prog, MODULEBINDIR);
 
 	module_conf_dir = g_strdup_printf("%s/modules/",
-					  SpeechdOptions.conf_dir);
+					  options.conf_dir);
 
 	module->configfilename =
-	    (char *)spd_get_path(mod_cfgfile, module_conf_dir);
+	    (char *)get_path(mod_cfgfile, module_conf_dir);
 	g_free(module_conf_dir);
 
 	if (mod_dbgfile != NULL)
@@ -224,7 +224,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 
 			}
 
-			if (SpeechdOptions.debug) {
+			if (options.debug) {
 				MSG(4,
 				    "Switching debugging on for output module %s",
 				    module->name);
@@ -339,10 +339,10 @@ int output_module_debug(OutputModule * module)
 		return -1;
 
 	MSG(4, "Output module debug logging for %s into %s", module->name,
-	    SpeechdOptions.debug_destination);
+	    options.debug_destination);
 
 	new_log_path = g_strdup_printf("%s/%s.log",
-				       SpeechdOptions.debug_destination,
+				       options.debug_destination,
 				       module->name);
 
 	output_send_debug(module, 1, new_log_path);

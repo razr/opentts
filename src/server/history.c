@@ -33,12 +33,12 @@
 
 #include "history.h"
 
-/* Compares TSpeechDMessage data structure elements
+/* Compares openttsd_message data structure elements
    with given ID */
 int message_compare_id(gconstpointer element, gconstpointer value, gpointer n)
 {
 	int ret;
-	ret = ((TSpeechDMessage *) element)->id - (int)value;
+	ret = ((openttsd_message *) element)->id - (int)value;
 	return ret;
 }
 
@@ -52,9 +52,9 @@ char *history_get_client_list()
 
 	clist = g_string_new("");
 
-	for (i = 1; i <= SpeechdStatus.max_uid; i++) {
+	for (i = 1; i <= status.max_uid; i++) {
 		MSG(3, "Getting settings for client %d of %d", i,
-		    SpeechdStatus.max_uid - 1);
+		    status.max_uid - 1);
 		client = get_client_settings_by_uid(i);
 		assert(client != NULL);
 		g_string_append_printf(clist, C_OK_CLIENTS "-");
@@ -91,7 +91,7 @@ char *history_get_message(int uid)
 #if 0
 	GString *mtext;
 	GList *gl;
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	int i, pos;
 	char c;
 	char helper[1024];
@@ -103,7 +103,7 @@ char *history_get_message(int uid)
 		return g_strdup(ERR_ID_NOT_EXIST);
 	if (gl->data == NULL)
 		return g_strdup(ERR_INTERNAL);
-	msg = (TSpeechDMessage *) gl->data;
+	msg = (openttsd_message *) gl->data;
 
 	i = 0;
 	pos = 0;
@@ -129,7 +129,7 @@ char *history_get_message(int uid)
 
 char *history_get_message_list(guint client_id, int from, int num)
 {
-	TSpeechDMessage *message;
+	openttsd_message *message;
 	GString *mlist;
 	GList *gl;
 	TFDSetElement *client_settings;
@@ -172,7 +172,7 @@ char *history_get_message_list(guint client_id, int from, int num)
 
 char *history_get_last(int fd)
 {
-	TSpeechDMessage *message;
+	openttsd_message *message;
 	GString *lastm;
 	GList *gl;
 
@@ -274,7 +274,7 @@ char *history_cursor_backward(int fd)
 char *history_cursor_get(int fd)
 {
 	TFDSetElement *settings;
-	TSpeechDMessage *new;
+	openttsd_message *new;
 	GString *reply;
 	GList *gl, *client_msgs;
 
@@ -296,7 +296,7 @@ char *history_cursor_get(int fd)
 
 char *history_say_id(int fd, int id)
 {
-	TSpeechDMessage *msg, *new;
+	openttsd_message *msg, *new;
 	GList *gl;
 
 	gl = g_list_find_custom(message_history, &id, p_msg_comp_id);
@@ -307,7 +307,7 @@ char *history_say_id(int fd, int id)
 		return g_strdup(ERR_INTERNAL);
 
 	MSG(4, "putting history message into queue\n");
-	new = (TSpeechDMessage *) spd_message_copy(msg);
+	new = copy_message(msg);
 	//      queue_message(new, fd, 0, 0);
 
 	return g_strdup(OK_MESSAGE_QUEUED);
@@ -317,7 +317,7 @@ GList *get_messages_by_client(int uid)
 {
 	GList *list = NULL;
 	GList *gl;
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	int i;
 
 	for (i = 0; i <= g_list_length(message_history) - 1; i++) {

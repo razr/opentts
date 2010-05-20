@@ -29,7 +29,7 @@
 
 #include "index_marking.h"
 
-void insert_index_marks(TSpeechDMessage * msg, SPDDataMode ssml_mode)
+void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
 {
 	GString *marked_text;
 	char *pos;
@@ -53,7 +53,7 @@ void insert_index_marks(TSpeechDMessage * msg, SPDDataMode ssml_mode)
 
 	pos = msg->buf;
 	while (pos) {
-		ret = spd_utf8_read_char(pos, character);
+		ret = read_utf8_char(pos, character);
 		if (ret == 0 || (strlen(character) == 0))
 			break;
 		u_char = g_utf8_get_char(character);
@@ -85,7 +85,7 @@ void insert_index_marks(TSpeechDMessage * msg, SPDDataMode ssml_mode)
 		    if (((u_char == '.') || (u_char == '?') || (u_char == '!'))
 			&& !inside_tag) {
 			pos = g_utf8_find_next_char(pos, NULL);
-			ret = spd_utf8_read_char(pos, character2);
+			ret = read_utf8_char(pos, character2);
 			if ((ret == 0) || (strlen(character2) == 0)) {
 				g_string_append_printf(marked_text, "%s",
 						       character);
@@ -131,7 +131,7 @@ void insert_index_marks(TSpeechDMessage * msg, SPDDataMode ssml_mode)
 }
 
 /* Finds the index mark specified in _mark_ . */
-char *find_index_mark(TSpeechDMessage * msg, int mark)
+char *find_index_mark(openttsd_message * msg, int mark)
 {
 	char str_mark[64];
 	char *pos;

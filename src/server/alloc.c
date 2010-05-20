@@ -20,14 +20,14 @@ TSpeechDQueue *speechd_queue_alloc()
 	return (new);
 }
 
-TSpeechDMessage *spd_message_copy(TSpeechDMessage * old)
+openttsd_message *copy_message(openttsd_message * old)
 {
-	TSpeechDMessage *new = NULL;
+	openttsd_message *new = NULL;
 
 	if (old == NULL)
 		return NULL;
 
-	new = (TSpeechDMessage *) g_malloc(sizeof(TSpeechDMessage));
+	new = (openttsd_message *) g_malloc(sizeof(openttsd_message));
 
 	*new = *old;
 
@@ -49,7 +49,7 @@ TSpeechDMessage *spd_message_copy(TSpeechDMessage * old)
 void mem_free_fdset(TFDSetElement * fdset)
 {
 	/* Don't forget that only these items are filled in
-	   in a TSpeechDMessage */
+	   in a openttsd_message */
 	g_free(fdset->client_name);
 	g_free(fdset->language);
 	g_free(fdset->synthesis_voice);
@@ -57,7 +57,7 @@ void mem_free_fdset(TFDSetElement * fdset)
 	g_free(fdset->index_mark);
 }
 
-void mem_free_message(TSpeechDMessage * msg)
+void mem_free_message(openttsd_message * msg)
 {
 	if (msg == NULL)
 		return;

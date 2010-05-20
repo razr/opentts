@@ -7,10 +7,10 @@
 TSpeechDQueue *speechd_queue_alloc();
 
 /* Copy a message */
-TSpeechDMessage *spd_message_copy(TSpeechDMessage * old);
+openttsd_message *copy_message(openttsd_message * old);
 
 /* Free a message */
-void mem_free_message(TSpeechDMessage * msg);
+void mem_free_message(openttsd_message * msg);
 
 /* Free a settings element */
 void mem_free_fdset(TFDSetElement * set);

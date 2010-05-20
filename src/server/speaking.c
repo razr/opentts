@@ -39,7 +39,7 @@
 #include "speaking.h"
 #include "sem_functions.h"
 
-static TSpeechDMessage *current_message = NULL;
+static openttsd_message *current_message = NULL;
 static SPDPriority current_priority = SPD_TEXT;
 
 static int SPEAKING = 0;
@@ -52,7 +52,7 @@ int poll_count;
 */
 void *speak(void *data)
 {
-	TSpeechDMessage *message = NULL;
+	openttsd_message *message = NULL;
 	int ret;
 	struct pollfd *poll_fds;	/* Descriptors to poll */
 	struct pollfd main_pfd;
@@ -142,7 +142,7 @@ void *speak(void *data)
 					    (&element_free_mutex);
 					if ((gl != NULL) && (gl->data != NULL)) {
 						MSG(5, "Reloading message");
-						reload_message((TSpeechDMessage
+						reload_message((openttsd_message
 								*) gl->data);
 					} else
 						break;
@@ -241,10 +241,10 @@ void *speak(void *data)
 		/* Check if the last priority 5 message wasn't said yet */
 		if (last_p5_block != NULL) {
 			GList *elem;
-			TSpeechDMessage *p5_message;
+			openttsd_message *p5_message;
 			elem = g_list_last(last_p5_block);
 			if (elem != NULL) {
-				p5_message = (TSpeechDMessage *) elem->data;
+				p5_message = (openttsd_message *) elem->data;
 				if (p5_message->settings.reparted ==
 				    message->settings.reparted) {
 					g_list_foreach(last_p5_block,
@@ -260,7 +260,7 @@ void *speak(void *data)
 	}
 }
 
-int reload_message(TSpeechDMessage * msg)
+int reload_message(openttsd_message * msg)
 {
 	TFDSetElement *client_settings;
 	int im;
@@ -341,7 +341,7 @@ int reload_message(TSpeechDMessage * msg)
 
 void speaking_stop(int uid)
 {
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	GList *gl;
 	GList *queue;
 	signed int gid = -1;
@@ -362,7 +362,7 @@ void speaking_stop(int uid)
 		if (gl->data == NULL)
 			return;
 
-		msg = (TSpeechDMessage *) gl->data;
+		msg = (openttsd_message *) gl->data;
 		if ((msg->settings.reparted != 0) && (msg->settings.uid == uid)) {
 			gid = msg->settings.reparted;
 		} else {
@@ -378,7 +378,7 @@ void speaking_stop(int uid)
 			if (gl->data == NULL)
 				return;
 
-			msg = (TSpeechDMessage *) gl->data;
+			msg = (openttsd_message *) gl->data;
 
 			if ((msg->settings.reparted == gid)
 			    && (msg->settings.uid == uid)) {
@@ -395,7 +395,7 @@ void speaking_stop(int uid)
 
 void speaking_stop_all()
 {
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	GList *gl;
 	GList *queue;
 	int gid = -1;
@@ -410,7 +410,7 @@ void speaking_stop_all()
 	if (gl == NULL)
 		return;
 	assert(gl->data != NULL);
-	msg = (TSpeechDMessage *) gl->data;
+	msg = (openttsd_message *) gl->data;
 
 	if (msg->settings.reparted != 0) {
 		gid = msg->settings.reparted;
@@ -427,7 +427,7 @@ void speaking_stop_all()
 		if (SPEECHD_DEBUG)
 			assert(gl->data != NULL);
 
-		msg = (TSpeechDMessage *) gl->data;
+		msg = (openttsd_message *) gl->data;
 		if (msg->settings.reparted == 1) {
 			queue = g_list_remove_link(queue, gl);
 			assert(gl->data != NULL);
@@ -465,7 +465,7 @@ int speaking_pause_all(int fd)
 	int i;
 	int uid;
 
-	for (i = 1; i <= SpeechdStatus.max_fd; i++) {
+	for (i = 1; i <= status.max_fd; i++) {
 		uid = get_client_uid_by_fd(i);
 		if (uid == 0)
 			continue;
@@ -528,7 +528,7 @@ int speaking_resume_all()
 	int i;
 	int uid;
 
-	for (i = 1; i <= SpeechdStatus.max_fd; i++) {
+	for (i = 1; i <= status.max_fd; i++) {
 		uid = get_client_uid_by_fd(i);
 		if (uid == 0)
 			continue;
@@ -574,7 +574,7 @@ int socket_send_msg(int fd, char *msg)
 	return 0;
 }
 
-int report_index_mark(TSpeechDMessage * msg, char *index_mark)
+int report_index_mark(openttsd_message * msg, char *index_mark)
 {
 	char *cmd;
 	int ret;
@@ -595,7 +595,7 @@ int report_index_mark(TSpeechDMessage * msg, char *index_mark)
 
 #define REPORT_STATE(state, ssip_code, ssip_msg) \
   int \
-  report_ ## state (TSpeechDMessage *msg) \
+  report_ ## state (openttsd_message *msg) \
   { \
     char *cmd; \
     int ret; \
@@ -719,10 +719,10 @@ int get_speaking_client_uid(void)
 
 GList *queue_remove_message(GList * queue, GList * gl)
 {
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	assert(gl != NULL);
 	assert(gl->data != NULL);
-	msg = (TSpeechDMessage *) gl->data;
+	msg = (openttsd_message *) gl->data;
 	if (msg->settings.notification & SPD_CANCEL)
 		report_cancel(msg);
 	mem_free_message(gl->data);
@@ -748,7 +748,7 @@ GList *empty_queue_by_time(GList * queue, unsigned int uid)
 {
 	int num, i;
 	GList *gl, *gln;
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 
 	num = g_list_length(queue);
 	gl = g_list_first(queue);
@@ -830,7 +830,7 @@ void stop_from_uid(const int uid)
 gint message_nto_speak(gconstpointer data, gconstpointer nothing)
 {
 	TFDSetElement *global_settings;
-	TSpeechDMessage *message = (TSpeechDMessage *) data;
+	openttsd_message *message = (openttsd_message *) data;
 
 	/* Is there something in the body of the message? */
 	if (message == NULL)
@@ -871,7 +871,7 @@ void stop_priority_except_first(SPDPriority priority)
 {
 	GList *queue;
 	GList *gl;
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 	GList *gl_next;
 	int gid;
 
@@ -884,7 +884,7 @@ void stop_priority_except_first(SPDPriority priority)
 	if (gl->data == NULL)
 		return;
 
-	msg = (TSpeechDMessage *) gl->data;
+	msg = (openttsd_message *) gl->data;
 	if (msg->settings.reparted <= 0) {
 		queue = g_list_remove_link(queue, gl);
 		speaking_set_queue(priority, queue);
@@ -903,7 +903,7 @@ void stop_priority_except_first(SPDPriority priority)
 		while (gl) {
 			gl_next = g_list_next(gl);
 			if (gl->data != NULL) {
-				TSpeechDMessage *msgg = gl->data;
+				openttsd_message *msgg = gl->data;
 				if (msgg->settings.reparted != gid) {
 					queue = g_list_remove_link(queue, gl);
 					mem_free_message(msgg);
@@ -979,7 +979,7 @@ void resolve_priorities(SPDPriority priority)
 	}
 }
 
-TSpeechDMessage *get_message_from_queues()
+openttsd_message *get_message_from_queues()
 {
 	GList *gl;
 	SPDPriority prio;
@@ -992,17 +992,17 @@ TSpeechDMessage *get_message_from_queues()
 		gl = g_list_first(current_queue);
 
 		while (gl != NULL) {
-			if (message_nto_speak((TSpeechDMessage *)gl->data, NULL)) {
+			if (message_nto_speak((openttsd_message *)gl->data, NULL)) {
 				gl = g_list_next(gl);
 				continue;
 			}
 			speaking_set_queue(prio, g_list_remove_link(current_queue, gl));
 			current_priority = prio;
-			return (TSpeechDMessage *) gl->data;
+			return (openttsd_message *) gl->data;
 		}
 	}
 
-	return (TSpeechDMessage *) NULL;
+	return NULL;
 }
 
 GList *speaking_get_queue(SPDPriority priority)
@@ -1065,8 +1065,8 @@ void speaking_set_queue(SPDPriority priority, GList * queue)
 
 gint sortbyuid(gconstpointer a, gconstpointer b)
 {
-	const TSpeechDMessage *msg1 = a;
-	const TSpeechDMessage *msg2 = b;
+	const openttsd_message *msg1 = a;
+	const openttsd_message *msg2 = b;
 
 	if ((msg1 == NULL) && (msg2 != NULL))
 		return -1;

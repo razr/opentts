@@ -49,7 +49,7 @@ static inline ssize_t safe_write(int fd, const void *buf, size_t count)
 }
 #endif /* TEMP_FAILURE_RETRY */
 
-void output_set_speaking_monitor(TSpeechDMessage * msg, OutputModule * output)
+void output_set_speaking_monitor(openttsd_message * msg, OutputModule * output)
 {
 	/* Set the speaking-monitor so that we know who is speaking */
 	speaking_module = output;
@@ -80,7 +80,7 @@ OutputModule *get_output_module_by_name(char *name)
 
 */
 
-OutputModule *get_output_module(const TSpeechDMessage * message)
+OutputModule *get_output_module(const openttsd_message * message)
 {
 	OutputModule *output = NULL;
 	GList *gl;
@@ -376,7 +376,7 @@ SPDVoice **output_list_voices(char *module_name)
     } \
     g_free(val);
 
-int output_send_settings(TSpeechDMessage * msg, OutputModule * output)
+int output_send_settings(openttsd_message * msg, OutputModule * output)
 {
 	GString *set_str;
 	char *val;
@@ -491,7 +491,7 @@ int output_send_debug(OutputModule * output, int flag, char *log_path)
 	OL_RET(0);
 }
 
-int output_speak(TSpeechDMessage * msg)
+int output_speak(openttsd_message * msg)
 {
 	OutputModule *output;
 	int err;

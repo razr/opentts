@@ -41,6 +41,8 @@ static void cfg_fatal(const char *errmsg)
 	MSG(0, "Aborting: %s", errmsg);
 	exit(EXIT_FAILURE);
 }
+int num_options;
+configoption_t *configoptions;
 
 /* == CONFIGURATION MANAGEMENT FUNCTIONS */
 
@@ -111,7 +113,7 @@ void free_config_options(configoption_t * opts, int *num)
    { \
        if (cl_spec_section) \
          FATAL("This command isn't allowed in a client specific section!"); \
-       if (!SpeechdOptions.arg ## _set) SpeechdOptions.arg = cmd->data.str; \
+       if (!options.arg ## _set) options.arg = cmd->data.str; \
        return NULL; \
    }
 
@@ -122,7 +124,7 @@ void free_config_options(configoption_t * opts, int *num)
        if (cl_spec_section) \
          FATAL("This command isn't allowed in a client specific section!"); \
        if (!(cond)) FATAL(str); \
-       if (!SpeechdOptions.arg ## _set) SpeechdOptions.arg = val; \
+       if (!options.arg ## _set) options.arg = val; \
        return NULL; \
    }
 
@@ -131,7 +133,7 @@ void free_config_options(configoption_t * opts, int *num)
    { \
        if (cl_spec_section) \
          FATAL("This command isn't allowed in a client specific section!"); \
-       SpeechdOptions.arg = g_strdup(cmd->data.str); \
+       options.arg = g_strdup(cmd->data.str); \
        return NULL; \
    }
 
@@ -142,7 +144,7 @@ void free_config_options(configoption_t * opts, int *num)
        if (cl_spec_section) \
          FATAL("This command isn't allowed in a client specific section!"); \
        if (!(cond)) FATAL(str); \
-       SpeechdOptions.arg = val; \
+       options.arg = val; \
        return NULL; \
    }
 
@@ -153,8 +155,8 @@ void free_config_options(configoption_t * opts, int *num)
        if (cl_spec_section) \
          FATAL("This command isn't allowed in a client specific section!"); \
        if (!(cond)) FATAL(str); \
-       if (!SpeechdOptions.arg ## _set){ \
-         SpeechdOptions.arg = val; \
+       if (!options.arg ## _set){ \
+         options.arg = val; \
          GlobalFDSet.arg = val; \
        } \
        return NULL; \
@@ -306,7 +308,7 @@ DOTCONF_CB(cb_LogFile)
 {
 	/* This option is DEPRECATED. If it is specified, get the directory. */
 	assert(cmd->data.str != NULL);
-	SpeechdOptions.log_dir = g_path_get_dirname(cmd->data.str);
+	options.log_dir = g_path_get_dirname(cmd->data.str);
 	logging_init();
 
 	MSG(1,
@@ -320,7 +322,7 @@ DOTCONF_CB(cb_LogDir)
 
 	if (strcmp(cmd->data.str, "default")) {
 		// cmd->data.str different from "default"
-		SpeechdOptions.log_dir = g_strdup(cmd->data.str);
+		options.log_dir = g_strdup(cmd->data.str);
 	}
 	logging_init();
 	return NULL;
@@ -376,7 +378,7 @@ DOTCONF_CB(cb_AddModule)
 	module_prgname = cmd->data.list[1];
 	module_cfgfile = cmd->data.list[2];
 
-	module_dbgfile = g_strdup_printf("%s/%s.log", SpeechdOptions.log_dir,
+	module_dbgfile = g_strdup_printf("%s/%s.log", options.log_dir,
 					 module_name);
 
 	cur_mod =
@@ -557,22 +559,22 @@ void load_default_global_set_options()
 	GlobalFDSet.audio_pulse_server = g_strdup("default");
 	GlobalFDSet.audio_pulse_min_length = 100;
 
-	SpeechdOptions.max_history_messages = 10000;
+	options.max_history_messages = 10000;
 
 	/*
 	 * Do not override options that were set from the command line.
 	 */
 
-	if (!SpeechdOptions.log_level_set)
-		SpeechdOptions.log_level = 3;
-	if (!SpeechdOptions.communication_method)
-		 SpeechdOptions.communication_method = g_strdup("unix_socket");
-	if (!SpeechdOptions.socket_name)
-		 SpeechdOptions.socket_name = g_strdup("default");
-	if (!SpeechdOptions.port_set)
-		SpeechdOptions.port = SPEECHD_DEFAULT_PORT;
-	if (!SpeechdOptions.localhost_access_only_set)
-		SpeechdOptions.localhost_access_only = 1;
+	if (!options.log_level_set)
+		options.log_level = 3;
+	if (!options.communication_method)
+		 options.communication_method = g_strdup("unix_socket");
+	if (!options.socket_name)
+		 options.socket_name = g_strdup("default");
+	if (!options.port_set)
+		options.port = SPEECHD_DEFAULT_PORT;
+	if (!options.localhost_access_only_set)
+		options.localhost_access_only = 1;
 
 	logfile = stderr;
 	custom_logfile = NULL;

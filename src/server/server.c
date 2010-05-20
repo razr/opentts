@@ -67,11 +67,11 @@ history is desired and _reparted_ flag indicates whether
 this message is a part of a reparted message (one of a block
 of messages). */
 int
-queue_message(TSpeechDMessage * new, int fd, int history_flag,
+queue_message(openttsd_message * new, int fd, int history_flag,
 	      SPDMessageType type, int reparted)
 {
 	TFDSetElement *settings;
-	TSpeechDMessage *hist_msg, *message_copy;
+	openttsd_message *hist_msg, *message_copy;
 	int id;
 	GList *element;
 
@@ -132,13 +132,13 @@ queue_message(TSpeechDMessage * new, int fd, int history_flag,
 	//    if (history_flag){
 	if (0) {
 		/* We will make an exact copy of the message for inclusion into history. */
-		hist_msg = (TSpeechDMessage *) spd_message_copy(new);
+		hist_msg = copy_message(new);
 
 		pthread_mutex_lock(&element_free_mutex);
 		if (hist_msg != NULL) {
 			/* Do the necessary expiration of old messages */
 			if (g_list_length(message_history) >=
-			    SpeechdOptions.max_history_messages) {
+			    options.max_history_messages) {
 				GList *gl;
 				MSG(5,
 				    "Discarding older history message, limit reached");
@@ -182,7 +182,7 @@ queue_message(TSpeechDMessage * new, int fd, int history_flag,
 		/* clear last_p5_block if we get new block or no block message */
 		element = g_list_last(last_p5_block);
 		if (!element || !element->data
-		    || ((TSpeechDMessage *) (element->data))->settings.
+		    || ((openttsd_message *) (element->data))->settings.
 		    reparted != new->settings.reparted) {
 			g_list_foreach(last_p5_block, (GFunc) mem_free_message,
 				       NULL);
@@ -190,7 +190,7 @@ queue_message(TSpeechDMessage * new, int fd, int history_flag,
 			last_p5_block = NULL;
 		}
 		/* insert message */
-		message_copy = spd_message_copy(new);
+		message_copy = copy_message(new);
 		if (message_copy != NULL)
 			last_p5_block =
 			    g_list_append(last_p5_block, message_copy);

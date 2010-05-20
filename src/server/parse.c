@@ -63,7 +63,7 @@
 
 char *parse(const char *buf, const int bytes, const int fd)
 {
-	TSpeechDMessage *new;
+	openttsd_message *new;
 	char *command;
 	int r;
 	int end_data;
@@ -178,8 +178,8 @@ enddata:
 			}
 
 			new =
-			    (TSpeechDMessage *)
-			    g_malloc(sizeof(TSpeechDMessage));
+			    (openttsd_message *)
+			    g_malloc(sizeof(openttsd_message));
 			new->bytes = SpeechdSocket[fd].o_bytes;
 			assert(SpeechdSocket[fd].o_buf != NULL);
 			new->buf =
@@ -602,7 +602,7 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 	} else if (TEST_CMD(set_sub, "debug")) {
 		SSIP_ON_OFF_PARAM(debug,
 				  g_strdup_printf("262-%s\r\n" OK_DEBUGGING,
-						  SpeechdOptions.
+						  options.
 						  debug_destination),
 				  ERR_COULDNT_SET_DEBUGGING,
 				  ALLOWED_INSIDE_BLOCK());
@@ -784,7 +784,7 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 			  SPDMessageType type)
 {
 	char *param;
-	TSpeechDMessage *msg;
+	openttsd_message *msg;
 
 	GET_PARAM_STR(param, 1, NO_CONV);
 
@@ -805,7 +805,7 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 		return g_strdup(ERR_INVALID_ENCODING);
 	}
 
-	msg = (TSpeechDMessage *) g_malloc(sizeof(TSpeechDMessage));
+	msg = (openttsd_message *) g_malloc(sizeof(openttsd_message));
 	msg->bytes = strlen(param);
 	msg->buf = g_strdup(param);
 
@@ -1013,7 +1013,7 @@ char *parse_block(const char *buf, const int bytes, const int fd)
 		assert(SpeechdSocket[fd].inside_block >= 0);
 		if (SpeechdSocket[fd].inside_block == 0) {
 			SpeechdSocket[fd].inside_block =
-			    ++SpeechdStatus.max_gid;
+			    ++status.max_gid;
 			return g_strdup(OK_INSIDE_BLOCK);
 		} else {
 			return g_strdup(ERR_ALREADY_INSIDE_BLOCK);
@@ -1163,7 +1163,7 @@ char *get_param(const char *buf, const int n, const int bytes,
  * at least  7 bytes (6 bytes character + 1 byte trailing 0). This
  * function doesn't validate if the string is valid UTF-8.
  */
-int spd_utf8_read_char(char *pointer, char *character)
+int read_utf8_char(char *pointer, char *character)
 {
 	int bytes;
 	gunichar u_char;

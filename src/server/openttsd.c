@@ -54,7 +54,7 @@ void destroy_pid_file();
 /* Server socket file descriptor */
 int server_socket;
 
-void speechd_load_configuration(int sig);
+static void load_configuration(int sig);
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - daemon is a gcc-ism
@@ -95,7 +95,7 @@ static int daemon(int nochdir, int noclose)
 }
 #endif /* __SUNPRO_C */
 
-char *spd_get_path(char *filename, char *startdir)
+char *get_path(char *filename, char *startdir)
 {
 	char *ret;
 	if (filename == NULL)
@@ -124,7 +124,7 @@ void fatal_error(void)
  * see documentation */
 void MSG2(int level, char *kind, char *format, ...)
 {
-	int std_log = level <= SpeechdOptions.log_level;
+	int std_log = level <= options.log_level;
 	int custom_log = (kind != NULL && custom_log_kind != NULL &&
 			  !strcmp(kind, custom_log_kind) &&
 			  custom_logfile != NULL);
@@ -152,7 +152,7 @@ void MSG2(int level, char *kind, char *format, ...)
 					fprintf(custom_logfile,
 						"%s speechd: ", tstr);
 				}
-				if (SpeechdOptions.debug) {
+				if (options.debug) {
 					fprintf(debug_logfile,
 						"%s speechd: ", tstr);
 				}
@@ -176,7 +176,7 @@ void MSG2(int level, char *kind, char *format, ...)
 				fprintf(custom_logfile, "\n");
 				fflush(custom_logfile);
 			}
-			if (SpeechdOptions.debug) {
+			if (options.debug) {
 				va_start(args, format);
 				vfprintf(debug_logfile, format, args);
 				va_end(args);
@@ -201,8 +201,8 @@ void MSG2(int level, char *kind, char *format, ...)
 void MSG(int level, char *format, ...)
 {
 
-	if ((level <= SpeechdOptions.log_level)
-	    || (SpeechdOptions.debug)) {
+	if ((level <= options.log_level)
+	    || (options.debug)) {
 		va_list args;
 		int i;
 		pthread_mutex_lock(&logging_mutex);
@@ -210,9 +210,9 @@ void MSG(int level, char *format, ...)
 			{
 				/* Print timestamp */
 				char *tstr = get_timestamp();
-				if (level <= SpeechdOptions.log_level)
+				if (level <= options.log_level)
 					fprintf(logfile, "%s speechd: ", tstr);
-				if (SpeechdOptions.debug)
+				if (options.debug)
 					fprintf(debug_logfile,
 						"%s speechd: ", tstr);
 				g_free(tstr);
@@ -221,14 +221,14 @@ void MSG(int level, char *format, ...)
 			for (i = 1; i < level; i++) {
 				fprintf(logfile, " ");
 			}
-			if (level <= SpeechdOptions.log_level) {
+			if (level <= options.log_level) {
 				va_start(args, format);
 				vfprintf(logfile, format, args);
 				va_end(args);
 				fprintf(logfile, "\n");
 				fflush(logfile);
 			}
-			if (SpeechdOptions.debug) {
+			if (options.debug) {
 				va_start(args, format);
 				vfprintf(debug_logfile, format, args);
 				va_end(args);
@@ -263,18 +263,18 @@ int speechd_connection_new(int server_socket)
 
 	/* We add the associated client_socket to the descriptor set. */
 	FD_SET(client_socket, &readfds);
-	if (client_socket > SpeechdStatus.max_fd)
-		SpeechdStatus.max_fd = client_socket;
+	if (client_socket > status.max_fd)
+		status.max_fd = client_socket;
 	MSG(4, "Adding client on fd %d", client_socket);
 
 	/* Check if there is space for server status data; allocate it */
-	if (client_socket >= SpeechdStatus.num_fds - 1) {
+	if (client_socket >= status.num_fds - 1) {
 		SpeechdSocket = (TSpeechdSock *) g_realloc(SpeechdSocket,
-							   SpeechdStatus.num_fds
+							   status.num_fds
 							   * 2 *
 							   sizeof
 							   (TSpeechdSock));
-		SpeechdStatus.num_fds *= 2;
+		status.num_fds *= 2;
 	}
 
 	SpeechdSocket[client_socket].o_buf = g_string_new("");
@@ -287,17 +287,17 @@ int speechd_connection_new(int server_socket)
 	if (new_fd_set == NULL) {
 		MSG(2,
 		    "Error: Failed to create a record in fd_settings for the new client");
-		if (SpeechdStatus.max_fd == client_socket)
-			SpeechdStatus.max_fd--;
+		if (status.max_fd == client_socket)
+			status.max_fd--;
 		FD_CLR(client_socket, &readfds);
 		return -1;
 	}
 	new_fd_set->fd = client_socket;
-	new_fd_set->uid = ++SpeechdStatus.max_uid;
+	new_fd_set->uid = ++status.max_uid;
 	p_client_socket = (int *)g_malloc(sizeof(int));
 	p_client_uid = (int *)g_malloc(sizeof(int));
 	*p_client_socket = client_socket;
-	*p_client_uid = SpeechdStatus.max_uid;
+	*p_client_uid = status.max_uid;
 
 	g_hash_table_insert(fd_settings, p_client_uid, new_fd_set);
 
@@ -338,8 +338,8 @@ int speechd_connection_destroy(int fd)
 			DIE("Can't close file descriptor associated to this client");
 
 	FD_CLR(fd, &readfds);
-	if (fd == SpeechdStatus.max_fd)
-		SpeechdStatus.max_fd--;
+	if (fd == status.max_fd)
+		status.max_fd--;
 
 	MSG(3, "Connection closed");
 
@@ -427,7 +427,7 @@ void speechd_module_nodebug(gpointer key, gpointer value, gpointer user)
 	return;
 }
 
-void speechd_reload_dead_modules(int sig)
+static void reload_dead_modules(int sig)
 {
 	/* Reload dead modules */
 	g_hash_table_foreach(output_modules, speechd_modules_reload, NULL);
@@ -451,34 +451,34 @@ void speechd_modules_nodebug(void)
 
 /* --- SPEECHD START/EXIT FUNCTIONS --- */
 
-void speechd_options_init(void)
+static void options_init(void)
 {
-	SpeechdOptions.spawn = FALSE;
-	SpeechdOptions.communication_method = NULL;
-	SpeechdOptions.communication_method_set = 0;
-	SpeechdOptions.socket_name = NULL;
-	SpeechdOptions.socket_name_set = 0;
-	SpeechdOptions.log_level_set = 0;
-	SpeechdOptions.port_set = 0;
-	SpeechdOptions.localhost_access_only_set = 0;
-	SpeechdOptions.pid_file = NULL;
-	SpeechdOptions.conf_file = NULL;
-	SpeechdOptions.home_speechd_dir = NULL;
-	SpeechdOptions.log_dir = NULL;
-	SpeechdOptions.debug = 0;
-	SpeechdOptions.debug_destination = NULL;
+	options.spawn = FALSE;
+	options.communication_method = NULL;
+	options.communication_method_set = 0;
+	options.socket_name = NULL;
+	options.socket_name_set = 0;
+	options.log_level_set = 0;
+	options.port_set = 0;
+	options.localhost_access_only_set = 0;
+	options.pid_file = NULL;
+	options.conf_file = NULL;
+	options.home_speechd_dir = NULL;
+	options.log_dir = NULL;
+	options.debug = 0;
+	options.debug_destination = NULL;
 	debug_logfile = NULL;
-	spd_mode = SPD_MODE_DAEMON;
+	mode = DAEMON;
 }
 
-void speechd_init()
+static void init()
 {
 	int START_NUM_FD = 16;
 	int ret;
 	int i;
 
-	SpeechdStatus.max_uid = 0;
-	SpeechdStatus.max_gid = 0;
+	status.max_uid = 0;
+	status.max_gid = 0;
 
 	/* Initialize inter-thread comm pipe */
 	if (pipe(speaking_pipe)) {
@@ -511,7 +511,7 @@ void speechd_init()
 
 	SpeechdSocket =
 	    (TSpeechdSock *) g_malloc(START_NUM_FD * sizeof(TSpeechdSock));
-	SpeechdStatus.num_fds = START_NUM_FD;
+	status.num_fds = START_NUM_FD;
 	for (i = 0; i <= START_NUM_FD - 1; i++) {
 		SpeechdSocket[i].awaiting_data = 0;
 		SpeechdSocket[i].inside_block = 0;
@@ -547,22 +547,22 @@ void speechd_init()
 	if (ret != 0)
 		DIE("Mutex initialization failed");
 
-	if (SpeechdOptions.log_dir == NULL) {
-		SpeechdOptions.log_dir =
-		    g_strdup_printf("%s/log/", SpeechdOptions.home_speechd_dir);
-		mkdir(SpeechdOptions.log_dir, S_IRWXU);
-		if (!SpeechdOptions.debug_destination) {
-			SpeechdOptions.debug_destination =
+	if (options.log_dir == NULL) {
+		options.log_dir =
+		    g_strdup_printf("%s/log/", options.home_speechd_dir);
+		mkdir(options.log_dir, S_IRWXU);
+		if (!options.debug_destination) {
+			options.debug_destination =
 			    g_strdup_printf("%slog/debug",
-					    SpeechdOptions.home_speechd_dir);
-			mkdir(SpeechdOptions.debug_destination, S_IRWXU);
+					    options.home_speechd_dir);
+			mkdir(options.debug_destination, S_IRWXU);
 		}
 	}
 
 	/* Load configuration from the config file */
 	MSG(4, "Reading Speech Dispatcher configuration from %s",
-	    SpeechdOptions.conf_file);
-	speechd_load_configuration(0);
+	    options.conf_file);
+	load_configuration(0);
 
 	logging_init();
 
@@ -578,7 +578,7 @@ void speechd_init()
 	last_p5_block = NULL;
 }
 
-void speechd_load_configuration(int sig)
+static void load_configuration(int sig)
 {
 	configfile_t *configfile = NULL;
 
@@ -593,33 +593,33 @@ void speechd_load_configuration(int sig)
 	/* Load new configuration */
 	load_default_global_set_options();
 
-	spd_num_options = 0;
-	spd_options = load_config_options(&spd_num_options);
+	num_options = 0;
+	configoptions = load_config_options(&num_options);
 
 	/* Add the LAST option */
-	spd_options = add_config_option(spd_options, &spd_num_options, "", 0,
+	configoptions = add_config_option(configoptions, &num_options, "", 0,
 					NULL, NULL, 0);
 
 	configfile =
-	    dotconf_create(SpeechdOptions.conf_file, spd_options, 0,
+	    dotconf_create(options.conf_file, configoptions, 0,
 			   CASE_INSENSITIVE);
 	if (configfile) {
-		configfile->includepath = strdup(SpeechdOptions.conf_dir);
+		configfile->includepath = strdup(options.conf_dir);
 		MSG(5, "Config file include path is: %s",
 		    configfile->includepath);
 		if (dotconf_command_loop(configfile) == 0)
 			DIE("Error reading config file\n");
 		dotconf_cleanup(configfile);
 		MSG(2, "Configuration has been read from \"%s\"",
-		    SpeechdOptions.conf_file);
+		    options.conf_file);
 	} else {
-		MSG(1, "Can't open %s", SpeechdOptions.conf_file);
+		MSG(1, "Can't open %s", options.conf_file);
 	}
 
-	free_config_options(spd_options, &spd_num_options);
+	free_config_options(configoptions, &num_options);
 }
 
-void speechd_quit(int sig)
+static void quit(int sig)
 {
 	int ret;
 
@@ -671,7 +671,7 @@ int create_pid_file()
 	int ret;
 
 	/* If the file exists, examine it's lock */
-	pid_file = fopen(SpeechdOptions.pid_file, "r");
+	pid_file = fopen(options.pid_file, "r");
 	if (pid_file != NULL) {
 		pid_fd = fileno(pid_file);
 
@@ -694,15 +694,15 @@ int create_pid_file()
 			return -1;
 		}
 
-		unlink(SpeechdOptions.pid_file);
+		unlink(options.pid_file);
 	}
 
 	/* Create a new pid file and lock it */
-	pid_file = fopen(SpeechdOptions.pid_file, "w");
+	pid_file = fopen(options.pid_file, "w");
 	if (pid_file == NULL) {
 		MSG(1,
 		    "Can't create pid file in %s, wrong permissions?\n",
-		    SpeechdOptions.pid_file);
+		    options.pid_file);
 		return -1;
 	}
 	fprintf(pid_file, "%d\n", getpid());
@@ -725,13 +725,13 @@ int create_pid_file()
 
 void destroy_pid_file(void)
 {
-	unlink(SpeechdOptions.pid_file);
+	unlink(options.pid_file);
 }
 
 void logging_init(void)
 {
 	char *file_name =
-	    g_strdup_printf("%s/speechd.log", SpeechdOptions.log_dir);
+	    g_strdup_printf("%s/speechd.log", options.log_dir);
 	assert(file_name != NULL);
 	if (!strncmp(file_name, "stdout", 6)) {
 		logfile = stdout;
@@ -810,7 +810,7 @@ int make_inet_socket(const int port)
 
 	/* Enable access only to localhost or for any address
 	   based on LocalhostAccessOnly configuration option. */
-	if (SpeechdOptions.localhost_access_only)
+	if (options.localhost_access_only)
 		server_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	else
 		server_address.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -854,11 +854,11 @@ int main(int argc, char *argv[])
 
 	/* Initialize logging */
 	logfile = stderr;
-	SpeechdOptions.log_level = 1;
+	options.log_level = 1;
 	custom_logfile = NULL;
 	custom_log_kind = NULL;
 
-	speechd_options_init();
+	options_init();
 
 	options_parse(argc, argv);
 
@@ -876,54 +876,54 @@ int main(int argc, char *argv[])
 
 		if (user_home_dir) {
 			/* Setup a ~/.speechd-dispatcher/ directory or create a new one */
-			SpeechdOptions.home_speechd_dir =
+			options.home_speechd_dir =
 			    g_strdup_printf("%s/.opentts",
 					    user_home_dir);
 			MSG(4, "Home dir found, trying to find %s",
-			    SpeechdOptions.home_speechd_dir);
-			g_mkdir(SpeechdOptions.home_speechd_dir, S_IRWXU);
+			    options.home_speechd_dir);
+			g_mkdir(options.home_speechd_dir, S_IRWXU);
 			MSG(4,
 			    "Using home directory: %s for configuration, pidfile and logging",
-			    SpeechdOptions.home_speechd_dir);
+			    options.home_speechd_dir);
 
 			/* Pidfile */
-			if (SpeechdOptions.pid_file == NULL) {
+			if (options.pid_file == NULL) {
 				/* If no pidfile path specified on command line, use default local dir */
-				SpeechdOptions.pid_file =
+				options.pid_file =
 				    g_strdup_printf
 				    ("%s/pid/openttsd.pid",
-				     SpeechdOptions.home_speechd_dir);
+				     options.home_speechd_dir);
 				g_mkdir(g_path_get_dirname
-					(SpeechdOptions.pid_file), S_IRWXU);
+					(options.pid_file), S_IRWXU);
 			}
 
 			/* Config file */
-			if (SpeechdOptions.conf_dir == NULL) {
+			if (options.conf_dir == NULL) {
 				/* If no conf_dir was specified on command line, try default local config dir */
-				SpeechdOptions.conf_dir =
+				options.conf_dir =
 				    g_strdup_printf("%s/conf/",
-						    SpeechdOptions.home_speechd_dir);
+						    options.home_speechd_dir);
 				if (!g_file_test
-				    (SpeechdOptions.conf_dir,
+				    (options.conf_dir,
 				     G_FILE_TEST_IS_DIR)) {
 					/* If the local confiration dir doesn't exist, read the global configuration */
 					if (strcmp(SYS_CONF, ""))
-						SpeechdOptions.conf_dir =
+						options.conf_dir =
 						    g_strdup(SYS_CONF);
 					else
-						SpeechdOptions.conf_dir =
+						options.conf_dir =
 						    g_strdup
 						    ("/etc/opentts/");
 				}
 			}
 		} else {
-			if (SpeechdOptions.pid_file == NULL
-			    || SpeechdOptions.conf_dir == NULL)
+			if (options.pid_file == NULL
+			    || options.conf_dir == NULL)
 				FATAL
 				    ("Paths to pid file or conf dir not specified and the current user has no HOME directory!");
 		}
-		SpeechdOptions.conf_file =
-		    g_strdup_printf("%s/speechd.conf", SpeechdOptions.conf_dir);
+		options.conf_file =
+		    g_strdup_printf("%s/speechd.conf", options.conf_dir);
 	}
 
 	/*
@@ -934,7 +934,7 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	/* Handle --spawn request */
-	if (SpeechdOptions.spawn) {
+	if (options.spawn) {
 		/* Check whether spawning is not disabled */
 		gchar *config_contents;
 		int err;
@@ -942,10 +942,10 @@ int main(int argc, char *argv[])
 		int result;
 
 		err =
-		    g_file_get_contents(SpeechdOptions.conf_file,
+		    g_file_get_contents(options.conf_file,
 					&config_contents, NULL, NULL);
 		if (err == FALSE) {
-			MSG(1, "Error openning %s", SpeechdOptions.conf_file);
+			MSG(1, "Error openning %s", options.conf_file);
 			FATAL("Can't open conf file");
 		}
 		regexp =
@@ -971,34 +971,34 @@ int main(int argc, char *argv[])
 	}
 
 	/* Register signals */
-	sig.sa_handler = speechd_quit;
+	sig.sa_handler = quit;
 	sigaction(SIGINT, &sig, NULL);
-	sig.sa_handler = speechd_load_configuration;
+	sig.sa_handler = load_configuration;
 	sigaction(SIGHUP, &sig, NULL);
 	sig.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &sig, NULL);
-	sig.sa_handler = speechd_reload_dead_modules;
+	sig.sa_handler = reload_dead_modules;
 	sigaction(SIGUSR1, &sig, NULL);
 
-	speechd_init();
+	init();
 
-	if (!strcmp(SpeechdOptions.communication_method, "inet_socket")) {
+	if (!strcmp(options.communication_method, "inet_socket")) {
 		MSG(2, "Speech Dispatcher will use inet port %d",
-		    SpeechdOptions.port);
+		    options.port);
 		/* Connect and start listening on inet socket */
-		server_socket = make_inet_socket(SpeechdOptions.port);
-	} else if (!strcmp(SpeechdOptions.communication_method, "unix_socket")) {
+		server_socket = make_inet_socket(options.port);
+	} else if (!strcmp(options.communication_method, "unix_socket")) {
 		/* Determine appropriate socket file name */
 		GString *socket_filename;
-		if (!strcmp(SpeechdOptions.socket_name, "default")) {
+		if (!strcmp(options.socket_name, "default")) {
 			/* This code cannot be moved above next to conf_dir and pidpath resolution because
 			 * we need to also consider the DotConf configuration,
-			 * which is read in speechd_init() */
+			 * which is read in init() */
 			socket_filename = g_string_new("");
-			if (SpeechdOptions.home_speechd_dir) {
+			if (options.home_speechd_dir) {
 				g_string_printf(socket_filename,
 						"%s/speechd.sock",
-						SpeechdOptions.
+						options.
 						home_speechd_dir);
 			} else {
 				FATAL
@@ -1006,7 +1006,7 @@ int main(int argc, char *argv[])
 			}
 		} else {
 			socket_filename =
-			    g_string_new(SpeechdOptions.socket_name);
+			    g_string_new(options.socket_name);
 		}
 		MSG(2, "Speech Dispatcher will use local unix socket: %s",
 		    socket_filename->str);
@@ -1025,10 +1025,10 @@ int main(int argc, char *argv[])
 	}
 
 	/* Fork, set uid, chdir, etc. */
-	if (spd_mode == SPD_MODE_DAEMON) {
+	if (mode == DAEMON) {
 		daemon(0, 0);
 		/* Re-create the pid file under this process */
-		unlink(SpeechdOptions.pid_file);
+		unlink(options.pid_file);
 		if (create_pid_file() == -1)
 			return -1;
 	}
@@ -1040,7 +1040,7 @@ int main(int argc, char *argv[])
 
 	FD_ZERO(&readfds);
 	FD_SET(server_socket, &readfds);
-	SpeechdStatus.max_fd = server_socket;
+	status.max_fd = server_socket;
 
 	/* Now wait for clients and requests. */
 	MSG(1, "Speech Dispatcher started and waiting for clients ...");
@@ -1054,7 +1054,7 @@ int main(int argc, char *argv[])
 			 * we find which descriptor it's on by checking each in turn using FD_ISSET. */
 
 			for (fd = 0;
-			     fd <= SpeechdStatus.max_fd && fd < FD_SETSIZE;
+			     fd <= status.max_fd && fd < FD_SETSIZE;
 			     fd++) {
 				if (FD_ISSET(fd, &testfds)) {
 					MSG(4, "Activity on fd %d ...", fd);

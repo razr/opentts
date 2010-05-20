@@ -32,7 +32,7 @@
 
 #include "options.h"
 
-static struct option spd_long_options[] = {
+static struct option long_options[] = {
 	{"run-daemon", 0, 0, 'd'},
 	{"run-single", 0, 0, 's'},
 	{"spawn", 0, 0, 'a'},
@@ -48,7 +48,7 @@ static struct option spd_long_options[] = {
 	{0, 0, 0, 0}
 };
 
-static char *spd_short_options = "dsal:c:S:p:P:C:vDh";
+static char *short_options = "dsal:c:S:p:P:C:vDh";
 
 void options_print_help(char *argv[])
 {
@@ -91,15 +91,15 @@ void options_print_version(void)
 	       "For more information about these matters, see the file named COPYING.\n");
 }
 
-#define SPD_OPTION_SET_INT(param) \
+#define OPTION_SET_INT(param) \
     val = strtol(optarg, &tail_ptr, 10); \
     if(tail_ptr != optarg){ \
-        SpeechdOptions.param ## _set = 1; \
-        SpeechdOptions.param = val; \
+        options.param ## _set = 1; \
+        options.param = val; \
     }
 
-#define SPD_OPTION_SET_STR(param) \
-    SpeechdOptions.param = optarg
+#define OPTION_SET_STR(param) \
+    options.param = optarg
 
 void options_parse(int argc, char *argv[])
 {
@@ -119,37 +119,37 @@ void options_parse(int argc, char *argv[])
 		option_index = 0;
 
 		c_opt =
-		    getopt_long(argc, argv, spd_short_options, spd_long_options,
+		    getopt_long(argc, argv, short_options, long_options,
 				&option_index);
 		if (c_opt == -1)
 			break;
 		switch (c_opt) {
 		case 'd':
-			spd_mode = SPD_MODE_DAEMON;
+			mode = DAEMON;
 			break;
 		case 's':
-			spd_mode = SPD_MODE_SINGLE;
+			mode = SESSION;
 			break;
 		case 'l':
-			SPD_OPTION_SET_INT(log_level);
+			OPTION_SET_INT(log_level);
 			break;
 		case 'c':
-			SPD_OPTION_SET_STR(communication_method);
+			OPTION_SET_STR(communication_method);
 			break;
 		case 'S':
-			SPD_OPTION_SET_STR(socket_name);
+			OPTION_SET_STR(socket_name);
 			break;
 		case 'p':
-			SPD_OPTION_SET_INT(port);
+			OPTION_SET_INT(port);
 			break;
 		case 'a':
-			SpeechdOptions.spawn = TRUE;
+			options.spawn = TRUE;
 			break;
 		case 'P':
-			SPD_OPTION_SET_STR(pid_file);
+			OPTION_SET_STR(pid_file);
 			break;
 		case 'C':
-			SPD_OPTION_SET_STR(conf_dir);
+			OPTION_SET_STR(conf_dir);
 			break;
 		case 'v':
 			options_print_version();
@@ -159,26 +159,27 @@ void options_parse(int argc, char *argv[])
 			tmpdir = g_strdup(getenv("TMPDIR"));
 			if (!tmpdir)
 				tmpdir = g_strdup("/tmp");
-			SpeechdOptions.debug_destination =
+			options.debug_destination =
 			    g_strdup_printf("%s/speechd-debug", tmpdir);
 			g_free(tmpdir);
 
-			ret = mkdir(SpeechdOptions.debug_destination, S_IRWXU);
+			ret = mkdir(options.debug_destination, S_IRWXU);
 			if (ret) {
 				MSG(1,
 				    "Can't create additional debug destination in %s, reason %d-%s",
-				    SpeechdOptions.debug_destination, errno,
+				    options.debug_destination, errno,
 				    strerror(errno));
 				if (errno == EEXIST) {
 					MSG(1,
 					    "Debugging directory %s already exists, please delete it first",
-					    SpeechdOptions.debug_destination);
+					    options.debug_destination);
 				}
 				exit(1);
 			}
 
 			debug_logfile_path = g_strdup_printf("%s/speechd.log",
-							     SpeechdOptions.debug_destination);
+							     options.
+							     debug_destination);
 			/* Open logfile for writing */
 			debug_logfile = fopen(debug_logfile_path, "wx");
 			g_free(debug_logfile_path);
@@ -188,7 +189,7 @@ void options_parse(int argc, char *argv[])
 				    debug_logfile_path, errno, strerror(errno));
 				exit(1);
 			}
-			SpeechdOptions.debug = 1;
+			options.debug = 1;
 			break;
 		case 'h':
 			options_print_help(argv);
@@ -202,4 +203,4 @@ void options_parse(int argc, char *argv[])
 	}
 }
 
-#undef SPD_OPTION_SET_INT
+#undef OPTION_SET_INT

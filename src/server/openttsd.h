@@ -77,13 +77,13 @@ union semun {
 
 /* Mode of speechd execution */
 typedef enum {
-	SPD_MODE_DAEMON,	/* Run as daemon (background, ...) */
-	SPD_MODE_SINGLE		/*  */
-} TSpeechDMode;
+	DAEMON,	/* Run as daemon (background, ...) */
+	SESSION		/*  */
+} openttsd_mode;
 
-TSpeechDMode spd_mode;
+openttsd_mode mode;
 
-/*  TSpeechDQueue is a queue for messages. */
+/*  message_queue is a queue for messages. */
 typedef struct {
 	GList *p1;		/* important */
 	GList *p2;		/* text */
@@ -92,7 +92,7 @@ typedef struct {
 	GList *p5;		/* progress */
 } TSpeechDQueue;
 
-/*  TSpeechDMessage is an element of TSpeechDQueue,
+/*  openttsd_message is an element of TSpeechDQueue,
     that is, some text with or without index marks
     inside  and it's configuration. */
 typedef struct {
@@ -101,7 +101,7 @@ typedef struct {
 	char *buf;		/* the actual text */
 	int bytes;		/* number of bytes in buf */
 	TFDSetElement settings;	/* settings of the client when queueing this message */
-} TSpeechDMessage;
+} openttsd_message;
 
 #include "alloc.h"
 #include "speaking.h"
@@ -124,14 +124,14 @@ struct {
 	char *debug_destination;
 	char *debug_logfile;
 	int max_history_messages;	/* Maximum of messages in history before they expire */
-} SpeechdOptions;
+} options;
 
 struct {
 	int max_uid;		/* The largest assigned uid + 1 */
 	int max_gid;		/* The largest assigned gid + 1 */
 	int max_fd;
 	int num_fds;		/* Number of available allocated sockets */
-} SpeechdStatus;
+} status;
 
 /* speak() thread defined in speaking.c */
 pthread_t speak_thread;
@@ -210,7 +210,7 @@ int isanum(const char *str);
 /* Construct a path given a filename and the directory
  where to refer relative paths. filename can be either
  absolute (starting with slash) or relative. */
-char *spd_get_path(char *filename, char *startdir);
+char *get_path(char *filename, char *startdir);
 
 /* Functions used in speechd.c only */
 int speechd_connection_new(int server_socket);
@@ -221,11 +221,6 @@ void speechd_modules_reload(gpointer key, gpointer value, gpointer user);
 void speechd_modules_debug(void);
 void speechd_modules_nodebug(void);
 
-void speechd_reload_dead_modules(int sig);
-void speechd_options_init(void);
-void speechd_init(void);
-void speechd_load_configuration(int sig);
-void speechd_quit(int sig);
 int create_pid_file(void);
 void destroy_pid_file(void);
 

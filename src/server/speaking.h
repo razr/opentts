@@ -48,7 +48,7 @@ int resume_requested;
 void *speak(void *data);
 
 /* Put this message into queue again, stripping index marks etc. */
-int reload_message(TSpeechDMessage * msg);
+int reload_message(openttsd_message * msg);
 
 /* Speech flow control functions */
 void speaking_stop(int uid);
@@ -85,7 +85,7 @@ void set_speak_thread_attributes();
 void resolve_priorities(SPDPriority priority);
 
 /* Queue interaction helper functions */
-TSpeechDMessage *get_message_from_queues();
+openttsd_message *get_message_from_queues();
 GList *speaking_get_queue(SPDPriority priority);
 void speaking_set_queue(SPDPriority priority, GList * queue);
 gint sortbyuid(gconstpointer a, gconstpointer b);
@@ -95,12 +95,12 @@ gint sortbyuid(gconstpointer a, gconstpointer b);
 int get_speaking_client_uid();
 
 int socket_send_msg(int fd, char *msg);
-int report_index_mark(TSpeechDMessage * msg, char *index_mark);
-int report_begin(TSpeechDMessage * msg);
-int report_end(TSpeechDMessage * msg);
-int report_pause(TSpeechDMessage * msg);
-int report_resume(TSpeechDMessage * msg);
-int report_cancel(TSpeechDMessage * msg);
+int report_index_mark(openttsd_message * msg, char *index_mark);
+int report_begin(openttsd_message * msg);
+int report_end(openttsd_message * msg);
+int report_pause(openttsd_message * msg);
+int report_resume(openttsd_message * msg);
+int report_cancel(openttsd_message * msg);
 
 GList *empty_queue(GList * queue);
 GList *empty_queue_by_time(GList * queue, unsigned int uid);

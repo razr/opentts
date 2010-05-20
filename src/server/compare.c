@@ -37,11 +37,11 @@ gint(*p_msg_uid_lc) () = compare_message_uid;
 gint compare_message_fd(gconstpointer element, gconstpointer value, gpointer x)
 {
 	int *fd_val;
-	TSpeechDMessage *message;
+	openttsd_message *message;
 
 	fd_val = (int *)value;
 
-	message = ((TSpeechDMessage *) element);
+	message = ((openttsd_message *) element);
 	assert(message != NULL);
 	assert(message->settings.fd != 0);
 
@@ -51,11 +51,11 @@ gint compare_message_fd(gconstpointer element, gconstpointer value, gpointer x)
 gint compare_message_uid(gconstpointer element, gconstpointer value, gpointer x)
 {
 	int *uid_val;
-	TSpeechDMessage *message;
+	openttsd_message *message;
 
 	uid_val = (int *)value;
 
-	message = ((TSpeechDMessage *) element);
+	message = ((openttsd_message *) element);
 	assert(message != NULL);
 	//assert(message->settings.fd!=0);
 

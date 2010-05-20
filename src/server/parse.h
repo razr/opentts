@@ -27,6 +27,6 @@ char *get_param(const char *buf, const int n, const int bytes,
 /* Other internal functions */
 char *parse_general_event(const char *buf, const int bytes, const int fd,
 			  SPDMessageType type);
-int spd_utf8_read_char(char *pointer, char *character);
+int read_utf8_char(char *pointer, char *character);
 
 #endif

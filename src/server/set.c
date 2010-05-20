@@ -74,7 +74,7 @@ int set_priority_uid(int uid, SPDPriority priority)
       int i; \
       int uid; \
       int err = 0; \
-      for(i=1;i<=SpeechdStatus.max_fd;i++){ \
+      for(i=1;i<=status.max_fd;i++){ \
         uid = get_client_uid_by_fd(i); \
         if (uid == 0) continue; \
         err += set_ ## param ## _uid(uid, param); \
@@ -387,15 +387,15 @@ int set_debug_uid(int uid, int debug)
 
 	/* Do not switch debugging on when already on
 	   and vice-versa */
-	if (SpeechdOptions.debug && debug)
+	if (options.debug && debug)
 		return 1;
-	if (!SpeechdOptions.debug && !debug)
+	if (!options.debug && !debug)
 		return 1;
 
 	if (debug) {
 		debug_logfile_path =
 		    g_strdup_printf("%s/speechd.log",
-				    SpeechdOptions.debug_destination);
+				    options.debug_destination);
 
 		debug_logfile = fopen(debug_logfile_path, "w");
 		if (debug_logfile == NULL) {
@@ -404,14 +404,14 @@ int set_debug_uid(int uid, int debug)
 			    debug_logfile_path);
 			return 1;
 		}
-		SpeechdOptions.debug = debug;
+		options.debug = debug;
 
 		g_free(debug_logfile_path);
 
 		/* Redirecting debugging for all output modules */
 		speechd_modules_debug();
 	} else {
-		SpeechdOptions.debug = 0;
+		options.debug = 0;
 		speechd_modules_nodebug();
 		fclose(debug_logfile);
 	}
