@@ -1,4 +1,4 @@
-/* Declarations for spdsend
+/* Declarations for otts-send
    Author: Milan Zamazal <pdm@brailcom.org>
 */
 

@@ -1,4 +1,4 @@
-/* server.c -- Server part of spdsend
+/* server.c -- Server part of otts-send
    Author: Milan Zamazal <pdm@brailcom.org>
 */
 
@@ -320,7 +320,7 @@ static const char *login_name()
 static const char *server_socket_name()
 {
 	char *name;
-	if (asprintf(&name, "/tmp/spdsend-server.%s", login_name()) < 0)
+	if (asprintf(&name, "/tmp/otts-send-server.%s", login_name()) < 0)
 		system_error("memory allocation");
 	return name;
 }

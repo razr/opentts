@@ -1,4 +1,4 @@
-/* client.c -- Client part of spdsend
+/* client.c -- Client part of otts-send
    Author: Milan Zamazal <pdm@brailcom.org>
 */
 

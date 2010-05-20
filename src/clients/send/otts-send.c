@@ -1,4 +1,4 @@
-/* spdsend.c -- Send SSIP commands to Speech Dispatcher
+/* otts-send.c -- Send SSIP commands to openttsd
    Author: Milan Zamazal <pdm@brailcom.org>
 */
 
@@ -37,9 +37,9 @@ const char *const SPDSEND_VERSION = "0.0.0";
 static void usage(const char *const message)
 {
 	if (message != NULL)
-		fprintf(stderr, "spdsend: %s\n", message);
+		fprintf(stderr, "otts-send: %s\n", message);
 	fprintf(stderr,
-		"usage: spdsend { --open SERVER PORT | --close ID | --send ID }\n");
+		"usage: otts-send { --open SERVER PORT | --close ID | --send ID }\n");
 	exit(EXIT_ERROR);
 }
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		int port;
 
 		if (!strcmp(action, "--version")) {
-			printf("spdsend %s\n", SPDSEND_VERSION);
+			printf("otts-send %s\n", SPDSEND_VERSION);
 			exit(EXIT_OK);
 		}
 
