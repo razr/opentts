@@ -33,6 +33,11 @@ AC_SUBST(LIBOPENTTS_REVISION)
 AC_SUBST(LIBOPENTTS_AGE)
 
 # command line arguments
+AC_ARG_ENABLE([python],
+	[AS_HELP_STRING([--disable-python], [do not install python bindings])],
+	[],
+	[enable_python=check])
+
 AC_ARG_WITH([alsa],
 	[AS_HELP_STRING([--with-alsa], [include ALSA support])],
 	[],
@@ -84,11 +89,6 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-# Python support?
-# Python 2.4 or greater should be acceptable.
-AM_PATH_PYTHON([2.4],, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ':'])
-
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h langinfo.h limits.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h wchar.h wctype.h])
 
@@ -135,6 +135,15 @@ AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
 
 AC_SUBST(SNDFILE_CFLAGS)
 AC_SUBST(SNDFILE_LIBS)
+
+# Python support
+# Python 2.4 or greater should be acceptable.
+AS_IF([test $enable_python != "no"],
+	[AM_PATH_PYTHON([2.4],
+		[enable_python=yes],
+		[AS_IF([test $enable_python = "yes"],
+		[AC_MSG_FAILURE([python is not available])])])])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$enable_python" = 'yes'])
 
 # Audio subsystem part
 AUDIO_DLOPEN_MODULES=
