@@ -1,8 +1,9 @@
 
 /*
- * say.c - Super-simple Speech Dispatcher client
+ * say.c - Super-simple OpenTTS client
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,7 +20,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: say.c,v 1.16 2007-05-03 09:43:12 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -42,7 +42,7 @@
 
 sem_t semaphore;
 
-/* Callback for Speech Dispatcher notifications */
+/* Callback for openttsd notifications */
 void end_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 {
 	sem_post(&semaphore);
@@ -81,12 +81,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	/* Open a connection to Speech Dispatcher */
-	conn = spd_open(application_name ? application_name : "spd-say",
+	/* Open a connection to openttsd */
+	conn = spd_open(application_name ? application_name : "otts-say",
 			connection_name ? connection_name : "main",
 			NULL, SPD_MODE_THREADED);
 	if (conn == NULL)
-		FATAL("Speech Dispatcher failed to open");
+		FATAL("openttsd failed to open");
 
 	if (stop_previous)
 		spd_stop_all(conn);
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
 		spd_set_notification_on(conn, SPD_CANCEL);
 	}
 
-	/* In pipe mode, read from stdin, write to stdout, and also to Speech Dispatcher. */
+	/* In pipe mode, read from stdin, write to stdout, and also to openttsd. */
 	if (pipe_mode == 1) {
 		line = (char *)malloc(MAX_LINELEN);
 		while (NULL != fgets(line, MAX_LINELEN, stdin)) {
@@ -227,7 +227,7 @@ int main(int argc, char **argv)
 		assert(argv[argc - 1]);
 		err = spd_sayf(conn, spd_priority, (char *)argv[argc - 1]);
 		if (err == -1)
-			FATAL("Speech Dispatcher failed to say message");
+			FATAL("openttsd failed to say message");
 
 		/* Wait till the callback is called */
 		if (wait_till_end)

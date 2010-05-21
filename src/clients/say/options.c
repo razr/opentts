@@ -2,6 +2,7 @@
   * options.c - Parse and process possible command line options
   *
   * Copyright (C) 2003 Brailcom, o.p.s.
+  * Copyright (C) 2010 OpenTTS Developers
   *
   * This is free software; you can redistribute it and/or modify it
   * under the terms of the GNU General Public License as published by
@@ -18,7 +19,6 @@
   * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
   * Boston, MA 02110-1301, USA.
   *
-  * $Id: options.c,v 1.9 2006-07-11 16:12:26 hanke Exp $
   */
 
 #ifdef HAVE_CONFIG_H
@@ -83,7 +83,7 @@ void options_print_help(char *argv[])
 
 	printf("Usage: %s [options] \"some text\"\n", argv[0]);
 	printf
-	    ("Speech Dispatcher Say -- a simple client for speech synthesis (GNU GPL)\n\n");
+	    ("otts-say -- a simple client for speech synthesis (GNU GPL)\n\n");
 	printf("-r, --rate             -     Set the rate of the speech\n"
 	       "                               (between -100 and +100, default: 0)\n"
 	       "-p, --pitch            -     Set the pitch of the speech\n"
@@ -99,37 +99,39 @@ void options_print_help(char *argv[])
 	       "-s, --spelling         -     Spell the message\n"
 	       "-x, --ssml             -     Set SSML mode on (default: off)\n"
 	       "\n"
-	       "-e, --pipe-mode        -     Pipe from stdin to stdout plus Speech Dispatcher\n"
+	       "-e, --pipe-mode        -     Pipe from stdin to stdout plus openttsd\n"
 	       "-P, --priority         -     Set priority of the message (important, message,\n"
 	       "                                text, notification, progress; default: text)\n"
 	       "-N, --application-name -     Set the application name used to estabilish\n"
 	       "                                the connection to specified string value\n"
-	       "                                (default: spd-say)\n"
+	       "                                (default: otts-say)\n"
 	       "-n, --connection-name  -     Set the connection name used to estabilish\n"
 	       "                                the connection to specified string value\n"
 	       "                                (default: main)\n" "\n"
 	       "-w, --wait             -     Wait till the message is spoken or discarded\n"
 	       "-S, --stop             -     Stop speaking the message being spoken\n"
-	       "                                in Speech Dispatcher\n"
-	       "-C, --cancel           -     Cancel all messages in Speech Dispatcher\n"
+	       "                                in openttsd\n"
+	       "-C, --cancel           -     Cancel all messages in openttsd\n"
 	       "\n"
 	       "-v, --version          -     Print version and copyright info\n"
 	       "-h, --help             -     Print this info\n" "\n"
 	       "Copyright (C) 2003 Brailcom, o.p.s.\n"
+	       "Copyright (C) 2010 OpenTTS Developers.\n"
 	       "This is free software; you can redistribute it and/or modify it\n"
 	       "under the terms of the GNU General Public License as published by\n"
 	       "the Free Software Foundation; either version 2, or (at your option)\n"
 	       "any later version. Please see COPYING for more details.\n\n"
-	       "Please report bugs to <speechd@bugs.freebsoft.org>\n\n");
+	       "Please report bugs on the Issues page at <http://opentts.org/>.\n\n");
 
 }
 
 void options_print_version()
 {
-	printf("spd-say: " PACKAGE " " VERSION "\n");
+	printf("otts-say: " PACKAGE " " VERSION "\n");
 	printf("Copyright (C) 2002-2006 Brailcom, o.p.s.\n"
-	       "spd-say comes with ABSOLUTELY NO WARRANTY.\n"
-	       "You may redistribute copies of spd-say\n"
+	       "Copyright (C) 2010 OpenTTS Developers.\n"
+	       "otts-say comes with ABSOLUTELY NO WARRANTY.\n"
+	       "You may redistribute copies of otts-say\n"
 	       "under the terms of the GNU General Public License.\n"
 	       "For more information about these matters, see the file named COPYING.\n");
 }
