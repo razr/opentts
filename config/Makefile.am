@@ -2,16 +2,5 @@
 
 SUBDIRS= modules clients
 
-all-local: openttsd.conf
-
-openttsd.conf: openttsd.conf.in
-	sed -e s:INCLUDE_PATH:$(spdconfdir):g openttsd.conf.in > openttsd.conf
-
-
-spdconf_DATA= openttsd.conf
-
-spdconforig_DATA= openttsd.conf
-
-CLEANFILES = openttsd.conf
-
-EXTRA_DIST = openttsd.conf.in
+dist_spdconf_DATA= openttsd.conf
+dist_spdconforig_DATA= openttsd.conf
