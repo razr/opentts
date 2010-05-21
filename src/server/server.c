@@ -1,6 +1,6 @@
 
  /*
-  * server.c - Speech Dispatcher server core
+  * server.c - OpenTTS daemon core
   * 
   * Copyright (C) 2001,2002,2003, 2004, 2006, 2007 Brailcom, o.p.s
   *

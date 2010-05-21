@@ -1,5 +1,5 @@
 @   This script is used to test VOICE functionality
-@   in Speech Dispatcher.
+@   in openttsd.
 
 $ 3
 !SET SELF VOICE MALE1

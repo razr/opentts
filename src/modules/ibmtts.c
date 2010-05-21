@@ -1,6 +1,6 @@
 
 /*
- * ibmtts.c - Speech Dispatcher backend for IBM TTS
+ * ibmtts.c - OpenTTS backend for IBM TTS
  *
  * Copyright (C) 2006, 2007 Brailcom, o.p.s.
  *
@@ -25,14 +25,14 @@
 
 /* This output module operates with four threads:
 
-        The main thread called from Speech Dispatcher (module_*()).
+        The main thread called from the OpenTTS daemon (module_*()).
         A synthesis thread that accepts messages, parses them, and forwards
             them to the IBM TTS via the Eloquence Command Interface (ECI).
             This thread receives audio and index mark callbacks from
             IBM TTS and queues them into a playback queue. See _ibmtts_synth().
         A playback thread that acts on entries in the playback queue,
             either sending them to the audio output module (spd_audio_play()),
-            or emitting Speech Dispatcher events.  See _ibmtts_play().
+            or emitting OpenTTS events.  See _ibmtts_play().
         A thread which is used to stop or pause the synthesis and
             playback threads.  See _ibmtts_stop_or_pause().
 
@@ -56,7 +56,7 @@
    Won't exist unless IBM TTS or IBM TTS SDK is installed. */
 #include <eci.h>
 
-/* Speech Dispatcher includes. */
+/* OpenTTS includes. */
 #include "opentts/opentts_types.h"
 #include "audio.h"
 #include "module_utils.h"
@@ -177,7 +177,7 @@ static TIbmttsBool ibmtts_stop_synth_requested = IBMTTS_FALSE;
 static TIbmttsBool ibmtts_stop_play_requested = IBMTTS_FALSE;
 static TIbmttsBool ibmtts_pause_requested = IBMTTS_FALSE;
 
-/* Current message from Speech Dispatcher. */
+/* Current message from the OpenTTS daemon. */
 static char **ibmtts_message;
 static SPDMessageType ibmtts_message_type;
 
@@ -655,8 +655,8 @@ size_t module_pause(void)
 	   except that processing should continue until the next index mark is
 	   reached before stopping.
 	   Note that although IBM TTS offers an eciPause function, we cannot
-	   make use of it because Speech Dispatcher doesn't have a module_resume
-	   function. Instead, Speech Dispatcher resumes by calling module_speak
+	   make use of it because the OpenTTS daemon doesn't have a module_resume
+	   function. Instead, the daemon resumes by calling module_speak
 	   from the last index mark reported in the text. */
 	dbg("Ibmtts: module_pause().");
 
@@ -982,7 +982,7 @@ static void *_ibmtts_synth(void *nothing)
 			break;
 		case SPD_MSGTYPE_KEY:
 			/* Map unspeakable keys to speakable words. */
-			dbg("Ibmtts: Key from Speech Dispatcher: |%s|", pos);
+			dbg("Ibmtts: Key from openttsd: |%s|", pos);
 			pos = ibmtts_subst_keys(pos);
 			dbg("Ibmtts: Key to speak: |%s|", pos);
 			g_free(*ibmtts_message);
@@ -1626,7 +1626,7 @@ static void ibmtts_subst_keys_cb(gpointer data, gpointer user_data)
 	ibmtts_replace(key_subst->key, key_subst->newkey, msg);
 }
 
-/* Given a Speech Dispatcher !KEY key sequence, replaces unspeakable
+/* Given an OpenTTS !KEY key sequence, replaces unspeakable
    or incorrectly spoken keys or characters with speakable ones.
    The subsitutions come from the KEY NAME SUBSTITUTIONS section of the
    config file.

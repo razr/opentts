@@ -1,6 +1,6 @@
 
 /*
- * set.h - Settings related functions for Speech Dispatcher header
+ * set.h - Settings related functions for openttsd
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

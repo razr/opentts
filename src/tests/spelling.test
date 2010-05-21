@@ -1,7 +1,7 @@
 
 @ Hello, this is a spelling test
 
-@ Set parameters and test if Speech Dispatcher works
+@ Set parameters and test if openttsd works
 !SET SELF CLIENT_NAME unknown_user:test-spelling:main
 !SET SELF PRIORITY MESSAGE
 

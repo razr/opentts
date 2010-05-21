@@ -36,7 +36,7 @@
 /*-----------------------------------------------------------------------*/
 /*                                                                       */
 /* Client end of Festival server API in C designed specifically formerly */
-/* for Galaxy Communicator use, but rewritten to suit Speech Dispatcher  */
+/* for Galaxy Communicator use, but rewritten to suit OpenTTS */
 /* needs. Please look also at the original festival_client.c library     */
 /* that can be found in festival/examples/festival_client.c -- it will   */
 /* be probably more up-to-date.                                          */
@@ -466,6 +466,10 @@ FT_Info *festivalOpen(FT_Info * info)
 		return NULL;
 	}
 
+	/* These next two references to speech-dispatcher need to stay,
+	 * since we have to require the speech-dispatcher module from
+	 * festival-freebsoft-utils.
+	 */
 	FEST_SEND_CMD("(require 'speech-dispatcher)");
 	ret = festival_read_response(info, &resp);
 	if (ret || resp == NULL || strcmp(resp, "t\n")) {
@@ -818,7 +822,7 @@ int main(int argc, char **argv)
 	FT_Info *info;
 	FT_Wave *wave;
 
-	printf("Welcome to Festival client library for Speech Dispatcher\n");
+	printf("Welcome to the Festival client library for OpenTTS\n");
 
 	info = festivalDefaultInfo();
 	if (server != 0)

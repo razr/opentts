@@ -1,6 +1,6 @@
 
 /*
- * set.c - Settings related functions for Speech Dispatcher
+ * set.c - Settings related functions for openttsd
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

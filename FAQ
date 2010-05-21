@@ -1,9 +1,9 @@
 Frequently Asked Questions
 
-Q: How do I configure Speech Dispatcher in user-mode?
+Q: How do I configure openttsd in user-mode?
 
 A: Run
-        spd-conf
+        otts-conf
    and answer some basic questions
 
 Q: During the instalation, when running `make' and `make install',
@@ -34,13 +34,13 @@ Q: Flite has only a very crappy voice!
 
 A: Flite is only a simple light software synthesizer and it's voices are not of
    a very high quality.  Festival can do much better and it also supports
-   various languages.  But if you are compiling Flite and Speech Dispatcher
+   various languages.  But if you are compiling Flite and OpenTTS
    yourselves, there are still chances that you can improve the Flite voice
    considerably by using the 16-bit KAL voice instead of the (in the
    distribution tarball default) 8-bit voice.  To be able to use the 16-bit
    voice, you have to compile Flite with a special flag, please consult it's
-   documentation or ./configure --help.  Then you should recompile Speech
-   Dispatcher (no flag is necessary, it will be automatically installed with
+   documentation or ./configure --help.  Then you should recompile OpenTTS
+   (no flag is necessary, it will be automatically installed with
    the better voice).
 
    If you are using Debian or any other package based distribution, the 16-bit

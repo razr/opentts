@@ -1,6 +1,6 @@
 /*
  * index_marking.h -- Implements functions handling index marking
- *                    for Speech Dispatcher (header)
+ *                    for the OpenTTS daemon (header)
  * 
  * Copyright (C) 2001,2002,2003 Brailcom, o.p.s
  *

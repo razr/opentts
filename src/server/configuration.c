@@ -356,7 +356,7 @@ DOTCONF_CB(cb_CustomLogFile)
 		custom_logfile = stdout;
 	}
 
-	MSG(2, "Speech Dispatcher custom logging to file %s", file);
+	MSG(2, "openttsd custom logging to file %s", file);
 	return NULL;
 }
 

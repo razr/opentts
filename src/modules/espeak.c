@@ -1,6 +1,6 @@
 
 /*
- * espeak.c - Speech Dispatcher backend for espeak
+ * espeak.c - OpenTTS backend for espeak
  *
  * Copyright (C) 2007 Brailcom, o.p.s.
  *
@@ -41,7 +41,7 @@
 #define ESPEAK_API_REVISION 1
 #endif
 
-/* Speech Dispatcher includes. */
+/* OpenTTS includes. */
 #include "opentts/opentts_types.h"
 #include "audio.h"
 #include "module_utils.h"

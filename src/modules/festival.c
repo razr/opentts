@@ -1,5 +1,5 @@
 /*
- * festival.c - Speech Dispatcher backend for Festival
+ * festival.c - OpenTTS backend for Festival
  *
  * Copyright (C) 2003, 2007 Brailcom, o.p.s.
  *
@@ -282,7 +282,7 @@ int module_init(char **status_info)
 
 	/* Initialize festival_speak thread to handle communication
 	   with festival in a separate thread (to be faster in communication
-	   with Speech Dispatcher) */
+	   with the OpenTTS daemon) */
 	festival_semaphore = module_semaphore_init();
 	if (festival_semaphore == NULL)
 		return -1;

@@ -1348,8 +1348,8 @@ Only @code{self} is allowed as the `target' argument.
 If set to @code{ON}, OpenTTS will write all its debugging
 information (including output modules) with maximal verbosity into a
 debug directory which is reported by the server to the client in reply
-to this command. When subsequently set to @code{OFF}, Speech
-Dispatcher will stop writing out debugging information into this path
+to this command. When subsequently set to @code{OFF},
+openttsd will stop writing out debugging information into this path
 and close all the appropriate logging files.
 
 The intended use for this functionality is on-line debugging from
@@ -1366,7 +1366,7 @@ time.
 
 @example
 SET all DEBUG ON
-262-/home/hanke/.speech-dispatcher/log/debug
+262-/home/hanke/.opentts/log/debug
 262 OK DEBUGGING SET
 @end example
 

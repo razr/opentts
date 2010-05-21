@@ -1,6 +1,6 @@
 
 /*
- * speaking.c - Speech Dispatcher speech output functions
+ * speaking.c - speech output functions
  * 
  * Copyright (C) 2001,2002,2003, 2006, 2007 Brailcom, o.p.s
  *
@@ -85,7 +85,7 @@ void *speak(void *data)
 			if (revents & POLLIN) {
 				char buf[100];
 				MSG(5,
-				    "wait_for_poll: activity in Speech Dispatcher");
+				    "wait_for_poll: activity in openttsd");
 				read(poll_fds[0].fd, buf, 1);
 			}
 		}

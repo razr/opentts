@@ -1,5 +1,5 @@
 /*
- * output.h - Output layer for Speech Dispatcher header
+ * output.h - Output layer for openttsd
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

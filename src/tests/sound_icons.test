@@ -1,5 +1,5 @@
 @   This script is used to test SOUND ICON functionality
-@   in Speech Dispatcher.
+@   in openttsd.
 
 @   Note that these tests assume you have the free(b)soft
 @   sound-icons package installed (apt-get install sound-icons).

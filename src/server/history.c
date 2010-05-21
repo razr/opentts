@@ -1,6 +1,6 @@
 
 /*
- * history.c - History functions for Speech Dispatcher
+ * history.c - History functions for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

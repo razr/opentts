@@ -1,6 +1,6 @@
 
 /*
- * flite.c - Speech Dispatcher backend for Flite (Festival Lite)
+ * flite.c - OpenTTS backend for Flite (Festival Lite)
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
  *

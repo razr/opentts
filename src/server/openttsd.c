@@ -1,5 +1,5 @@
 /*
- * speechd.c - Speech Dispatcher server program
+ * openttsd.c - OpenTTS server program
  *  
  * Copyright (C) 2001, 2002, 2003, 2006, 2007 Brailcom, o.p.s.
  *
@@ -194,7 +194,7 @@ void MSG2(int level, char *kind, char *format, ...)
 	}
 }
 
-/* The main logging function for Speech Dispatcher,
+/* The main logging function for the OpenTTS daemon,
    level is between 1 and 5. 1 means the most important.*/
 /* TODO: Define this in terms of MSG somehow. I don't
    know how to pass '...' arguments to another C function */
@@ -486,7 +486,7 @@ static void init()
 		FATAL("Can't create pipe");
 	}
 
-	/* Initialize Speech Dispatcher priority queue */
+	/* Initialize the OpenTTS daemon's priority queue */
 	MessageQueue = (TSpeechDQueue *) speechd_queue_alloc();
 	if (MessageQueue == NULL)
 		FATAL("Couldn't alocate memmory for MessageQueue.");
@@ -560,7 +560,7 @@ static void init()
 	}
 
 	/* Load configuration from the config file */
-	MSG(4, "Reading Speech Dispatcher configuration from %s",
+	MSG(4, "Reading openttsd's configuration from %s",
 	    options.conf_file);
 	load_configuration(0);
 
@@ -570,7 +570,7 @@ static void init()
 	if (g_hash_table_size(output_modules) == 0) {
 		DIE("No speech output modules were loaded - aborting...");
 	} else {
-		MSG(3, "Speech Dispatcher started with %d output module%s",
+		MSG(3, "openttsd started with %d output module%s",
 		    g_hash_table_size(output_modules),
 		    g_hash_table_size(output_modules) > 1 ? "s" : "");
 	}
@@ -656,7 +656,7 @@ static void quit(int sig)
 
 	fflush(NULL);
 
-	MSG(2, "Speech Dispatcher terminated correctly");
+	MSG(2, "openttsd terminated correctly");
 
 	exit(0);
 }
@@ -690,7 +690,7 @@ int create_pid_file()
 
 		fclose(pid_file);
 		if (lock.l_type != F_UNLCK) {
-			MSG(1, "Speech Dispatcher already running.\n");
+			MSG(1, "openttsd is already running.\n");
 			return -1;
 		}
 
@@ -745,7 +745,7 @@ void logging_init(void)
 				file_name);
 			logfile = stdout;
 		} else {
-			MSG(2, "Speech Dispatcher Logging to file %s",
+			MSG(2, "openttsd is logging to file %s",
 			    file_name);
 		}
 	}
@@ -827,7 +827,7 @@ int make_inet_socket(const int port)
 	if (listen(server_socket, 50) == -1) {
 		MSG(2, "ERRNO:%s", strerror(errno));
 		FATAL
-		    ("listen() failed for inet socket, another Speech Dispatcher running?");
+		    ("listen() failed for inet socket, is another openttsd running?");
 	}
 
 	return server_socket;
@@ -862,7 +862,7 @@ int main(int argc, char *argv[])
 
 	options_parse(argc, argv);
 
-	MSG(1, "Speech Dispatcher " VERSION " starting");
+	MSG(1, "openttsd " VERSION " starting");
 
 	/* By default, search for configuration options and put everything
 	 * in a .opentts directory  in user's home directory. */
@@ -875,7 +875,7 @@ int main(int argc, char *argv[])
 			user_home_dir = g_get_home_dir();
 
 		if (user_home_dir) {
-			/* Setup a ~/.speechd-dispatcher/ directory or create a new one */
+			/* Setup a ~/.opentts/ directory or create a new one */
 			options.home_speechd_dir =
 			    g_strdup_printf("%s/.opentts",
 					    user_home_dir);
@@ -959,7 +959,7 @@ int main(int argc, char *argv[])
 		}
 		g_free(config_contents);
 		g_regex_unref(regexp);
-		MSG(2, "Starting Speech Dispatcher due to auto-spawn");
+		MSG(2, "Starting openttsd due to auto-spawn");
 	}
 
 	/* Initialize logging mutex to workaround ctime threading bug */
@@ -983,7 +983,7 @@ int main(int argc, char *argv[])
 	init();
 
 	if (!strcmp(options.communication_method, "inet_socket")) {
-		MSG(2, "Speech Dispatcher will use inet port %d",
+		MSG(2, "openttsd will use inet port %d",
 		    options.port);
 		/* Connect and start listening on inet socket */
 		server_socket = make_inet_socket(options.port);
@@ -1008,7 +1008,7 @@ int main(int argc, char *argv[])
 			socket_filename =
 			    g_string_new(options.socket_name);
 		}
-		MSG(2, "Speech Dispatcher will use local unix socket: %s",
+		MSG(2, "openttsd will use local unix socket: %s",
 		    socket_filename->str);
 
 		/* Delete an old socket file if it exists */
@@ -1043,7 +1043,7 @@ int main(int argc, char *argv[])
 	status.max_fd = server_socket;
 
 	/* Now wait for clients and requests. */
-	MSG(1, "Speech Dispatcher started and waiting for clients ...");
+	MSG(1, "openttsd started, and it is waiting for clients ...");
 	while (1) {
 		testfds = readfds;
 

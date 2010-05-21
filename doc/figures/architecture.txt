@@ -1,7 +1,7 @@
  applications      protocol                    output modules 
-            interface      Speech Dispatcher core           synthesizers
+            interface         OpenTTS daemon core           synthesizers
                           .-----------------------.
-|Emacspeak|    :s l:  < > |  Speech Dispatcher    | :m  :  |Apollo|
+|Emacspeak|    :s l:  < > |     OpenTTS daemon    | :m  :  |Apollo|
                :h i:  <S> |    - configuration    | :o  :  |Festival|
 |Speakup|      :a b:  <S> | - synchronization     | :d A:  |Flite|
                :r r:  <I> |        - sound icons  | :u P:     .

@@ -59,7 +59,7 @@ void options_print_help(char *argv[])
 	    ("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n",
 	     argv[0]);
 	printf
-	    ("Speech Dispatcher -- Common interface for Speech Synthesis (GNU GPL)\n\n");
+	    ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n");
 	printf("-d, --run-daemon     -      Run as a daemon\n"
 	       "-s, --run-single     -      Run as single application\n"
 	       "-a, --spawn          -      Start only if autospawn is not disabled\n"
@@ -85,8 +85,8 @@ void options_print_version(void)
 {
 	printf("%s %s\n", PACKAGE, VERSION);
 	printf("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
-	       "Speech Dispatcher comes with ABSOLUTELY NO WARRANTY.\n"
-	       "You may redistribute copies of Speech Dispatcher\n"
+	       "OpenTTS comes with ABSOLUTELY NO WARRANTY.\n"
+	       "You may redistribute copies of OpenTTS\n"
 	       "under the terms of the GNU General Public License.\n"
 	       "For more information about these matters, see the file named COPYING.\n");
 }

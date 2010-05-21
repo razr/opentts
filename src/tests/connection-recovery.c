@@ -63,7 +63,7 @@ int main(void)
 
 	printf("Connection recovery test \n\n");
 	printf("This test will keep saying a message 'Testing connection' \n");
-	printf("until Speech Dispatcher is stopped. Then it output at least\n");
+	printf("until openttsd is stopped. Then it outputs at least\n");
 	printf
 	    ("5 messages about connection failure and will try to reconnect.\n");
 	printf

@@ -1,5 +1,5 @@
 /*
- * cicero.c - Speech Dispatcher backend for Cicero French TTS engine
+ * cicero.c - OpenTTS backend for Cicero French TTS engine
  *
  * Copyright (C) 2006 Brailcom, o.p.s.
  *
@@ -136,7 +136,7 @@ int module_load(void)
 	REGISTER_DEBUG();
 	MOD_OPTION_1_STR_REG(CiceroExecutable, "/usr/bin/cicero");
 	MOD_OPTION_1_STR_REG(CiceroExecutableLog,
-			     "/var/log/speech-dispatcher/cicero-executable.log");
+			     "/var/log/opentts/cicero-executable.log");
 	return 0;
 }
 

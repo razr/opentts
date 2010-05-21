@@ -1,6 +1,6 @@
 
 /*
- * ivona.c - Speech Dispatcher backend for Ivona (IVO Software)
+ * ivona.c - OpenTTS backend for Ivona (IVO Software)
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
  *

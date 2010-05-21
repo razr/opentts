@@ -1,5 +1,5 @@
 /*
- * msg.h - Client/server messages for Speech Dispatcher
+ * msg.h - Client/server messages for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

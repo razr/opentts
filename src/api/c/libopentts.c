@@ -181,7 +181,7 @@ static ssize_t otts_getline(char **lineptr, size_t * n, FILE * f)
 
 #define SPD_REPLY_BUF_SIZE 65536
 
-/* Opens a new Speech Dispatcher connection.
+/* Opens a new connection to openttsd.
  * Returns socket file descriptor of the created connection
  * or -1 if no connection was opened. */
 
@@ -383,7 +383,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
     return r; \
     }
 
-/* Close a Speech Dispatcher connection */
+/* Close a connection to openttsd */
 void spd_close(SPDConnection * connection)
 {
 
@@ -517,7 +517,7 @@ spd_sayf(SPDConnection * connection, SPDPriority priority, const char *format,
 	buf = g_strdup_vprintf(format, args);
 	va_end(args);
 
-	/* Send the buffer to Speech Dispatcher */
+	/* Send the buffer to openttsd */
 	ret = spd_say(connection, priority, buf);
 	xfree(buf);
 
@@ -1353,14 +1353,14 @@ static void *spd_events_handler(void *conn)
 			msg_id = get_param_int(reply, 1, &err);
 			if (err < 0) {
 				SPD_DBG
-				    ("Bad reply from Speech Dispatcher: %s (code %d)",
+				    ("Bad reply from openttsd: %s (code %d)",
 				     reply, err);
 				break;
 			}
 			client_id = get_param_int(reply, 2, &err);
 			if (err < 0) {
 				SPD_DBG
-				    ("Bad reply from Speech Dispatcher: %s (code %d)",
+				    ("Bad reply from openttsd: %s (code %d)",
 				     reply, err);
 				break;
 			}
@@ -1388,7 +1388,7 @@ static void *spd_events_handler(void *conn)
 				im = get_param_str(reply, 3, &err);
 				if ((err < 0) || (im == NULL)) {
 					SPD_DBG
-					    ("Broken reply from Speech Dispatcher: %s",
+					    ("Broken reply from openttsd: %s",
 					     reply);
 					break;
 				}

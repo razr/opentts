@@ -15,9 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-"""Python API to Speech Dispatcher
+"""Python API for OpenTTS
 
-Basic Python client API to Speech Dispatcher is provided by the 'SSIPClient'
+The basic Python client API for OpenTTS is provided by the 'SSIPClient'
 class.  This interface maps directly to available SSIP commands and logic.
 
 A more convenient interface is provided by the 'Speaker' class.
@@ -47,7 +47,7 @@ class CallbackType(object):
     included into the text by the client application is reached
     when speaking them"""
     BEGIN = 'begin'
-    """The begin event is reported when Speech Dispatcher starts
+    """The begin event is reported when openttsd starts
     actually speaking the message."""
     END = 'end'
     """The end event is reported after the message has terminated and
@@ -238,7 +238,7 @@ class _SSIP_Connection:
         """Read server response from the communication thread
         and return the triplet (code, msg, data)."""
         # TODO: This check is dumb but seems to work.  The main thread
-        # hangs without it, when the Speech Dispatcher connection is lost.
+        # hangs without it, when the connection to openttsd is lost.
         if not self._communication_thread.isAlive():
             raise SSIPCommunicationError
         self._ssip_reply_semaphore.acquire()
@@ -272,7 +272,7 @@ class _SSIP_Connection:
         try:
             self._socket.send(cmd + self._NEWLINE)
         except socket.error:
-            raise SSIPCommunicationError("Speech Dispatcher connection lost.")
+            raise SSIPCommunicationError("openttsd connection lost.")
         code, msg, data = self._recv_response()
         if code/100 != 2:
             raise SSIPCommandError(code, msg, cmd)
@@ -304,7 +304,7 @@ class _SSIP_Connection:
         try:
             self._socket.send(data + self._END_OF_DATA)
         except socket.error:
-            raise SSIPCommunicationError("Speech Dispatcher connection lost.")
+            raise SSIPCommunicationError("openttsd connection lost.")
         code, msg, response_data = self._recv_response()
         if code/100 != 2:
             raise SSIPDataError(code, msg, data)
@@ -333,7 +333,7 @@ class _SSIP_Connection:
         self._callback = callback
 
     def speechd_server_spawn(self):
-        """Attempts to spawn the speech-dispatcher server."""
+        """Attempts to spawn the openttsd server."""
         if os.path.exists(spawn_mod.SPD_SPAWN_CMD):
             speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD, '--spawn'],
                         stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -353,7 +353,7 @@ class Scope(object):
     SELF = 'self'
     """The command (mostly a setting) applies to current connection only."""
     ALL = 'all'
-    """The command applies to all current Speech Dispatcher connections."""
+    """The command applies to all current openttsd connections."""
 
     
 class Priority(object):
@@ -384,24 +384,24 @@ class PunctuationMode(object):
     SOME = 'some'
     """Only the user-defined punctuation characters are read.
 
-    The set of characters is specified in Speech Dispatcher configuration.
+    The set of characters is specified in openttsd configuration.
 
     """
 
 class SSIPClient(object):
-    """Basic Speech Dispatcher client interface.
+    """Basic OpenTTS client interface.
 
-    This class provides a Python interface to Speech Dispatcher functionality
+    This class provides a Python interface to OpenTTS functionality
     over an SSIP connection.  The API maps directly to available SSIP commands.
-    Each connection to Speech Dispatcher is represented by one instance of this
+    Each connection to openttsd is represented by one instance of this
     class.
     
     Many commands take the 'scope' argument, thus it is shortly documented
     here.  It is either one of 'Scope' constants or a number of connection.  By
     specifying the connection number, you are applying the command to a
-    particular connection.  This feature is only meant to be used by Speech
-    Dispatcher control application, however.  More datails can be found in
-    Speech Dispatcher documentation.
+    particular connection.  This feature is only meant to be used by
+    OpenTTS control application, however.  More datails can be found in
+    OpenTTS documentation.
 
     """
     
@@ -437,8 +437,8 @@ class SSIPClient(object):
           autospawn -- a flag to specify whether the library should try to start the
           server if it determines its not already running
         
-        For more information on client identification strings see Speech
-        Dispatcher documentation.
+        For more information on client identification strings see
+        OpenTTS documentation.
           
         """
         if socket_name is None:
@@ -811,7 +811,7 @@ class SSIPClient(object):
     def set_debug(self, val):
         """Switch debugging on and off. When switched on,
         debugging files will be created in the chosen destination
-        (see set_debug_destination()) for Speech Dispatcher and all
+        (see set_debug_destination()) for openttsd and all
         its running modules. All logging information will then be
         written into these files with maximal verbosity until switched
         off. You should always first call set_debug_destination.
@@ -865,7 +865,7 @@ class SSIPClient(object):
         self._conn.send_command('BLOCK', 'END')
 
     def close(self):
-        """Close the connection to Speech Dispatcher."""
+        """Close the connection to openttsd."""
         if hasattr(self, '_conn'):
             self._conn.close()
 
@@ -901,9 +901,9 @@ class Client(SSIPClient):
         
 
 class Speaker(SSIPClient):
-    """Extended Speech Dispatcher Interface.
+    """Extended openttsd Interface.
 
-    This class provides an extended intercace to Speech Dispatcher
+    This class provides an extended interface to OpenTTS
     functionality and tries to hide most of the lower level details of SSIP
     (such as a more sophisticated handling of blocks and priorities and
     advanced event notifications) under a more convenient API.

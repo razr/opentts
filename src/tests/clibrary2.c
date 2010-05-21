@@ -1,6 +1,6 @@
 
 /*
- * clibrary2.c - Testing LIST and associated set functions in Speech Dispatcher
+ * clibrary2.c - Testing LIST and associated set functions in openttsd
  *
  * Copyright (C) 2008 Brailcom, o.p.s.
  *
@@ -100,7 +100,7 @@ int main()
 		}
 	}
 
-	printf("Trying to close Speech Dispatcher connection...");
+	printf("Trying to close the connection to openttsd...");
 	spd_close(conn);
 	printf("OK\n");
 

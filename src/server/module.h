@@ -1,6 +1,6 @@
 
 /*
- * module.h - Definition of a module for Speech Dispatcher
+ * module.h - Definition of a module for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

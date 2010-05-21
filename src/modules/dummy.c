@@ -1,6 +1,6 @@
 
 /*
- * dummy.c - Speech Dispatcher dummy output module
+ * dummy.c - OpenTTS dummy output module
  *
  * A simplific output module that just tries to play an
  * an error message in various ways.

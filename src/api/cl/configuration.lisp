@@ -34,13 +34,13 @@
 
 
 (defvar *default-text-priority* :text
-  "Default Speech Dispatcher priority of sent texts.")
+  "Default OpenTTS priority of sent texts.")
 
 (defvar *default-sound-priority* :message
-  "Default Speech Dispatcher priority of sent sound icons.")
+  "Default OpenTTS priority of sent sound icons.")
 
 (defvar *default-char-priority* :notification
-  "Default Speech Dispatcher priority of sent single letters.")
+  "Default OpenTTS priority of sent single letters.")
 
 
 (defvar *connection-parameters* '()

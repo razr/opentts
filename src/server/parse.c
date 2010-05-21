@@ -1,5 +1,5 @@
 /*
- * parse.c - Parses commands Speech Dispatcher got from client
+ * parse.c - Parses commands which openttsd receives from clients
  *
  * Copyright (C) 2001, 2002, 2003, 2006 Brailcom, o.p.s.
  *
@@ -118,7 +118,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 			/* Send a reply to the socket */
 			write(fd, OK_BYE, strlen(OK_BYE));
 			speechd_connection_destroy(fd);
-			/* This is internal Speech Dispatcher message, see serve() */
+			/* This is an internal OpenTTS message, see serve() */
 			g_free(command);
 			return g_strdup("999 CLIENT GONE");	/* This is an internal message, not part of SSIP */
 		}

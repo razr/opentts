@@ -1,6 +1,6 @@
 
 /*
- * run_test.c - Read a set of Speech Dispatcher commands and try them
+ * run_test.c - Read a set of SSIP commands and try them
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 
 	sockk = init("run_test", "user_test");
 	if (sockk == 0)
-		FATAL("Can't connect to Speech Dispatcher");
+		FATAL("Can't connect to openttsd");
 
 	assert(line != 0);
 

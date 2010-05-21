@@ -1,6 +1,6 @@
 
 /*
- * generic.c - Speech Dispatcher generic output module
+ * generic.c - OpenTTS generic output module
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
  *

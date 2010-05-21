@@ -1,6 +1,6 @@
 
 /*
- * ivona_client.c - Speech Dispatcher backend for Ivona (IVO Software)
+ * ivona_client.c - OpenTTS backend for Ivona (IVO Software)
  *
  * Copyright (C) Bohdan R. Rau 2008 <ethanak@polip.com>
  *

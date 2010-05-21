@@ -1,6 +1,6 @@
 
 /*
- * module.c - Output modules for Speech Dispatcher
+ * module.c - Output modules for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003, 2006, 2007 Brailcom, o.p.s.
  *

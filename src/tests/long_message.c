@@ -1,6 +1,6 @@
 
 /*
- * long_message.c - Two testing messages for Speech Dispatcher test
+ * long_message.c - Two messages for testing openttsd
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *
@@ -38,10 +38,10 @@ int main()
 
 	printf("Start of the test.\n");
 
-	printf("Trying to initialize Speech Dispatcher...");
+	printf("Trying to initialize openttsd...");
 	sockfd = spd_open("test", NULL, NULL, SPD_MODE_SINGLE);
 	if (sockfd == 0) {
-		printf("Speech Dispatcher failed");
+		printf("openttsd failed");
 		exit(1);
 	}
 	printf("OK\n");
@@ -384,11 +384,11 @@ int main()
 		"	else return 1;\n"
 		"}\n" "					");
 
-	printf("Trying to close Speech Dispatcher connection...");
+	printf("Trying to close the connection to openttsd...");
 	spd_close(sockfd);
 	printf("OK\n");
 
-	printf("Speech Dispatcher should continue saying both messages...\n");
+	printf("openttsd should continue saying both messages...\n");
 
 	printf("End of the test.\n");
 	exit(0);

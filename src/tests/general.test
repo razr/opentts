@@ -6,7 +6,7 @@
 @       this is a tour through SSIP!
 
 @ SSIP stands for Speech Synthesis Internet Protocol,
-@ It's the actual interface to Speech Dispatcher.
+@ It's the actual interface to openttsd.
 
 ?
 *
@@ -49,7 +49,7 @@ I have often regretted my speech, never my silence.
 
 @               S  S  I  P   ---   Basic ideas
 @
-@     *  Communication   `client library' <--> `Speech Dispatcher'
+@     *  Communication   `client library' <--> `OpenTTS daemon'
 @    
 @     *  Synchronous TCP/IP protocol
 @              (remote hosts)
@@ -59,7 +59,7 @@ I have often regretted my speech, never my silence.
 @
 @     *  Priorities
 @
-@     *  All configuration is done by user in Speech Dispatcher
+@     *  All configuration is done by the user in openttsd
 @
 @     *  Multiple connections per client
 

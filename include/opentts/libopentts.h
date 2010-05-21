@@ -86,7 +86,7 @@ typedef struct {
 
 /* -------------- Public functions --------------------------*/
 
-/* Openning and closing Speech Dispatcher connection */
+/* Openning and closing connections to openttsd */
 SPDConnection *spd_open(const char *client_name,
 			const char *connection_name,
 			const char *user_name, SPDConnectionMode mode);

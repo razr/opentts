@@ -1,4 +1,4 @@
-@ Hi, this is a basic Speech Dispatcher test.
+@ Hi, this is a basic test of openttsd.
 
 @ I've successfully connected to the server
 @ and now I'm going to try to set my client name
@@ -12,10 +12,10 @@ $4
 @ Hope it was ok. Now I can try to say something:
 $8
 !SPEAK
-Hello world, this is Speech Dispatcher speaking.
+Hello world, this is openttsd speaking.
 . 
 $2
-@ If you heard the full message, Speech Dispatcher
+@ If you heard the full message, openttsd
 @ works correctly.
 $8
 
@@ -86,7 +86,7 @@ $8
 
 !QUIT
 
-@ If the tests did what was expected, your installation of Speech Dispatcher
+@ If the tests did what was expected, your installation of OpenTTS
 @ probably works fine. If not, there can be different causes, see
 @ the documentation -- Troubleshooting. (Note that some synthesizers
 @ don't have to support setting of the voice parameters. If everything

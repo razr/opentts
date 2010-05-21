@@ -183,7 +183,7 @@ The libopentts library communicates with a server named openttsd, over TCP/IP us
 The openttsd server enqueues the message, and then speaks it using a module for the current synthesizer with the settings and priority set by the client.
 The module for each synthesizer is a stand alone executable, so that multiple synthesizers can be available at the same time, and be switched on the fly.
 
-@image{figures/architecture,155mm,,Speech Dispatcher architecture}
+@image{figures/architecture,155mm,,OpenTTS architecture}
 
 See also the detailed description @ref{Client Programming} interfaces, and
 @ref{Server Programming} documentation.

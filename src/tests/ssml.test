@@ -1,4 +1,4 @@
-@ Hi, this is a test for SSML support in Speech Dispatcher.
+@ Hi, this is a test for SSML support in openttsd.
 
 @ Note that not all synthesizers (output modules) support SSML.
 @ If they do not, they should still speak but should not speak any
@@ -19,7 +19,7 @@ etc. across different synthesis-capable platforms.
 . 
 +702 END
 
-@ If you heard the full message, Speech Dispatcher
+@ If you heard the full message, openttsd
 @ works correctly.
 $2
 
@@ -100,7 +100,7 @@ $2
 
 !QUIT
 
-@ If the tests did what was expected, your installation of Speech Dispatcher
+@ If the tests did what was expected, your installation of OpenTTS
 @ probably works fine. If not, there can be different causes, see
 @ the documentation -- Troubleshooting. (Note that some synthesizers
 @ don't support SSML. If everything else worked correctly, this is not a

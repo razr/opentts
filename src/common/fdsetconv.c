@@ -1,6 +1,6 @@
 
 /*
- * fdsetconv.c - Conversion of types for Speech Dispatcher
+ * fdsetconv.c - Conversion of types for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

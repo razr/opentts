@@ -1,4 +1,4 @@
-@ Test stop and pause functions in Speech Dispatcher.
+@ Test stop and pause functions in openttsd.
 
 @ Note that not all synthesizers (output modules) support effective
 @ stop and pause.  If they do not, they should at least not crash

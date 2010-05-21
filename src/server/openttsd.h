@@ -155,7 +155,7 @@ GHashTable *language_default_modules;
 /* Table of relations between client file descriptors and their uids */
 GHashTable *fd_uid;
 
-/* Speech Dispatcher main priority queue for messages */
+/* Main priority queue for messages */
 TSpeechDQueue *MessageQueue;
 /* List of messages from paused clients waiting for resume */
 GList *MessagePausedList;

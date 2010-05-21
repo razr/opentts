@@ -1,6 +1,6 @@
 
 /*
- * alsa.c -- The Advanced Linux Sound System backend for Speech Dispatcher
+ * alsa.c -- The Advanced Linux Sound System backend for OpenTTS
  *
  * Copyright (C) 2005,2006 Brailcom, o.p.s.
  *

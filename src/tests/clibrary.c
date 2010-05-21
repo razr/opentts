@@ -1,6 +1,6 @@
 
 /*
- * clibrary.c - Testing the C library for Speech Dispatcher
+ * clibrary.c - Testing the C library for OpenTTS
  *
  * Copyright (C) 2003 Brailcom, o.p.s.
  *
@@ -80,7 +80,7 @@ int main()
 		spd_sayf(conn, SPD_PROGRESS, "%d%% completed", i);
 	}
 
-	printf("Trying to close Speech Dispatcher connection...");
+	printf("Trying to close the connection to openttsd...");
 	spd_close(conn);
 	printf("OK\n");
 

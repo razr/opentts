@@ -1,4 +1,4 @@
-This is a simple Common Lisp interface to Speech Dispatcher through the Speech
+This is a simple Common Lisp interface to openttsd through the Speech
 Synthesis Interface Protocol (SSIP).
 
 Currently, there is no documentation, read the sources.
@@ -11,6 +11,6 @@ It works with CLisp and SBCL, but it should be easy to port to other systems,
 just add the support to sysdep.lisp.
 
 Feel free to contact us with any questions regarding the Common Lisp interface
-at the Speech Dispatcher mailing list <speechd@lists.freebsoft.org>.
+on the OpenTTS mailing list <opentts-users@lists.opentts.org>.
 
 -- Milan Zamazal <pdm@freebsoft.org>

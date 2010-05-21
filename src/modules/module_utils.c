@@ -1,6 +1,6 @@
 /*
  * module_utils.c - Module utilities
- *           Functions to help writing output modules for Speech Dispatcher
+ *           Functions to help writing output modules for OpenTTS
  * Copyright (C) 2003,2006, 2007 Brailcom, o.p.s.
  *
  * This is free software; you can redistribute it and/or modify it under the

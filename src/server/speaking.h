@@ -1,6 +1,6 @@
 
  /*
-  * speaking.h - Speech Dispatcher speech output functions header
+  * speaking.h - speech output functions
   * 
   * Copyright (C) 2001,2002,2003 Brailcom, o.p.s, Prague 2,
   * Vysehradska 3/255, 128 00, <freesoft@freesoft.cz>

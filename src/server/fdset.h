@@ -1,6 +1,6 @@
 
 /*
- * fdset.h - Settings for Speech Dispatcher
+ * fdset.h - Settings for the OpenTTS daemon
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *

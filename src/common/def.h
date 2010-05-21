@@ -1,6 +1,6 @@
 
 /*
- * def.h - Some global definitions for Speech Dispatcher
+ * def.h - Some global definitions for OpenTTS
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *
