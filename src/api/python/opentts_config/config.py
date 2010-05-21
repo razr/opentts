@@ -530,7 +530,7 @@ Either not installed or not in path.""")
 
     def user_configuration_seems_complete(self):
         """Decide if the user configuration seems reasonably complete"""
-        if not os.path.exists(os.path.join(self.user_conf_dir(), "speechd.conf")):
+        if not os.path.exists(os.path.join(self.user_conf_dir(), "openttsd.conf")):
             return False
 
         if not len(os.listdir(self.user_conf_dir())) > 2:
@@ -758,9 +758,9 @@ Do you want to keep it?""", False)
 
         # Substitute given configuration options
         if type == 'user':
-            configfile = os.path.join(test.user_conf_dir(), "speechd.conf")
+            configfile = os.path.join(test.user_conf_dir(), "openttsd.conf")
         elif type == 'system':
-            configfile = os.path.join(test.system_conf_dir(), "speechd.conf")
+            configfile = os.path.join(test.system_conf_dir(), "openttsd.conf")
 
         self.options_substitute(configfile, 
                                 {"DefaultModule": self.default_output_module,

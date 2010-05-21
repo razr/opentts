@@ -923,7 +923,7 @@ int main(int argc, char *argv[])
 				    ("Paths to pid file or conf dir not specified and the current user has no HOME directory!");
 		}
 		options.conf_file =
-		    g_strdup_printf("%s/speechd.conf", options.conf_dir);
+		    g_strdup_printf("%s/openttsd.conf", options.conf_dir);
 	}
 
 	/*

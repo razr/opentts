@@ -2,16 +2,16 @@
 
 SUBDIRS= modules clients
 
-all-local: speechd.conf
+all-local: openttsd.conf
 
-speechd.conf: speechd.conf.in
+openttsd.conf: openttsd.conf.in
 	sed -e s:INCLUDE_PATH:$(spdconfdir):g speechd.conf.in > speechd.conf
 
 
-spdconf_DATA= speechd.conf
+spdconf_DATA= openttsd.conf
 
-spdconforig_DATA= speechd.conf
+spdconforig_DATA= openttsd.conf
 
-CLEANFILES = speechd.conf
+CLEANFILES = openttsd.conf
 
-EXTRA_DIST = speechd.conf.in
+EXTRA_DIST = openttsd.conf.in

@@ -1,10 +1,10 @@
 
-# Global configuration for Speech Dispatcher
+# Global configuration for openttsd
 # ==========================================
 
 # -----SYSTEM OPTIONS-----
 
-# CommunicationMethod specifies the method to be used by Speech Dispatcher to communicate with
+# CommunicationMethod specifies the method to be used by openttsd to communicate with
 # its clients. Two basic methods are "unix_socket" and "inet_socket".
 #
 # unix_socket -- communication over Unix sockets represented by a file in the
@@ -12,9 +12,9 @@
 # prefered for standard session setup, where every user runs his own instance of Speech
 # Dispatcher to get voice feedback on his own computer.
 #
-# inet_socket -- alternatively, you can start Speech Dispatcher on
+# inet_socket -- alternatively, you can start openttsd on
 # a TCP port and connect to it via hostname/port. This allows for a more
-# flexible setup, where you can use Speech Dispatcher over network
+# flexible setup, where you can use openttsd over network
 # from different machines. See also the Port and LocalhostAccessOnly
 # configuration variables.
 #
@@ -24,13 +24,13 @@
 # where the driving Unix socket file should be created in case the
 # CommunicationMethod is set to "unix_socket". The default is
 # TMPDIR+speechd-sock-UID where TMPDIR is the default temp dir
-# location on the system and UID the user id who starts Speech Dispatcher
+# location on the system and UID the user id who starts openttsd
 # (e.g. /tmp/speechd-sock-1005 for a user # whose uid is 1005).
 # Do not change this unless you have a reason and know what you are doing.
 
 # SocketName "default"
 
-# The Port on which Speech Dispatcher should be available to clients if the "inet_socket"
+# The Port on which openttsd should be available to clients if the "inet_socket"
 # communication method is used.
 
 # Port 6560
@@ -39,7 +39,7 @@
 # for connections comming from localhost. If LocalhostAccessOnly is set to 0 it disables this
 # access controll. It means that the port will be accessible from all computers on the
 # network. If you turn off this option, please make sure you set up some system rules on what
-# computers are and are not allowed to access the Speech Dispatcher port.
+# computers are and are not allowed to access the openttsd port.
 
 # LocalhostAccessOnly 1
 
@@ -52,7 +52,7 @@
 
 LogLevel  3
 
-# The LogDir specifies where Speech Dispatcher writes its logging messages
+# The LogDir specifies where openttsd writes its logging messages
 # (status information, error messages, etc.).  Specify "stdout" for
 # standard console output or a directory path. 'default' means that
 # the logs are written to the default destination (e.g. a preconfigured
@@ -248,7 +248,7 @@ AddModule "dummy"         "dummy"      ""
 
 # The output module testing doesn't actually connect to anything. It
 # outputs the requested commands to standard output and reads
-# responses from stdandard input. This way, Speech Dispatcher's
+# responses from stdandard input. This way, openttsd's
 # communication with output modules can be tested easily.
 
 # AddModule "testing"
@@ -274,7 +274,7 @@ DefaultModule espeak
 #          DefaultPunctuationMode "some"
 #          ...and/or some other settings
 #     EndClient
-# The parameter of BeginClient tells Speech Dispatcher to which clients
+# The parameter of BeginClient tells openttsd to which clients
 # it should apply this settings (it does glob-style matching, you can use
 # * to match any number of characters and ? to match one character)
 
