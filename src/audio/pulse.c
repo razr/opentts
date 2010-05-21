@@ -7,7 +7,7 @@
  * Copied from Luke Yelavich's libao.c driver, and merged with code from
  * Marco's ao_pulse.c driver, by Bill Cox, Dec 21, 2009.
  *
- * Minor changes be Rui Batista <rui.batista@ist.utl.pt> to configure settings through speech-dispatcher configuration files
+ * Minor changes be Rui Batista <rui.batista@ist.utl.pt> to configure settings through OpenTTS configuration files
  * Date: Dec 22, 2009
  *
  * This is free software; you can redistribute it and/or modify it under the
@@ -71,14 +71,14 @@ static char const *pulse_play_cmd = "paplay";
 
 static FILE *pulseDebugFile = NULL;
 
-/* Write to /tmp/speech-dispatcher-pulse.log */
+/* Write to /tmp/opentts-pulse.log */
 #ifdef DEBUG_PULSE
 static void MSG(char *message, ...)
 {
 	va_list ap;
 
 	if (pulseDebugFile == NULL) {
-		pulseDebugFile = fopen("/tmp/speech-dispatcher-pulse.log", "w");
+		pulseDebugFile = fopen("/tmp/opentts-pulse.log", "w");
 	}
 	va_start(ap, message);
 	vfprintf(pulseDebugFile, message, ap);
@@ -184,7 +184,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 
 		if (!
 		    (pulse_id->pa_simple =
-		     pa_simple_new(pulse_id->pa_server, "speech-dispatcher",
+		     pa_simple_new(pulse_id->pa_server, "OpenTTS",
 				   PA_STREAM_PLAYBACK, NULL, "playback", &ss,
 				   NULL, &buffAttr, &error))) {
 			fprintf(stderr,
