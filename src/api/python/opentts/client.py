@@ -409,7 +409,7 @@ class SSIPClient(object):
     """Default host for server connections."""
     DEFAULT_SPEECHD_PORT = 6560
     """Default port number for server connections."""
-    DEFAULT_SOCKET_PATH = "~/.opentts/speechd.sock"
+    DEFAULT_SOCKET_PATH = "~/.opentts/openttsd.sock"
     """Default name of the communication unix socket"""
     
     def __init__(self, name, component='default', user='unknown', host=None,

@@ -731,7 +731,7 @@ void destroy_pid_file(void)
 void logging_init(void)
 {
 	char *file_name =
-	    g_strdup_printf("%s/speechd.log", options.log_dir);
+	    g_strdup_printf("%s/openttsd.log", options.log_dir);
 	assert(file_name != NULL);
 	if (!strncmp(file_name, "stdout", 6)) {
 		logfile = stdout;
@@ -997,7 +997,7 @@ int main(int argc, char *argv[])
 			socket_filename = g_string_new("");
 			if (options.home_speechd_dir) {
 				g_string_printf(socket_filename,
-						"%s/speechd.sock",
+						"%s/openttsd.sock",
 						options.
 						home_speechd_dir);
 			} else {

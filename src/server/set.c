@@ -394,7 +394,7 @@ int set_debug_uid(int uid, int debug)
 
 	if (debug) {
 		debug_logfile_path =
-		    g_strdup_printf("%s/speechd.log",
+		    g_strdup_printf("%s/openttsd.log",
 				    options.debug_destination);
 
 		debug_logfile = fopen(debug_logfile_path, "w");

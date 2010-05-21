@@ -70,7 +70,7 @@ void options_print_help(char *argv[])
 	       "-P, --pid-file       -      Set path to pid file\n"
 	       "-C, --config-dir     -      Set path to configuration\n"
 	       "-v, --version        -      Report version of this program\n"
-	       "-D, --debug          -      Output debugging information into /tmp/.speech-dispatcher\n"
+	       "-D, --debug          -      Output debugging information into /tmp/openttsd-debug\n"
 	       "-h, --help           -      Print this info\n\n"
 	       "Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
 	       "This is free software; you can redistribute it and/or modify it\n"
@@ -160,7 +160,7 @@ void options_parse(int argc, char *argv[])
 			if (!tmpdir)
 				tmpdir = g_strdup("/tmp");
 			options.debug_destination =
-			    g_strdup_printf("%s/speechd-debug", tmpdir);
+			    g_strdup_printf("%s/openttsd-debug", tmpdir);
 			g_free(tmpdir);
 
 			ret = mkdir(options.debug_destination, S_IRWXU);
@@ -177,7 +177,7 @@ void options_parse(int argc, char *argv[])
 				exit(1);
 			}
 
-			debug_logfile_path = g_strdup_printf("%s/speechd.log",
+			debug_logfile_path = g_strdup_printf("%s/openttsd.log",
 							     options.
 							     debug_destination);
 			/* Open logfile for writing */
