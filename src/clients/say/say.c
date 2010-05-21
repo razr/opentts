@@ -32,7 +32,6 @@
 #include <assert.h>
 #include <semaphore.h>
 #include <errno.h>
-#include <opentts/opentts_types.h>
 #include <opentts/libopentts.h>
 #include "options.h"
 

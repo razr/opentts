@@ -30,6 +30,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <assert.h>
+#include <opentts/opentts_types.h>
 #include "options.h"
 
 /* Definitions of global variables. */

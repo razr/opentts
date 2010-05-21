@@ -24,8 +24,6 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include "opentts/opentts_types.h"
-
 /* Global variable declarations. */
 extern signed int rate;
 extern signed int pitch;

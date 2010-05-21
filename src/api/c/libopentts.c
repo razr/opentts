@@ -45,7 +45,6 @@
 #include <assert.h>
 
 #include <def.h>
-#include <opentts/opentts_types.h>
 #include <opentts/libopentts.h>
 
 /* Comment/uncomment to switch debugging on/off */
