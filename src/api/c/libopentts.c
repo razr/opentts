@@ -1,7 +1,8 @@
 /*
-  libspeechd.c - Shared library for easy acces to Speech Dispatcher functions
+  libopentts.c - Shared library for easy acces to OpenTTS functions
  *
  * Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -18,7 +19,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: libspeechd.c,v 1.37 2008-12-23 09:15:32 pdm Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -56,7 +56,7 @@ static FILE *spd_debug;
 #endif
 
 /* Unless there is an fatal error, it doesn't print anything */
-#define SPD_FATAL(msg) { printf("Fatal error (libspeechd) [%s:%d]:"msg, __FILE__, __LINE__); fflush(stdout); exit(EXIT_FAILURE); }
+#define SPD_FATAL(msg) { printf("Fatal error (libopentts) [%s:%d]:"msg, __FILE__, __LINE__); fflush(stdout); exit(EXIT_FAILURE); }
 
 /* --------------  Private functions headers ------------------------*/
 
@@ -207,7 +207,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 	char tcp_no_delay = 1;
 
 	/* Autospawn related */
-	const char *pidof_speechd[] = { "pidof", "speech-dispatcher", NULL };
+	const char *pidof_speechd[] = { "pidof", "openttsd", NULL };
 	const char *speechd_cmd[] = { SPD_SPAWN_CMD, "--spawn", NULL };
 	gchar *speechd_pid = NULL;
 	GError *error = NULL;
