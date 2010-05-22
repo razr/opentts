@@ -219,17 +219,6 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 
 #undef COPY_SET_STR
 
-/* Switch data mode on for the particular client. */
-int server_data_on(int fd)
-{
-	/* Mark this client as ,,sending data'' */
-	SpeechdSocket[fd].awaiting_data = 1;
-	/* Create new output buffer */
-	SpeechdSocket[fd].o_buf = g_string_new("");
-	MSG(4, "Switching to data mode...");
-	return 0;
-}
-
 /* Switch data mode of for the particular client. */
 void server_data_off(int fd)
 {

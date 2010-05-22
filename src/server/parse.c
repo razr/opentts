@@ -128,12 +128,13 @@ char *parse(const char *buf, const int bytes, const int fd)
 			/* Ckeck if we have enough space in awaiting_data table for
 			 * this client, that can have higher file descriptor that
 			 * everything we got before */
-			r = server_data_on(fd);
-			if (r != 0) {
-				if (SPEECHD_DEBUG)
-					FATAL("Can't switch to data on mode\n");
-				return g_strdup(ERR_INTERNAL);
-			}
+
+			SpeechdSocket[fd].awaiting_data = 1;
+			/* Create new output buffer */
+			SpeechdSocket[fd].o_bytes = 0;
+			SpeechdSocket[fd].o_buf = g_string_new("");
+
+			MSG(4, "Switching to data mode...");
 			return g_strdup(OK_RECEIVE_DATA);
 		}
 		g_free(command);
@@ -164,8 +165,10 @@ enddata:
 				SpeechdSocket[fd].o_bytes -= 2;
 
 			/* Check if message contains any data */
-			if (SpeechdSocket[fd].o_bytes == 0)
+			if (SpeechdSocket[fd].o_bytes == 0) {
+				server_data_off (fd);
 				return g_strdup(OK_MSG_CANCELED);
+			}
 
 			/* Check buffer for proper UTF-8 encoding */
 			if (!g_utf8_validate
@@ -174,6 +177,7 @@ enddata:
 				MSG(3,
 				    "ERROR: Invalid character encoding on input (failed UTF-8 validation)");
 				MSG(3, "Rejecting this message.");
+				server_data_off (fd);
 				return g_strdup(ERR_INVALID_ENCODING);
 			}
 
@@ -186,6 +190,10 @@ enddata:
 			    deescape_dot(SpeechdSocket[fd].o_buf->str,
 					 new->bytes);
 			reparted = SpeechdSocket[fd].inside_block;
+
+			/* Clear the counter of bytes in the output buffer. */
+			server_data_off(fd);
+
 			MSG(5, "New buf is now: |%s|", new->buf);
 			if ((msg_uid =
 			     queue_message(new, fd, 1, SPD_MSGTYPE_TEXT,
@@ -197,8 +205,6 @@ enddata:
 				return g_strdup(ERR_INTERNAL);
 			}
 
-			/* Clear the counter of bytes in the output buffer. */
-			server_data_off(fd);
 			ok_queued_reply = g_string_new("");
 			g_string_printf(ok_queued_reply,
 					C_OK_MESSAGE_QUEUED "-%d\r\n"
