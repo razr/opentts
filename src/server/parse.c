@@ -484,7 +484,7 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		if (ret)
 			return g_strdup(ERR_COULDNT_SET_CLIENT_NAME);
 		return g_strdup(OK_CLIENT_NAME_SET);
-	} else if (!strcmp(set_sub, "rate")) {
+	} else if (TEST_CMD(set_sub, "rate")) {
 		signed int rate;
 		GET_PARAM_INT(rate, 3);
 
@@ -589,7 +589,7 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		if (ret)
 			return g_strdup(ERR_COULDNT_SET_CAP_LET_RECOG);
 		return g_strdup(OK_CAP_LET_RECOGN_SET);
-	} else if (!strcmp(set_sub, "pause_context")) {
+	} else if (TEST_CMD(set_sub, "pause_context")) {
 		int pause_context;
 		GET_PARAM_INT(pause_context, 3);
 
