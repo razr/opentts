@@ -277,7 +277,7 @@ int speechd_connection_new(int server_socket)
 		status.num_fds *= 2;
 	}
 
-	SpeechdSocket[client_socket].o_buf = g_string_new("");
+	SpeechdSocket[client_socket].o_buf = NULL;
 	SpeechdSocket[client_socket].o_bytes = 0;
 	SpeechdSocket[client_socket].awaiting_data = 0;
 	SpeechdSocket[client_socket].inside_block = 0;
@@ -328,11 +328,6 @@ int speechd_connection_destroy(int fd)
 
 	MSG(4, "Removing client from the fd->uid table.");
 	g_hash_table_remove(fd_uid, &fd);
-
-	SpeechdSocket[fd].awaiting_data = 0;
-	SpeechdSocket[fd].inside_block = 0;
-	if (SpeechdSocket[fd].o_buf != NULL)
-		g_string_free(SpeechdSocket[fd].o_buf, 1);
 
 	MSG(4, "Closing clients file descriptor %d", fd);
 

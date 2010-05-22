@@ -236,7 +236,7 @@ void server_data_off(int fd)
 	assert(SpeechdSocket[fd].o_buf != NULL);
 
 	SpeechdSocket[fd].o_bytes = 0;
-	g_string_free(SpeechdSocket[fd].o_buf, 1);
+	g_string_free(SpeechdSocket[fd].o_buf, TRUE);
 	SpeechdSocket[fd].o_buf = NULL;
 }
 
