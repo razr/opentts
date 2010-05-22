@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
 dist_snddata_DATA = test.wav
-dist_spddesktopconforig_DATA = opentts.desktop
 
 bin_SCRIPTS = otts-conf
 opentts_pythondir = $(pyexecdir)/opentts_config
