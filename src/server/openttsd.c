@@ -294,12 +294,15 @@ int speechd_connection_new(int server_socket)
 	}
 	new_fd_set->fd = client_socket;
 	new_fd_set->uid = ++status.max_uid;
-	p_client_socket = (int *)g_malloc(sizeof(int));
 	p_client_uid = (int *)g_malloc(sizeof(int));
-	*p_client_socket = client_socket;
 	*p_client_uid = status.max_uid;
 
 	g_hash_table_insert(fd_settings, p_client_uid, new_fd_set);
+
+	p_client_socket = (int *)g_malloc(sizeof(int));
+	*p_client_socket = client_socket;
+	p_client_uid = (int *)g_malloc(sizeof(int));
+	*p_client_uid = status.max_uid;
 
 	g_hash_table_insert(fd_uid, p_client_socket, p_client_uid);
 
@@ -497,10 +500,10 @@ static void init()
 	output_modules_list = NULL;
 
 	/* Initialize hash tables */
-	fd_settings = g_hash_table_new(g_int_hash, g_int_equal);
+	fd_settings = g_hash_table_new_full(g_int_hash, g_int_equal, g_free, NULL);
 	assert(fd_settings != NULL);
 
-	fd_uid = g_hash_table_new(g_str_hash, g_str_equal);
+	fd_uid = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 	assert(fd_uid != NULL);
 
 	language_default_modules = g_hash_table_new(g_str_hash, g_str_equal);
