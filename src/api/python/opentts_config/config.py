@@ -106,7 +106,7 @@ class Options(object):
         {
         'create_user_configuration':
             {
-            'descr' : "Create Speech Dispatcher configuration for the given user",
+            'descr' : "Create OpenTTS configuration for the given user",
             'doc' : None,
             'type' : bool,
             'default' : False,
@@ -136,13 +136,13 @@ class Options(object):
             'default' : False,
             'command_line' : ('-d', '--diagnostics'),
             },
-        'test_spd_say':
+        'test_otts_say':
             {
-            'descr' : "Test connection to Speech Dispatcher using spd-say",
+            'descr' : "Test connection to OpenTTS using otts-say",
             'doc' : None,
             'type' : bool,
             'default' : False,
-            'command_line' : ('-s', '--test-spd-say'),
+            'command_line' : ('-s', '--test-otts-say'),
             },
         'test_festival':
             {
@@ -205,7 +205,7 @@ class Options(object):
         }
 
     def __init__(self):
-        usage = """A simple tool for basic configuration of Speech Dispatcher
+        usage = """A simple tool for basic configuration of OpenTTS
 and problem diagnostics
 
 usage: %prog [options]"""
@@ -262,20 +262,20 @@ usage: %prog [options]"""
            # raise "This command takes no positional arguments (without - or -- prefix)"
 
 class Tests:
-    """Tests of functionality of Speech Dispatcher and its dependencies
+    """Tests of functionality of OpenTTS and its dependencies
     and methods for determination of proper paths"""
 
-    def user_speechd_dir(self):
-        """Return user Speech Dispatcher configuration and logging directory"""
+    def user_openttsd_dir(self):
+        """Return user OpenTTS configuration and logging directory"""
         return os.path.expanduser(os.path.join('~', '.opentts'))
 
-    def user_speechd_dir_exists(self):
-        """Determine whether user speechd directory exists"""
-        return os.path.exists(self.user_speechd_dir())
+    def user_openttsd_dir_exists(self):
+        """Determine whether user openttsd directory exists"""
+        return os.path.exists(self.user_openttsd_dir())
 
     def user_conf_dir(self):
         """Return user configuration directory"""
-        return os.path.join(self.user_speechd_dir(), "conf")
+        return os.path.join(self.user_openttsd_dir(), "conf")
 
     def system_conf_dir(self):
         """Determine system configuration directory"""
@@ -314,18 +314,18 @@ Try /etc/init.d/festival start or run 'festival --server' from the command line.
         else:
             report("""ERROR: Your Festival server is working but it doesn't seem
 to load festival-freebsoft-utils. You need to install festival-freebsoft-utils
-to be able to use Festival with Speech Dispatcher.""");
+to be able to use Festival with OpenTTS.""");
             return False
 
-    def python_speechd_in_path(self):
-        """Try whether python speechd library is importable"""
+    def python_openttsd_in_path(self):
+        """Try whether python openttsd library is importable"""
         try:
-            import speechd
+            import opentts
         except:
-            report("""Python can't find the Speech Dispatcher library.
-Is it installed? This won't prevent Speech Dispatcher to work, but no
+            report("""Python can't find the OpenTTS library.
+Is it installed? This won't prevent OpenTTS to work, but no
 Python applications like Orca will find it.
-Search for package like python-speechd.""")
+Search for package like python-openttsd.""")
             return False
         return True
 
@@ -366,28 +366,28 @@ not muted in the mixer? Please fix your audio system first or choose a different
 audio output method in configuration.""")
             return False
 
-    def test_spd_say(self):
-        """Test Speech Dispatcher using spd_say"""
+    def test_otts_say(self):
+        """Test OpenTTS using otts-say"""
 
-        report("Testing Speech Dispatcher using spd_say")
+        report("Testing OpenTTS using otts-say")
         
         while True:
             try:
-                ret = os.system("spd-say -P important \"Speech Dispatcher seems to work\"")
+                ret = os.system("otts-say -P important \"OpenTTS seems to work\"")
             except:
-                report("""Can't execute the spd-say binary,
-it is likely that Speech Dispatcher is not installed.""")
+                report("""Can't execute the otts-say binary,
+it is likely that OpenTTS is not installed.""")
                 return False
-            hearing_test = question("Did you hear the message about Speech Dispatcher working?", True)
+            hearing_test = question("Did you hear the message about OpenTTS working?", True)
             if hearing_test:
-                report("Speech Dispatcher is working")
+                report("OpenTTS is working")
                 return True
             else:
                 repeat = question("Do you want to repeat the test?", True)
                 if repeat:
                     continue
                 else:
-                    report("Speech Dispatcher not working now")
+                    report("OpenTTS not working now")
                     return False
 
     def test_festival(self):
@@ -429,7 +429,7 @@ is not installed.""")
                     report("""
 Espeak is installed, but the espeak utility is not working now.
 This doesn't necessarily mean that your espeak won't work with
-Speech Dispatcher.""")
+OpenTTS.""")
                     return False
 
     def test_alsa(self):
@@ -442,31 +442,31 @@ Speech Dispatcher.""")
         report("Testing PULSE sound output")
         return self.audio_try_play(type='pulse')
 
-    def diagnostics(self, speechd_running = True, output_modules=[], audio_output=[]):
+    def diagnostics(self, openttsd_running = True, output_modules=[], audio_output=[]):
 
         """Perform a complete diagnostics"""
         working_modules = []
         working_audio = []
 
-        if speechd_running:
-            # Test whether Speech Dispatcher works
-            if self.test_spd_say():
-                dispatcher_working = True
-                skip = question("Speech Dispatcher works. Do you want to skip other tests?",
+        if openttsd_running:
+            # Test whether OpenTTS works
+            if self.test_otts_say():
+                opentts_working = True
+                skip = question("OpenTTS works. Do you want to skip other tests?",
                                 True)
                 if skip:
-                    return {'dispatcher_working': True}
+                    return {'opentts_working': True}
             else:
-                dispatcher_working = False
+                opentts_working = False
         else:
-            dispatcher_working = False
+            opentts_working = False
 
-        if not dispatcher_working:
+        if not opentts_working:
             if not question("""
-Speech Dispatcher isn't running or we can't connect to it (see above),
+OpenTTS isn't running or we can't connect to it (see above),
 do you want to proceed with other tests? (They can help to determine
 what is wrong)""", True):
-                return {'dispatcher_working': False}
+                return {'opentts_working': False}
 
 
         def decide_to_test(identifier, name, listing):
@@ -494,14 +494,14 @@ what is wrong)""", True):
             if not self.test_pulse():
                 working_audio += ["pulse"]
 
-        report("Testing whether Python Speech Dispatcher library is in path and importable")
-        python_speechd_working = test.python_speechd_in_path()
+        report("Testing whether Python OpenTTS library is in path and importable")
+        python_openttsd_working = test.python_openttsd_in_path()
         
         # TODO: Return results of the diagnostics
-        return  {'dispatcher_working': dispatcher_working,
+        return  {'opentts_working': opentts_working,
                  'audio': working_audio,
                  'synthesizers': working_modules,
-                 'python_speechd' : python_speechd_working}
+                 'python_openttsd' : python_openttsd_working}
 
     def write_diagnostics_results(self, results):
         """Write out diagnostics results using report()"""
@@ -509,22 +509,22 @@ what is wrong)""", True):
         report("""
 
 Diagnostics results:""")
-        if results.has_key('dispatcher_working'):
-            if results['dispatcher_working']:
-                report("Speech Dispatcher is working")
+        if results.has_key('opentts_working'):
+            if results['opentts_working']:
+                report("OpenTTS is working")
             else:
-                report("Speech Dispatcher not working");
+                report("OpenTTS not working");
         if results.has_key('synthesizers'):
             report("Synthesizers that were tested and work: %s" %
                    str(results['synthesizers']))
         if results.has_key('audio'):
             report("Audio systems that were tested and work: %s" %
                    str(results['audio']))
-        if results.has_key('python_speechd'):
-            if(results['python_speechd']):
-                report("Python Speech Dispatcher module is importable")
+        if results.has_key('python_openttsd'):
+            if(results['python_openttsd']):
+                report("Python OpenTTS module is importable")
             else:
-                report("""Python Speech Dispatcher module not importable.
+                report("""Python OpenTTS module not importable.
 Either not installed or not in path.""")
         report("End of diagnostics results")
 
@@ -544,69 +544,69 @@ Either not installed or not in path.""")
 
         return True
 
-    def debug_and_report(self, speechd_port=6560, type = None):
-        """Start Speech Dispatcher in debugging mode, collect the debugging output
+    def debug_and_report(self, openttsd_port=6560, type = None):
+        """Start OpenTTS in debugging mode, collect the debugging output
         and offer to send it to the developers"""
 
         report("Starting collecting debugging output, configuration and logfiles");
 
         if not type:
             type = question_with_required_answers("""
-Do you want to debug 'system' or  'user' Speech Dispatcher?""",
+Do you want to debug 'system' or  'user' OpenTTS?""",
                                                   'user', ['user', 'system'])
 
-        # Try to kill running Speech Dispatcher
-        reply = question("""It is necessary to kill the currently running Speech Dispatcher
+        # Try to kill running OpenTTS
+        reply = question("""It is necessary to kill the currently running OpenTTS
 processes. Do you want to do it now?""", True);
         if reply:
-            os.system("killall speech-dispatcher")
+            os.system("killall openttsd")
         else:
             report("""
-You decided not to kill running Speech Dispatcher processes.
-Please make sure your Speech Dispatcher is not running now.""")
-            reply = question("Is your Speech Dispatcher not running now?", True);
+You decided not to kill running OpenTTS  processes.
+Please make sure your OpenTTS is not running now.""")
+            reply = question("Is your OpenTTS not running now?", True);
             if not reply:
-                report("Can't continue, please stop your Speech Dispatcher and try again")
+                report("Can't continue, please stop your OpenTTS and try again")
 
         time.sleep(2)
 
-        # All debugging files are written to TMPDIR/speech-dispatcher/
+        # All debugging files are written to TMPDIR/openttsd-debug/
         if os.environ.has_key('TMPDIR'):
             tmpdir = os.environ['TMPDIR']
         else:
             tmpdir = "/tmp/"
-        debugdir_path = os.path.join(tmpdir, "speechd-debug")
+        debugdir_path = os.path.join(tmpdir, "openttsd-debug")
         date = datetime.date.today()
-        debugarchive_path = os.path.join(tmpdir, "speechd-debug-%d-%d-%d.tar.gz" %
+        debugarchive_path = os.path.join(tmpdir, "openttsd-debug-%d-%d-%d.tar.gz" %
                                          (date.day, date.month, date.year))
 
-        # Start Speech Dispatcher with debugging enabled
+        # Start OpenTTS with debugging enabled
         if type == 'user':
-            report("Speech Dispatcher will be started now in debugging mode")
-            speechd_started = not os.system("speech-dispatcher -D")
+            report("OpenTTS will be started now in debugging mode")
+            openttsd_started = not os.system("openttsd -D")
             configure_directory = test.user_conf_dir()
         else:
             report("Warning: You must be root or under sudo to do this.")        
             report("""
-Please start your system Speech Dispatcher now with parameter '-D'""");
-            reply = question("Is your Speech Dispatcher running now?", True);
+Please start your system OpenTTS now with parameter '-D'""");
+            reply = question("Is your OpenTTS running now?", True);
             if reply:
-                speechd_started = True
+                openttsd_started = True
             else:
                 report("Can't continue");
             configure_directory = test.system_conf_dir()
         time.sleep(2)
 
-        if not speechd_started:
-            reply = question("Speech Dispatcher failed to start, continuing anyway");
+        if not openttsd_started:
+            reply = question("OpenTTS failed to start, continuing anyway");
 
         report("Trying to speak some messages");
-        ret = os.system("spd-say \"Speech Dispatcher debugging 1\"")
+        ret = os.system("otts-say \"OpenTTS debugging 1\"")
         if ret:
-            report("Can't test Speech Dispatcher connection, can't connect")
+            report("Can't test OpenTTS connection, can't connect")
 
-        os.system("spd-say \"Speech Dispatcher debugging 2\"")
-        os.system("spd-say \"Speech Dispatcher debugging 3\"")
+        os.system("otts-say \"OpenTTS debugging 2\"")
+        os.system("otts-say \"OpenTTS debugging 3\"")
 
         report("Please wait (about 5 seconds)")
         time.sleep(5)
@@ -616,11 +616,11 @@ Please start your system Speech Dispatcher now with parameter '-D'""");
         os.system("umask 077");
         os.system("tar -cz %s %s > %s" % 
                   (debugdir_path, configure_directory, debugarchive_path))   
-        os.system("killall speech-dispatcher")
+        os.system("killall openttsd")
         os.system("rm -rf %s" % debugdir_path)
 
         report("""
-Please send %s to speechd@bugs.freebsoft.org with
+Please send %s to opentts-dev@lists.opentts.org with
 a short description of what you did. We will get in touch with you soon
 and suggest a solution.""" % debugarchive_path)
         
@@ -690,7 +690,7 @@ class Configure:
         """Create user configuration in the standard location"""
 
         # Ask before touching things that we do not have to!
-        if test.user_speechd_dir_exists():
+        if test.user_openttsd_dir_exists():
             if test.user_conf_dir_exists():
                 if test.user_configuration_seems_complete():
                     reply = question(
@@ -713,8 +713,8 @@ Do you want to keep it?""", False)
 
             # TODO: Check for permissions on logfiles and pid
         else:
-            report("Creating " + test.user_speechd_dir());
-            os.mkdir(test.user_speechd_dir())
+            report("Creating " + test.user_openttsd_dir());
+            os.mkdir(test.user_openttsd_dir())
 
         # Copy the original intact configuration files
         # creating a conf/ subdirectory
@@ -726,10 +726,10 @@ Do you want to keep it?""", False)
         """Ask for basic settings and rewrite them in the configuration file"""
 
         if type == 'user':
-            report("Configuring user settings for Speech Dispatcher");
+            report("Configuring user settings for OpenTTS");
         elif type == 'system':
             report("Warning: You must be root or under sudo to do this.")
-            report("Configuring system settings for Speech Dispatcher");
+            report("Configuring system settings for OpenTTS");
         else:
             assert(0);
 
@@ -772,11 +772,11 @@ Do you want to keep it?""", False)
                                  })
         if type == 'user':
             self.setup_autostart = question(
-                "Do you want to have Speech Dispatcher automatically started from ~/.config/autostart ?",
+                "Do you want to have OpenTTS automatically started from ~/.config/autostart ?",
                 True)
             if self.setup_autostart:
                 os.system("""cp %s ~/.config/autostart/""" % os.path.join(paths.SPD_DESKTOP_CONF_PATH,
-                                                                          "speechd.desktop")) 
+                                                                          "openttsd.desktop")) 
                          
                 report("""
 Configuration written to %s
@@ -784,47 +784,47 @@ Basic configuration now complete. You might still need to fine tune it by
 manually editing the configuration above file. Especially if you need to
 use special audio settings, non-standard synthesizer ports etc.""" % configfile)
 
-    def speechd_start_user(self):
-        """Start Speech Dispatcher in user-mode"""
+    def openttsd_start_user(self):
+        """Start OpenTTS in user-mode"""
 
-        report("Starting Speech Dispatcher in user-mode")
+        report("Starting OpenTTS in user-mode")
 
         not_started = True
         while not_started:
-            not_started = os.system("speech-dispatcher");
+            not_started = os.system("openttsd");
             if not_started:
-                report("Can't start Speech Dispatcher. Exited with status %d" %
+                report("Can't start OpenTTS. Exited with status %d" %
                        not_started)
                 reply = question("""
-Perhaps this is because your Speech Dispatcher is already running.
-Do you want to kill all running Speech Dispatchers and try again?""", True)
+Perhaps this is because your OpenTTS is already running.
+Do you want to kill all running OpenTTS processes and try again?""", True)
                 if reply:
-                    os.system("killall speech-dispatcher")
+                    os.system("killall openttsd")
                 else:
-                    report("Can't start Speech Dispatcher");
+                    report("Can't start OpenTTS");
                     return False
         return True
 
-    def speechd_start_system(self):
-        """Start Speech Dispatcher in system-mode"""
+    def openttsd_start_system(self):
+        """Start OpenTTS in system-mode"""
 
         report("Warning: You must be root or under sudo to do this.")        
-        report("Starting Speech Dispatcher in system-mode")
+        report("Starting OpenTTS in system-mode")
         
-        reply = question("Is your system using an /etc/init.d/speech-dispatcher script?",
+        reply = question("Is your system using an /etc/init.d/openttsd script?",
                          True)
         if reply:
-            report("Stopping Speech Dispatcher in case any is running already")
-            os.system("/etc/init.d/speech-dispatcher stop") 
-            report("Starting Speech Dispatcher via /etc/init.d/speech-dispatcher")
-            ret = os.system("/etc/init.d/speech-dispatcher start")
+            report("Stopping OpenTTS in case any is running already")
+            os.system("/etc/init.d/openttsd stop") 
+            report("Starting OpenTTS via /etc/init.d/openttsd")
+            ret = os.system("/etc/init.d/openttsd start")
             if ret:
-                report("Can't start Speech Dispatcher. Exited with status %d" % ret)
+                report("Can't start OpenTTS. Exited with status %d" % ret)
                 return False
         else:
-            report("""Do not know how to start system Speech Dispatcher,
+            report("""Do not know how to start system OpenTTS,
 you have to start it manually to continue.""")
-            reply = question("Have you started Speech Dispatcher now?", True)
+            reply = question("Have you started OpenTTS now?", True)
             if not reply:
                 report("Can't continue")
                 return False
@@ -833,32 +833,32 @@ you have to start it manually to continue.""")
     def complete_config(self):
         """Create a complete configuration, run diagnosis and if necessary, debugging"""
 
-        speechd_type = question_with_required_answers(
+        openttsd_type = question_with_required_answers(
             "Do you want to create/setup a 'user' or 'system' configuration",
             'user', ['user', 'system'])
 
-        if speechd_type == 'user':
+        if openttsd_type == 'user':
             self.create_user_configuration()
             self.configure_basic_settings(type='user')
-        elif speechd_type == 'system':
+        elif openttsd_type == 'system':
             self.configure_basic_settings(type='system')
         else:
             assert(False)
 
-        reply = question("Do you want to start/restart Speech Dispatcher now and run some tests?", True)
+        reply = question("Do you want to start/restart OpenTTS now and run some tests?", True)
         if not reply:
             report("Your configuration is now done but not tested")
             return
         else:
-            if speechd_type == 'user':
-                started = self.speechd_start_user()
-            elif speechd_type == 'system':
-                started= self.speechd_start_system()
+            if openttsd_type == 'user':
+                started = self.openttsd_start_user()
+            elif openttsd_type == 'system':
+                started= self.openttsd_start_system()
 
         if not started:
-            report("Your Speech Dispatcher is not running");
+            report("Your OpenTTS is not running");
             
-        result = test.diagnostics(speechd_running = started,
+        result = test.diagnostics(openttsd_running = started,
                                   audio_output=[self.default_audio_method],
                                   output_modules=[self.default_output_module]);
         test.write_diagnostics_results(result)
@@ -866,7 +866,7 @@ you have to start it manually to continue.""")
         reply = question("Do you want to run debugging now and send a request for help to the developers?",
                          False)
         if reply:
-            test.debug_and_report(type=speechd_type)
+            test.debug_and_report(type=openttsd_type)
 
 
 # Basic objects
@@ -877,7 +877,7 @@ test = Tests()
 
 def main():
 
-    report("Speech Dispatcher configuration tool")
+    report("OpenTTS configuration tool")
     
     if options.create_user_configuration:
         # Check for and/or create basic user configuration
@@ -894,8 +894,8 @@ def main():
     elif options.test_festival:
         test.test_festival()
 
-    elif options.test_spd_say:
-        test.test_spd_say()
+    elif options.test_otts_say:
+        test.test_otts_say()
 
     elif options.test_espeak:
         test.test_espeak()
