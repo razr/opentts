@@ -98,6 +98,7 @@ General Public License''
 @menu
 * Introduction::                What is OpenTTS.
 * User's Documentation::        Usage, Configuration...
+* Technical Specifications::
 * Client Programming::          Documentation for application developers.
 * Server Programming::          Documentation for project contributors.
 
@@ -127,49 +128,47 @@ General Public License''
 @cindex Basic ideas, Motivation
 @cindex Philosophy
 
-The OpenTTS project provides a device independent layer for
-speech synthesis on any POSIX operating system. It provides a simple interface for client
-applications (applications, that want to speak).
+The OpenTTS framework is a device-independent layer for speech synthesis.
+Currently, it is known to work on the Linux and Solaris platforms,
+but we hope that it will be available for all POSIX-compatible operating
+systems.  OpenTTS bridges the gap between client applications and software
+synthesizers.  A client application is simply an application that needs
+to provide spoken output, and a software synthesizer is a program that
+converts text to speech.
+The OpenTTS framework provides easy-to-use interfaces for both categories
+of software.
 
 High quality speech synthesis has been available for a long time and
 now it's usable even by ordinary users on their home PC's. It is a good
 feature, and sometimes mandatory, for programs to
-provide speech output.  There is a wide field of possible uses from
-educational software, to specialized systems (hospitals,
-laboratories).  For visually impaired users it is one of the two
+provide speech output.
+There is a wide variety of uses for speech synthesis.  Examples include
+educational software and the specialized systems found in hospitals and
+laboratories.  For visually impaired users, it is one of the two
 essential ways of getting output from a computer (the second one is
 a Braille display).
 
 There are different speech synthesizers with different capabilities.
-Some of them are hardware, some of them are software.  Some of them
+Some of them are hardware, and some of them are software.  Some of them
 are Free Software and are available on the Internet.  Programmers
-have a really hard time when they want to make their program speak
+have a really hard time when they want to make their program speak,
 because they have to solve three problems.
-First most synthesizers have their own protocol or API.
-Second, various messages have to be scheduled, (should a given message be skipped, stopped, or paused to allow another to be spoken).
-Finaly, The programmer has to deal with other applications possibly wanting to share the synthysizer.
-They often need to write output device drivers for these programs or
-hardware devices and are doing it again and again.  You can imagine it
-all fails when an innocent user simultaneously executes two programs with
-speech output --- if both even start (which I doubt), they will
-be talking one over the other.  This makes it very hard for
-programmers to implement speech support in their programs (for blind
-users or simply to make a better user interface) and it's one of the
-reasons we still don't fully exploit what speech synthesis technology
-offers.
+First, most synthesizers have their own protocol or API.
+Second, various messages have to be scheduled.
+In other words, should a given message be skipped, stopped, or paused
+so that another message can be spoken?
+Finally, The programmer has to deal with other applications
+which may want to share the synthysizer.
+In short, providing spoken output can be a very difficult task.
 
-In an ideal world, programmers would use the same commands for speech
-synthesis as they do for normal text output (printf, puts, ...).  In an
-ideal world, there would be a speech_printf() function that would take care of
-saying a message at the right time without interrupting others, without
-them being obligated to take care of how exactly the communication with
-speech synthesizer is implemented, and without them having to worry about
-what synthesizer to use and if it's available.  In an ideal world, there
-would be a speech synthesizer in each GNU/Linux distribution and some
-common interface taking care of all applications that want to speak,
-allowing users to configure speech parameters and providing a simple interface
-(as speech_printf()) through a shared library for programmers.  It will
-be a long way until we achieve this state of things.
+OpenTTS solves all three of these problems in one place.  If the author
+of an application wishes to provide spoken output, he no longer needs
+to deal with the peculiarities of the various speech synthesizers.
+Instead, his application should simply call upon the services provided
+by OpenTTS.
+Ideally, there should be little distinction between spoken output and
+text that is displayed on the screen.  OpenTTS tries to make that ideal
+a reality.
 
 @node Basic Design, Features Overview, Motivation, Introduction
 @section Design
@@ -179,9 +178,15 @@ be a long way until we achieve this state of things.
 The goal of the OpenTTS project is to provide a uniform interface to use any synthesizer on any POSIX operating system.
 We implement this with a library libopentts, which is used by an application that wants to provide speech.
 This library provides functions like say, stop, speak character, speak key etc.
-The libopentts library communicates with a server named openttsd, over TCP/IP using a protocol @code{SSIP}.
-The openttsd server enqueues the message, and then speaks it using a module for the current synthesizer with the settings and priority set by the client.
-The module for each synthesizer is a stand alone executable, so that multiple synthesizers can be available at the same time, and be switched on the fly.
+The libopentts library communicates with a server named openttsd, using
+a protocol named SSIP.
+When a client sends a message that is to be spoken,
+the openttsd server places the received message in a queue.
+It is spoken using a module for the current synthesizer, with the settings
+and priority set by the client.
+The module for each synthesizer is a stand alone executable,
+so that multiple synthesizers can be available at the same time.
+A user can switch from one synthesizer to another at will.
 
 @image{figures/architecture,155mm,,OpenTTS architecture}
 
@@ -190,16 +195,15 @@ See also the detailed description @ref{Client Programming} interfaces, and
 
 @node Features Overview, Current State, Basic Design, Introduction
 @section Features Overview
-openttsd from user's point of view:
+OpenTTS from user's point of view:
 
 @itemize @bullet
 @item easy configuration of different speaking applications and central maintenance
 @item the ability to freely choose which synthesizer is to be used with each application
 @item less time devoted to configuring and tuning different applications and synthesizers
-@item history of said messages for visually impaired
 @end itemize
 
-openttsd from application programmers's point of view:
+OpenTTS from application programmers's point of view:
 
 @itemize @bullet
 @item easy way to make your applications speak
@@ -227,51 +231,23 @@ OpenTTS directly, as of recent versions.  See
 information.
 
 We also provide a shared C library, a Python library and a Common Lisp
-library that implement the SSIP functions of openttsd in a
+library that implement the SSIP functions of OpenTTS in a
 higher level interface, so writing client applications in these
 languages should be quite easy. 
 
-On the synthesis side, there is good support for Festival. Festival
-is a Free Software multi-language Text-to-Speech synthesis system,
-that is very flexible and extensible using the Scheme scripting
-language. Currently, it supports high quality synthesis for several
-languages (English, Czech, Italian, Spanish, Russian, Polish...), and
-on today's computers it runs reasonably fast.  See
-@uref{http://www.cstr.ed.ac.uk/projects/festival/}. The openttsd
-output module for Festival is highly optimized for fast
-responsivity.
+OpenTTS supports the following synthesizers:
+Festival, eSpeak, Flite, Cicero, IBM TTS, MBROLA, Epos, Dectalk software,
+Cepstral Swift and others. @xref{Supported Modules}.
 
-For simpler purposes, there is also support for Flite and eSpeak which
-currently only support English. Flite (Festival Light) is a
-lightweight free software TTS synthesizer intended to run on systems
-with limited resources. At this time, it has only one English voice
-and porting voices from Festival looks rather difficult.  With the
-caching mechanism provided by openttsd, Festival is even
-faster than Flite in many situations.  See
-@uref{http://www.speech.cs.cmu.edu/flite/}. eSpeak is a newer very
-lightweight free software engine with a good quality of voice at high
-rates. See @uref{http://espeak.sourceforge.net/}.
+OpenTTS does not yet support hardware synthesizers, however there are plans to implement modules for these synthesizers.
 
-OpenTTS also offers support for the non-free Cicero and IBM
-TTS. Also generic output devices are supported, which means that
-basically any Text-to-Speech program that provides a simple command
-line interface can be used with OpenTTS after a little bit
-of tuning in the configuration file. This kind of output module
-provides only limited functionality, but it can be useful if there are
-no other choices for your language. Configuration files for
-Espeak+MBROLA, Epos, Dectalk software, Cepstral Swift and
-(experimental) LiaPhon are shipped with OpenTTS.
-
-openttsd does not yet support hardware synthesizers, however there are plans to implement modules for these synthesizers.
-
-@node User's Documentation, Client Programming, Introduction, Top
+@node User's Documentation, Technical Specifications, Introduction, Top
 @chapter User's Documentation
 
 @menu
 * Features::                    Description of some features in more detail.
-
-* Installation::                How to get it running
-* Running::                     How to use it
+* Installation::                How to install it.
+* Running::                     How to use it.
 * Troubleshooting::             What to do if something doesn't work...
 
 * Configuration::               How to configure OpenTTS.
@@ -291,7 +267,7 @@ please @xref{Top,,,ssip, SSIP Documentation}.
 @menu
 * Multiple Output Modules::     Using various speech synthesizers on one system.
 * Client Specific Default Configuration::  Managing multiple speaking applications.
-* Security::                    openttsd protects the privacy of users.
+* Security::                    How security and privacy are handled in OpenTTS.
 @end menu
 
 @node Multiple Output Modules, Client Specific Default Configuration, Features, Features
@@ -306,7 +282,7 @@ module2 speaks only German, the idea is that if there is some message in
 German, module2 is used, while module1 is used for the other languages.
 However the language is not the only criteria for the decision.  The rules for
 selection of an output module can be influenced through the configuration file
-@file{opentts/openttsd.conf}.
+@file{openttsd.conf}.
 
 @menu
 * Provided Functionality::      Some synthesizers don't support the full set of SSIP features.
@@ -322,17 +298,20 @@ functionality (e.g. spelling mode, sound icons). If there
 is no easy way around the missing functionality, we don't try to
 emulate it in some complicated way and rather try to encourage the
 developers of that particular synthesizer to add that
-functionality. We are actively working on adding the missing parts to
-Festival, so Festival supports nearly all of the features of opentts
-and we encourage you to use it.
+functionality.
+The synthesizers with the best support in OpenTTS are eSpeak and Festival,
+and we encourage you to use one of those.
 
 @node Supported Modules, Compiling a New Module , Provided Functionality, Multiple Output Modules
 @subsubsection Supported Modules
 
-Currently, these output modules are supported: Espeak Festival, Flite, Epos
-and Generic.
-
 @itemize
+
+@item eSpeak
+eSpeak is a free, fast, and lightweight synthesis engine which supports
+many languages.  The espeak output module is also very well-tested and
+frequently used.  See @url{http://espeak.sourceforge.net} for more
+information.
 
 @item Festival
 Festival is a free software multi-language Text-to-Speech 
@@ -368,7 +347,7 @@ and add it to @file{src/modules/Makefile.am}. You can compile and
 install it by typing: @code{make; su root; make install}. The last
 step is to let openttsd know that you want to
 use this new module by adding at least these two lines to
-@file{opentts/openttsd.conf} in your configuration
+@file{openttsd.conf} in your configuration
 directory. @xref{AddModule}.
 
 @example
@@ -403,65 +382,37 @@ For more details, @xref{Client Specific Configuration}.
 @node Security,  , Client Specific Default Configuration, Features
 @subsection Security
 
-@menu
-* User Authentication::         
-* Access Rights to Message History::  
-@end menu
+OpenTTS does not implement any user authentication mechanisms.
+Instead, the mechanisms provided by the system regulate access to the
+daemon.
 
-@node User Authentication, Access Rights to Message History, Security, Security
-@subsubsection User Authentication
-@cindex Identification Protocol
-@cindex identd
-@cindex RFC 1413
+OpenTTS provides two mechanisms of communication between the client and
+the server.  These are Unix sockets and TCP/IP sockets.  By default,
+Unix sockets are used for all communication between the client and
+the server.  A Unix socket is simply a file on your filesystem.
+Access to that file can be controlled via file permissions, as it is with
+any other file.  Thus, you can restrict access to the OpenTTS daemon simply
+by setting the proper permissions on the Unix socket.
+This is the most secure communication mechanism.
 
-NOTE: This feature is being implemented, however the current version
-does not support it.
+The second method of communicating with OpenTTS is via TCP/IP.
+This used to be the only option.  However, it is not secure.
+Anyone who can connect to your machine can send commands and retrieve
+data from the OpenTTS daemon.
+The configuration file, @file{openttsd.conf}, provides an option which
+can make TCP/IP somewhat more secure.  This option is named
+LocalhostAccessOnly.  When it is set to 1 (or true), it is not possible
+to connect to the OpenTTS daemon from systems other than the one on which
+it is running.  By default, LocalhostAccessOnly is set to 1,
+and we strongly suggest that you leave it that way.
+If you disable LocalhostAccessOnly, you need to take other precautions
+to prevent unwanted connections to your OpenTTS daemon.  For instance,
+block unwanted connections using a firewall.
+We suggest that you avoid the TCP/IP mechanism entirely.
 
-Openttsd does not provide any explicit authentication mechanism.  To
-check the identity of users, openttsd uses the Identification Protocol
-mechanism defined by RFC 1413 to get the user's identity. 
-
-@cindex user mapping
-It is possible to specify user mapping in the configuration.  This allows
-certain users to be considered the same and have the same rights (eg. to browse
-their message history)  See @ref{Top,,Message History,ssip, SSIP Documentation}.
-
-@node Access Rights to Message History,  , User Authentication, Security
-@subsubsection Access Rights to Message History
-@cindex access rights
-
-NOTE: This feature is being implemented, however the current version
-does not support it. For security reasons, history was turned off in
-this release of OpenTTS.
-
-To protect privacy of users, OpenTTS restricts history access to a
-certain subset of all the received messages.  The following rules apply:
-
-@itemize @bullet
-@item
-All the messages issued by a client connection are accessible to that
-client connection.
-
-@item
-All the messages sent by a given user are accessible to that user.
-
-@item
-@cindex @code{openttsd} user
-@cindex @code{openttsd} group
-All the messages sent by the user @code{openttsd} are accessible to all
-users on the system running the openttsd instance present in the
-group @code{openttsd}.
-
-@item
-No other messages are accessible.
-@end itemize
-
-Two users are considered the same, if and only if their connections originate
-on the same host, their user names are the same, and their identity can be
-checked, as described in @ref{User Authentication}.  If user's identity cannot
-be checked, the user is considered different from all other connected or
-previously connected users.
-
+@xref{Setting the Communication Method}, to learn how to
+select one of these mechanisms.
+@xref{Communication Mechanisms}, for further explanation of this topic.
 
 @node Installation, Running, Features, User's Documentation
 @section Installation
@@ -518,15 +469,23 @@ synthesizer works. For eSpeak run @code{espeak "test"}, for Flite run
 
 @item Install OpenTTS
 
-Install the packages for opentts from your distribution or
+Install the packages for OpenTTS from your distribution or
 download the source tarball or clone the git repository from
 @url{http://www.opentts.org/} or @url{git://git.opentts.org/opentts.git} respecitely,and follow the instructions in
 the file @code{INSTALL} in the source tree.
 
 @item Configure OpenTTS
 
-The easiest way to configure and test OpenTTS is
-through the @code{otts-conf} configuration script. It will guide you
+If you are satisfied with the default configuration in
+@file{/etc/opentts/conf/openttsd.conf}, simply start the server.
+You need not do any further configuration.
+
+@example
+openttsd
+@end example
+
+If the default configuration does not appeal to you, you can create
+a custom configuration using the @code{otts-conf} script. It will guide you
 through the basic configuration. It will also subsequently perform
 some diagnostics test and offer some limited help with
 troubleshooting. Just execute
@@ -535,34 +494,14 @@ troubleshooting. Just execute
 otts-conf
 @end example
 
-under an ordinary user or system user like 'openttsd'
-depending on whether you'd like to setup openttsd as a user or
-system service respectively. You might also want to explore the
+while logged in with your non-privileged user account.
+You might also want to explore the
 offered options or run some of its subsystems manually, type
 @code{otts-conf -h} for help.
 
-If you do not want to use this script, it doesn't work in your case
+If you do not want to use this script, it doesn't work in your case,
 or it doesn't provide enough configuration flexibility, please
-continue as described bellow and/or in @xref{Running Under Ordinary Users}.
-
-Go to @file{/etc/opentts/openttsd.conf} or similar (it might
-be @file{/usr/local/etc/opentts/openttsd.conf} if you install
-from sources) and edit the lines @code{AddModule},
-@code{DefaultModule} and @code{LanguageDefaultModule} for your chosen
-synthesizer. If you want to run Festival, just substitute 'espeak' for
-'festival' in the last two options.
-
-Another thing you will likely want to change is the default rate of
-speech (line @code{DefaultRate}). Return to this later to adjust
-details.
-
-Another important thing is to configure the audio method you are
-using. Choose your preferred audio output method through the option
-@code{AudioOutputMethod} or similar. We highly recommend @code{ALSA}
-audio output when supported. Review the other options for more
-detailed audio configuration. If there is a '#' sign before the
-option, it means it doesn't have any effect and its argument is its
-default value.
+continue as described below and/or in @ref{Running Under Ordinary Users}.
 
 @item Test openttsd 
 
@@ -608,57 +547,45 @@ otts-say -o espeak-mbrola-generic -l cs Testing
 @node Running, Troubleshooting, Installation, User's Documentation
 @section Running
 
-Openttsd can be executed either as a system-wide system service
-or on a per-user basis. While the first way allows speech output in early
-boot stages and congregation of speech comming from applications running
-under different system users, the second way provides more flexibility
-in user configuration and is essential in an environment where multiple
-people use the computer at the same time.
+The name of the OpenTTS server program is openttsd, and we shall use that
+name to refer to the server in the rest of this documentation.
+openttsd is normally started by an ordinary user, within his session.
+It can be started as a system service at boot time, but that is not the
+recommended way to start it.  This method will not be described further.
 
 @menu
-* Runnning as System Wide Service::  
 * Running Under Ordinary Users::  
 * Running in a Custom Setup::   
-* Setting Communication Port::  
+* Setting the Communication Method::
 @end menu
 
-@node Runnning as System Wide Service, Running Under Ordinary Users, Running, Running
-@subsection Running as System Wide Service
-
-To run openttsd as a system wide service, if your
-distribution supports openttsd , most likely you will
-only have to do:
-
-@example
-/etc/init.d/openttsdstart
-@end example
-
-or it will even already be started automatically. Bellow follos a more
-technical description.
-
-When running openttsd as a system wide service, it is
-recommended to start it using an /etc/init.d/ script under a special
-user and group, like 'opentts'. This user must have read/write
-permissions to access the PID directory (typically
-/var/run/), read permissions to the configuration
-directory (typically /etc/opentts/) and read/write permissions
-to the logfile directory (typically /var/log/opentts/).  The
-listed typical path are prefixed with /usr/local/ when compiling the
-package from source code and can be overridden using compilation flags.
-
-@xref{Setting Communication Port}, for information about how to
-change the communication port from the default 6560 to other
-values.
-
-@node Running Under Ordinary Users, Running in a Custom Setup, Runnning as System Wide Service, Running
+@node Running Under Ordinary Users, Running in a Custom Setup, Running, Running
 @subsection Running Under Ordinary Users
 
-Before running openttsd under an ordinary user account, a
-directory @file{.opentts/conf/} should be created in the users
-home directory and all the configuration files and directories should be
-put here. If OpenTTS is already installed, this
-is most easily done with the @code{otts-conf} configuration utility
-under the appropriate user and answer some basic questions.
+No special provisions need to be done to run openttsd under
+the current user. The openttsd process will use (or create) a
+@file{~/.opentts/} directory for its purposes (logging,
+pidfile).
+Simply start the server as follows:
+
+@example
+$ openttsd
+@end example
+
+You can test it using the otts-say command.
+
+@example
+$ otts-say 'Hello there!'
+@end example
+
+If all went well, you should hear the message ``Hello there.''
+
+By default, openttsd takes its configuration files from the directory
+@file{/etc/opentts/}, and the name of the main configuration file
+is @file{openttsd.conf}.  If some of the default parameters do not
+suit you, you may create a personalized configuration under
+@file{~/.opentts/conf/}.  We recommend that you use the otts-conf tool
+to create this directory, as in the following example.
 
 @example
 $ otts-conf
@@ -671,7 +598,7 @@ Do you want to create/setup a 'user' or 'system' configuration [user] :
 @end example
 
 If you do not want to use the @code{otts-conf} tool,
-you can achieve the same result manually as described bellow:
+you can achieve the same result manually as described below:
 
 @example
 # mkdir ~/.opentts
@@ -679,18 +606,7 @@ you can achieve the same result manually as described bellow:
 # cp -r /usr/share/opentts/conf/* ~/.opentts/conf/
 @end example
 
-If @file{~/.opentts/} is found by openttsd on
-startup, it will use the configuration placed here and ignore the
-system-wide configuration. Also, it will create the @file{log/} and
-@file{pid/} subdirectories in @file{~/.opentts/} and use them
-for its log files and pid files respectively. This behavior can only
-be overriden directly by the command line options.
-
-It is also necessary to change the communication port, since the default
-6560 will most likely be used by a system-wide openttsd. Please
-read @xref{Setting Communication Port}.
-
-@node Running in a Custom Setup, Setting Communication Port, Running Under Ordinary Users, Running
+@node Running in a Custom Setup, Setting the Communication Method, Running Under Ordinary Users, Running
 @subsection Running in a Custom Setup
 
 openttsd can be run in any other setup of executing users, port
@@ -699,20 +615,45 @@ logfiles can be specified separately via compilation flags,
 configuration file options or command line options in this ascending
 order of their priority.
 
-@node Setting Communication Port,  , Running in a Custom Setup, Running
-@subsection Setting Communication Port
+@node Setting the Communication Method,  , Running in a Custom Setup, Running
+@subsection Setting the Communication Method
 
-The default communication port between openttsd and user
-applications is 6560 and all applications know this port number as the
-default to contact openttsd. If you want to change it
-however, you can do it in the configuration file openttsd.conf or
-through a command line option when executing the openttsd
-binary. In such a case, it will also be necessary to influence the
-port used by the client applications (ospeakup, Orca, speechd-el,
-...]. The most easy way to do so is via the @var{SPEECHD_PORT}
-environment variable, which should be set to the value of the port in
-use (e.g. as 'export SPEECHD_PORT=6561') before starting the client
-program, although some programs offer another mechanism as well.
+Two different methods are supported for communication between the
+server and its clients.
+
+For local communication, it's prefered to use @emph{Unix sockets},
+where the communication takes place over a Unix socket with its
+driving file located by default in the users home directory as
+@code{~/.opentts/openttsd.sock}. In this way, there can be no
+conflict between different user sessions using different openttsd
+servers in the same system. By default, permissions are set in
+such a way, that only the same user who started the server can access
+it, and communication is hidden to all other users. Clients should
+respect the @var{SPEECHD_SOCKET} environment variable, which can specify
+an alternative full path to the socket file.
+
+The other supported mechanism is @emph{Inet sockets}. The server will
+thus run on a given port, which can be made accessible either localy
+or to other machines on the network as well. This is very useful in a
+network setup. Be however aware that while using Inet sockets, both
+parties (server and clients) must first agree on the communication
+port number to use, which can create a lot of confusion in a setup
+where multiple instances of the server serve multiple different users.
+Also, since there is currently no authentication mechanism, during
+Inet socket communication, the server will make no distinction between
+the different users connecting to it. The default port is 6560 as set
+in the server configuration. The most easy way to tell the client
+applications which port to use is via the @var{SPEECHD_PORT}
+ environment variable, which should be set to the value of the port in
+use (e.g. as 'export SPEECHD_PORT=6561').
+
+There are two ways to select the communication method when
+starting openttsd: the configuration file or the command-line.
+The name of the configuration file parameter is @code{CommunicationMethod},
+and the command-line parameter is @code{--communication-method}.  Two
+values are possible: @code{unix_socket} and @code{inet_socket}.
+We strongly suggest that you do not change this parameter from its default
+value.
 
 @node Troubleshooting, Configuration, Running, User's Documentation
 @section Troubleshooting
@@ -844,11 +785,16 @@ remove the comment symbol @code{#}.
 @node Audio Output Configuration, Client Specific Configuration, Configuration options, Configuration
 @subsection Audio Output Configuration
 
-Audio output method (ALSA, Pulse etc.) can be configured centrally
+The audio output method (ALSA, Pulse, etc.) can be selected centrally
 from the main configuration file @code{openttsd.conf}. The option
 @code{AudioOutputMethod} selects the desired audio method and further
 options labeled as @code{AudioALSA...} or @code{AudioPulse...} provide
 a more detailed configuration of the given audio output method.
+
+The value of the @code{AudioOutputMethod} parameter may also be a list of
+preferred audio backends, separated by commas.  The output modules will try
+each one in the order given, until they find one which works.
+The default value of @code{AudioOutputMethod} is @code{pulse,alsa}.
 
 Please note however that some more simple output modules or
 synthesizers, like the generic output module, do not respect these
@@ -943,27 +889,8 @@ configuration options. Please look at the comments in its
 configuration file for a detailed description. However, there
 are several options which are common for some
 output modules. Here is a short overview of them.
-@table @code
-@item AudioOutputMethod
-@anchor{AudioOutputMethod method}
 
-When the module is able to use different methods of audio output for
-the given synthesizer, you can choose between them using this command.
-
-@var{method} is one of the strings 'alsa' for Advanced Linux Sound
-Architecture, 'oss' for Open Sound System and 'nas' for Network Audio
-Server. Please note that NAS support is only experimental and there
-are known problems in NAS.
-
-Sometimes there is an additional command in the configuration file
-where you can specify additional parameters.
-
-We recommend (e.g. for Festival:
-@example
-        FestivalAudioOutputMethod "alsa"
-        FestivalALSADevice "default"        
-@end example
-
+@itemize
 @item AddVoice "@var{language}" "@var{symbolicname}" "@var{name}"
 @anchor{AddVoice}
 
@@ -1035,7 +962,7 @@ only if they are followed by a space. This way for example
 ``file123.tmp'' would not be cut in two parts, but ``The horse
 raced around the fence, that was lately painted green, fell.''
 would be. (This is an interesting sentence, by the way.)
-@end table
+@end itemize
 
 @node Configuration of the Generic Output Module,  , Configuration files of output modules, Output Modules Configuration
 @subsubsection Configuration files of the Generic Output Module
@@ -1233,7 +1160,160 @@ command line tool to send and receive SSIP protocol communication.
 Please see @file{src/clients/otts-say/README} in the
 OpenTTS source tree for more information.
 
-@node Client Programming, Server Programming, User's Documentation, Top
+@node Technical Specifications, Client Programming, User's Documentation, Top
+@chapter Technical Specifications
+
+@menu
+* Communication Mechanisms::
+* Actions performed on startup::
+* Accepted signals::
+@end menu
+
+@node Communication Mechanisms, Actions performed on startup, Technical Specifications, Technical Specifications
+@section Communication Mechanisms
+
+OpenTTS supports two communication mechanisms: UNIX-style
+and Inet sockets, which are refered as 'unix-socket' and 'inet-socket'
+respectively. The communication mechanism is decided on startup and
+cannot be changed at runtime. Unix sockets are now the default and
+prefered variant for local communication, Inet sockets are necessary
+for communication over network.
+
+The mechanism for the decision of which method to use is as follows in
+this order of precedence: command-line option, configuration option,
+the default value 'unix-socket'.
+
+@emph{Unix sockets} are associated with a file in the filesystem. By
+default, this file is placed in the users home directory (as
+determined by the value of the HOME environment variable and the
+system configuration for the given user). It's default name is
+constructed as @code{~/.opentts/openttsd.sock}. The access
+permissions for this file are set to 600 so that it's restricted to
+read/write by the current user.
+
+As such, access is handled properly and there are no conflicts between
+the different instances of openttsd run by the different
+users.
+
+Client applications and libraries are supposed to independently
+replicate the process of construction of the socket path and connect
+to it, thus establishing a common communication channel.
+
+The server can use a custom file name for the socket, if necessary.
+Client libraries should respect the @code{SPEECHD_SOCKET} environment variable.
+If that variable is defined, it should contain the full path to the socket.
+
+@emph{Inet sockets} are based on communication over a given port on
+the given host, two variables which must be previously agreed between
+the server and client before a connection can be established. The only
+implicit security restriction is the server configuration option which
+can allow or disallow access from machines other than localhost.
+
+By convention, if the client connects to a server on localhost, it
+should use a port given by one of the following sources in the following
+order of precedence: its own configuration, value of the SPEECHD_PORT
+environment variable and the default port 6560.
+
+@node Actions performed on startup, Accepted signals, Communication Mechanisms, Technical Specifications
+@section Actions performed on startup
+
+What follows is an overview of the actions the server takes on startup
+in this order:
+
+@itemize @bullet
+
+@item Initialize logging stage 1
+
+Set loglevel to 1 and log destination to stderr (logfile is not ready yet).
+
+@item Parse command line options
+
+Read prefered communication method, destinations for logfile and pidfile
+
+@item Establish the ~/.opentts/ directory
+
+If pid and conf paths were not given as command line options, the
+server will place them in ~/.opentts/ by default. If they
+are not specified AND the current user doesn't have a system home directory,
+the server will fail startup.
+
+The configuration file is pointed to ~/.opentts/conf/openttsd.conf
+if it exists, otherwise to /etc/opentts/openttsd.conf or a similar
+system location according to compile options. One of these files must
+exists, otherwise openttsd will not know where to find its output
+modules.
+
+@item Create pid file
+
+Check the pid file in the determined location. If an instance of the
+server is already running, log an error message and exit with error
+code 1, otherwise create and lock a new pid file.
+
+@item Check for autospawning enabled
+
+If the server is started with --spawn, check whether autospawn is not
+disabled in the configuration (DisableAutoSpawn config option in
+openttsd.conf). If it is disabled, log an error message and exit with
+error code 1.
+
+@item Install signal handlers
+
+@item Create unix or inet sockets and start listening
+
+@item Initialize openttsd
+
+Read the configuration files, setup some lateral threads, start and
+initialize output modules. Reinitialize logging (stage 2) into the
+final logfile destination (as determined by the command line option,
+the configuration option and the default location in this order of
+precedence).
+
+After this step, openttsd is ready to accept new connections.
+
+@item Daemonize the process
+
+Fork the process, disconnect from standard input and outputs,
+disconnect from parent process etc. as prescribed by the POSIX
+standards.
+
+@item Initialize the speaking lateral thread
+
+Initialize the second main thread which will process the speech
+request from the queues and pass them onto the openttsd
+modules.
+
+@item Start accepting new connections from clients
+
+Start listening for new connections from clients and processing them
+in a loop.
+
+@end itemize
+
+@node Accepted signals,  , Actions performed on startup, Technical Specifications
+@section Accepted signals
+
+@itemize @bullet
+
+@item SIGINT
+
+Terminate the server
+
+@item SIGHUP
+
+Reload configuration from config files but do not restart modules
+
+@item SIGUSR1
+
+Reload dead output modules (modules which were previously working but
+crashed during runtime and marked as dead)
+
+@item SIGPIPE
+
+Ignored
+
+@end itemize
+
+@node Client Programming, Server Programming, Technical Specifications, Top
 @chapter Client Programming
 
 Clients communicate with openttsd via the Speech Synthesis
@@ -1254,6 +1334,8 @@ about current external client libraries.
 * Python API::                  Python module.
 * Guile API::                   
 * Common Lisp API::             
+
+* Autospawning::                How server is started from clients
 @end menu
 
 @node C API, Python API, Client Programming, Client Programming
@@ -1282,8 +1364,7 @@ about current external client libraries.
 Opens a new connection to openttsd and returns a socket file
 descriptor which you will use to communicate with the daemon. The
 socket file descriptor is a parameter used in all the other
-functions. It reads openttsd's port number from the
-environment variable @var{SPEECHD_PORT}.
+functions.  It uses Unix sockets as the communication method.
 
 The three parameters @code{client_name}, @code{connection_name} and
 @code{username} are there only for informational and navigational
@@ -1328,6 +1409,26 @@ on error.
 Each connection you open should be closed by spd_close() before the
 end of the program, so that the associated connection descriptor is
 closed, threads are terminated and memory is freed.
+
+@end deffn
+
+@deffn {C API function} SPDConnection* spd_open2(char* client_name, char* connection_name, char* user_name, SPDConnectionMode connection_mode, SPDConnectionMethod method, int autospawn)
+@findex spd_open2()
+
+Opens a new connection to openttsd and returns a socket file
+descriptor. This function is the same as @code{spd_open} except that
+it gives more control of the communication method and autospawn
+functionality as described below.
+
+@code{method} is either @code{SPD_METHOD_UNIX_SOCKET} or @code{SPD_METHOD_INET_SOCKET}. By default,
+unix socket communication should be prefered, but inet sockets are necessary for cross-network
+communication.
+
+@code{autospawn} is a boolean flag specifying whether the function
+should try to autospawn (autostart) the openttsd server
+process if it is not running already. This is set to 1 by default, so
+this function should normally not fail even if the server is not yet
+running.
 
 @end deffn
 
@@ -2118,9 +2219,10 @@ client.speak("Hello World!")
 client.close()
 @end example 
 
-The Python API respects the environment variables @var{SPEECHD_HOST}
-and @var{SPEECHD_PORT} if host/port is not specified explicitly (see
-@code{SSIPClient} constructor arguments).
+
+The Python API respects the environment variables @var{SPEECHD_SOCKET},
+@var{SPEECHD_HOST}, and @var{SPEECHD_PORT} if socket/host/port is not
+specified explicitly (see @code{SSIPClient} constructor arguments).
 
 Implementation of callbacks within the Python API tries to hide the
 low level details of SSIP callback handling and provide a convenient
@@ -2189,13 +2291,49 @@ The Guile API can be found under @file{src/api/guile/} in
 the source tree, however it's still considered to be
 at the experimental stage. Please read @file{src/api/guile/README}.
 
-@node Common Lisp API,  , Guile API, Client Programming
+@node Common Lisp API,  Autospawning, Guile API, Client Programming
 @section Common Lisp API
 
 The Common Lisp API can be found @file{src/api/cl/} in
 the source tree, however it's still considered to be
 at the experimental stage. Please read @file{src/api/cl/README}.
 
+@node Autospawning,  , Common Lisp API, Client Programming
+@section Autospawning
+
+It is suggested that client libraries offer an autospawn functionality
+to automatically start the server process when connecting locally and if
+it is not already running. E.g. if the client application starts and
+openttsd is not running already, the client will start openttsd.
+
+The library API should provide a possibility to turn this
+functionality off, but we suggest to set the default behavior to
+autospawn.
+
+Autospawn is performed by executing openttsd with the --spawn
+parameter under the same user and permissions as the client process:
+
+@example
+openttsd --spawn
+@end example
+
+With the @code{--spawn} parameter, the process will start and return
+with an exit code of 0 only if a) it is not already running (pidfile
+check) b) the server doesn't have autospawn disabled in its
+configuration c) no other error preventing the start
+occurs. Otherwise, openttsd is not started and the error code
+of 1 is returned.
+
+The client library should redirect its stdout and stderr outputs
+either to nowhere or to its logging system. It should subsequently
+completely detach from the newly spawned process.
+
+Due to a bug in openttsd, it is currently necessary to
+include a wait statement after the autospawn for about 0.5 seconds
+before attempting a connection.
+
+Please see how autospawn is implemented in the C API and in the Python
+API for an example.
 
 @node Server Programming, Download and Contact, Client Programming, Top
 @chapter Server Programming
@@ -2972,7 +3110,7 @@ Note that you cannot call module_report_event_pause() from within
 the call to module_pause().  The best thing to do is emit
 the pause event from another thread.
 
-For some software synthesizers, the desired effect can be archieved in this way:
+For some software synthesizers, the desired effect can be achieved in this way:
 When @code{module_speak()} is called, you execute a separate
 process and pass it the requested message. This process
 cuts the message into sentences and then runs in a loop
@@ -3618,5 +3756,4 @@ and Free Software.
 @c  LocalWords:  sayf ifinfo verbatiminclude ref UTF ccc ddd pxref LF cs conf
 @c  LocalWords:  su AddModule DefaultModule xref identd printindex Dectalk GTK
 
-@c speechd.texi ends here
 @c  LocalWords:  emph soundcard precission archieved succes Dispatcher When
