@@ -318,9 +318,10 @@ GList *get_messages_by_client(int uid)
 	GList *list = NULL;
 	GList *gl;
 	openttsd_message *msg;
-	int i;
+	guint i;
+	guint history_length = g_list_length(message_history);
 
-	for (i = 0; i <= g_list_length(message_history) - 1; i++) {
+	for (i = 0; i < history_length; i++) {
 		gl = g_list_nth(message_history, i);
 		assert(gl != NULL);
 		msg = gl->data;
