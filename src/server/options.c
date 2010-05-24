@@ -135,9 +135,11 @@ void options_parse(int argc, char *argv[])
 			break;
 		case 'c':
 			OPTION_SET_STR(communication_method);
+			options.communication_method_set = 1;
 			break;
 		case 'S':
 			OPTION_SET_STR(socket_name);
+			options.socket_name_set = 1;
 			break;
 		case 'p':
 			OPTION_SET_INT(port);

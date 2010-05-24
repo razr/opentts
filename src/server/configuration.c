@@ -184,8 +184,8 @@ GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
-SPEECHD_OPTION_CB_STR(CommunicationMethod, communication_method)
-SPEECHD_OPTION_CB_STR(SocketName, socket_name)
+SPEECHD_OPTION_CB_STR_M(CommunicationMethod, communication_method)
+SPEECHD_OPTION_CB_STR_M(SocketName, socket_name)
 SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
 			 "Invalid access controll mode!")
 SPEECHD_OPTION_CB_INT_M(Port, port, val >= 0,
