@@ -28,7 +28,7 @@
   "Name of the default host running speechd to connect to.")
 
 (defvar *port* (or (ignore-errors
-                     (car (read-from-string (getenv "SPEECHD_PORT"))))
+                     (car (read-from-string (getenv "OPENTTSD_PORT"))))
                    6560)
   "Default port of speechd.")
 

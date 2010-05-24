@@ -405,9 +405,9 @@ class SSIPClient(object):
 
     """
     
-    DEFAULT_SPEECHD_HOST = '127.0.0.1'
+    DEFAULT_OPENTTSD_HOST = '127.0.0.1'
     """Default host for server connections."""
-    DEFAULT_SPEECHD_PORT = 6560
+    DEFAULT_OPENTTSD_PORT = 6560
     """Default port number for server connections."""
     DEFAULT_SOCKET_PATH = "~/.opentts/openttsd.sock"
     """Default name of the communication unix socket"""
@@ -429,11 +429,11 @@ class SSIPClient(object):
           TEMP dir (determined via tempfile.gettempdir() according to the contents of
           the TMPDIR like environment variables)
           host -- for 'inet_socket' method, server hostname or IP address as a string.
-          If None, the default value is taken from SPEECHD_HOST environment variable (if it
-          exists) or from the DEFAULT_SPEECHD_HOST attribute of this class.
+          If None, the default value is taken from OPENTTSD_HOST environment variable (if it
+          exists) or from the DEFAULT_OPENTTSD_HOST attribute of this class.
           port -- for 'inet_socket' method, server port as number or None.  If None,
-          the default value is taken from SPEECHD_PORT environment variable (if it exists)
-          or from the DEFAULT_SPEECHD_PORT attribute of this class.
+          the default value is taken from OPENTTSD_PORT environment variable (if it exists)
+          or from the DEFAULT_OPENTTSD_PORT attribute of this class.
           autospawn -- a flag to specify whether the library should try to start the
           server if it determines its not already running
         
@@ -442,14 +442,14 @@ class SSIPClient(object):
           
         """
         if socket_name is None:
-            socket_name = os.environ.get('SPEECHD_SOCKET', os.path.expanduser(self.DEFAULT_SOCKET_PATH))
+            socket_name = os.environ.get('OPENTTSD_SOCKET', os.path.expanduser(self.DEFAULT_SOCKET_PATH))
         if host is None:
-            host = os.environ.get('SPEECHD_HOST', self.DEFAULT_SPEECHD_HOST)
+            host = os.environ.get('OPENTTSD_HOST', self.DEFAULT_OPENTTSD_HOST)
         if port is None:
             try:
-                port = int(os.environ.get('SPEECHD_PORT'))
+                port = int(os.environ.get('OPENTTSD_PORT'))
             except (ValueError, TypeError):
-                port = self.DEFAULT_SPEECHD_PORT
+                port = self.DEFAULT_OPENTTSD_PORT
 
         # If autospawn is not specified, use system default
         if autospawn is None:

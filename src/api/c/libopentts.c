@@ -260,7 +260,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 	if (method == SPD_METHOD_INET_SOCKET) {
 		struct sockaddr_in address_inet;
 
-		env_port = getenv("SPEECHD_PORT");
+		env_port = getenv("OPENTTSD_PORT");
 		if (env_port != NULL)
 			port = strtol(env_port, NULL, 10);
 		else
@@ -287,7 +287,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 		struct sockaddr_un address_unix;
 		GString *socket_filename;
 /* Determine address for the unix socket */
-		env_socket = getenv("SPEECHD_SOCKET");
+		env_socket = getenv("OPENTTSD_SOCKET");
 		if (env_socket) {
 			socket_filename = g_string_new(env_socket);
 		} else {

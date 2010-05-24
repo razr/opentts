@@ -104,7 +104,7 @@ void wait_for(int fd, char *event)
 
 /*
  * set_socket_path: establish the pathname that our Unix socket should
- * have.  If the SPEECHD_SOCKET environment variable is set, then that
+ * have.  If the OPENTTSD_SOCKET environment variable is set, then that
  * will be our pathname.  Otherwise, the pathname
  * is ~/.opentts/openttsd.sock.
  */
@@ -119,7 +119,7 @@ void set_socket_path(struct sockaddr_un *address)
 	char *home_dir;
 	size_t home_dir_length;
 
-	path = getenv("SPEECHD_SOCKET");
+	path = getenv("OPENTTSD_SOCKET");
 	if ((path == NULL) || (strlen(path) == 0)) {
 		home_dir = getenv("HOME");
 		if (home_dir == NULL)
