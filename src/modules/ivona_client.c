@@ -349,7 +349,7 @@ static gboolean ivona_play_file(char *filename)
 		dbg("Ivona: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
 		//spd_audio_set_volume(module_audio_id, IvonaSoundIconVolume);
-		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+		int ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
 			dbg("ERROR: Can't play track for unknown reason.");
 			result = FALSE;

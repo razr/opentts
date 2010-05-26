@@ -220,7 +220,7 @@ int module_stop(void)
 	ivona_stop = 1;
 	if (module_audio_id) {
 		dbg("Stopping audio");
-		ret = spd_audio_stop(module_audio_id);
+		ret = opentts_audio_stop(module_audio_id);
 		if (ret != 0)
 			dbg("WARNING: Non 0 value from spd_audio_stop: %d",
 			    ret);
@@ -258,7 +258,7 @@ void module_close(int status)
 		exit(1);
 
 	dbg("Closing audio output");
-	spd_audio_close(module_audio_id);
+	opentts_audio_close(module_audio_id);
 
 	exit(status);
 }
@@ -290,7 +290,7 @@ void *_ivona_speak(void *nothing)
 		ivona_stop = 0;
 		ivona_speaking = 1;
 
-		spd_audio_set_volume(module_audio_id, ivona_volume);
+		opentts_audio_set_volume(module_audio_id, ivona_volume);
 
 		module_report_event_begin();
 		msg = *ivona_message;
@@ -414,7 +414,7 @@ void *_ivona_speak(void *nothing)
 				track.bits = 16;
 				track.samples = ((short *)audio) + offset;
 				dbg("Got %d samples", track.num_samples);
-				spd_audio_play(module_audio_id, track,
+				opentts_audio_play(module_audio_id, track,
 					       SPD_AUDIO_LE);
 				g_free(audio);
 				audio = NULL;

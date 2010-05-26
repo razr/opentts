@@ -69,7 +69,7 @@ static lt_dlhandle lt_h;
    all other spd_audio functions, or NULL in case of failure.
 
 */
-AudioID *spd_audio_open(char *name, void **pars, char **error)
+AudioID *opentts_audio_open(char *name, void **pars, char **error)
 {
 	AudioID *id;
 	spd_audio_plugin_t const *p;
@@ -150,7 +150,7 @@ AudioID *spd_audio_open(char *name, void **pars, char **error)
    (spd_audio_stop() needs to be called from another thread, obviously.)
 
 */
-int spd_audio_play(AudioID * id, AudioTrack track, AudioFormat format)
+int opentts_audio_play(AudioID * id, AudioTrack track, AudioFormat format)
 {
 	int ret;
 
@@ -204,7 +204,7 @@ Comment:
    spd_audio_close isn't called before or during spd_audio_stop execution.
 */
 
-int spd_audio_stop(AudioID * id)
+int opentts_audio_stop(AudioID * id)
 {
 	int ret;
 	if (id && id->function->stop) {
@@ -230,7 +230,7 @@ Comments:
    is running in another threads. See spd_audio_stop() for detailed
    description of possible problems.
 */
-int spd_audio_close(AudioID * id)
+int opentts_audio_close(AudioID * id)
 {
 	int ret = -1;
 
@@ -270,7 +270,7 @@ Comments:
    means less volume (since this works by deviding the samples
    in the track by a constant).
 */
-int spd_audio_set_volume(AudioID * id, int volume)
+int opentts_audio_set_volume(AudioID * id, int volume)
 {
 	if ((volume > 100) || (volume < -100)) {
 		fprintf(stderr, "Requested volume out of range");
@@ -281,7 +281,7 @@ int spd_audio_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-void spd_audio_set_loglevel(AudioID * id, int level)
+void opentts_audio_set_loglevel(AudioID * id, int level)
 {
 	if (level) {
 		audio_log_level = level;
@@ -290,7 +290,7 @@ void spd_audio_set_loglevel(AudioID * id, int level)
 	}
 }
 
-char const *spd_audio_get_playcmd(AudioID * id)
+char const *opentts_audio_get_playcmd(AudioID * id)
 {
 	if (id != 0 && id->function != 0) {
 		return id->function->get_playcmd();

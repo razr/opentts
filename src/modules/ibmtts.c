@@ -31,7 +31,7 @@
             This thread receives audio and index mark callbacks from
             IBM TTS and queues them into a playback queue. See _ibmtts_synth().
         A playback thread that acts on entries in the playback queue,
-            either sending them to the audio output module (spd_audio_play()),
+            either sending them to the audio output module (opentts_audio_play()),
             or emitting OpenTTS events.  See _ibmtts_play().
         A thread which is used to stop or pause the synthesis and
             playback threads.  See _ibmtts_stop_or_pause().
@@ -692,7 +692,7 @@ void module_close(int status)
 	g_free(audio_chunk);
 
 	dbg("Ibmtts: Closing audio output");
-	spd_audio_close(module_audio_id);
+	opentts_audio_close(module_audio_id);
 
 	/* Request each thread exit and wait until it exits. */
 	dbg("Ibmtts: Terminating threads");
@@ -814,9 +814,9 @@ static void *_ibmtts_stop_or_pause(void *nothing)
 			if (module_audio_id) {
 				pthread_mutex_lock(&sound_stop_mutex);
 				dbg("Ibmtts: Stopping audio.");
-				int ret = spd_audio_stop(module_audio_id);
+				int ret = opentts_audio_stop(module_audio_id);
 				if (0 != ret)
-					dbg("Ibmtts: WARNING: Non 0 value from spd_audio_stop: %d", ret);
+					dbg("Ibmtts: WARNING: Non 0 value from opentts_audio_stop: %d", ret);
 				pthread_mutex_unlock(&sound_stop_mutex);
 			}
 		}
@@ -1499,8 +1499,8 @@ ibmtts_send_to_audio(TPlaybackQueueEntry * playback_queue_entry)
 	if (track.samples != NULL) {
 		dbg("Ibmtts: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
-		spd_audio_set_volume(module_audio_id, 75);
-		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+		opentts_audio_set_volume(module_audio_id, 75);
+		int ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
 			dbg("ERROR: Can't play track for unknown reason.");
 			return IBMTTS_FALSE;
@@ -1732,8 +1732,8 @@ static TIbmttsBool ibmtts_play_file(char *filename)
 		track.num_samples = readcount / sfinfo.channels;
 		dbg("Ibmtts: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
-		spd_audio_set_volume(module_audio_id, 0);
-		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+		opentts_audio_set_volume(module_audio_id, 0);
+		int ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
 			dbg("ERROR: Can't play track for unknown reason.");
 			result = IBMTTS_FALSE;

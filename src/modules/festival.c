@@ -431,7 +431,7 @@ int module_stop(void)
 			pthread_mutex_lock(&sound_output_mutex);
 			festival_stop = 1;
 			if (festival_speaking && module_audio_id) {
-				spd_audio_stop(module_audio_id);
+				opentts_audio_stop(module_audio_id);
 			}
 			pthread_mutex_unlock(&sound_output_mutex);
 		}
@@ -479,7 +479,7 @@ void module_close(int status)
 
 	dbg("Closing audio output");
 	if (module_audio_id)
-		spd_audio_close(module_audio_id);
+		opentts_audio_close(module_audio_id);
 
 	exit(status);
 }
@@ -523,12 +523,12 @@ int festival_send_to_audio(FT_Wave * fwave)
 		switch (module_audio_id->format) {
 		case SPD_AUDIO_LE:
 			ret =
-			    spd_audio_play(module_audio_id, track,
+			    opentts_audio_play(module_audio_id, track,
 					   SPD_AUDIO_LE);
 			break;
 		case SPD_AUDIO_BE:
 			ret =
-			    spd_audio_play(module_audio_id, track,
+			    opentts_audio_play(module_audio_id, track,
 					   SPD_AUDIO_BE);
 			break;
 		}
@@ -564,7 +564,7 @@ sem_wait:
 		sem_wait(festival_semaphore);
 		dbg("Semaphore on, speaking\n");
 
-		spd_audio_set_volume(module_audio_id, festival_volume);
+		opentts_audio_set_volume(module_audio_id, festival_volume);
 
 		festival_stop = 0;
 		festival_speaking = 1;

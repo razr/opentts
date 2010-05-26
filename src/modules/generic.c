@@ -285,7 +285,7 @@ void module_close(int status)
 		exit(1);
 
 	if (module_audio_id)
-		spd_audio_close(module_audio_id);
+		opentts_audio_close(module_audio_id);
 
 	exit(status);
 }
@@ -389,7 +389,7 @@ void *_generic_speak(void *nothing)
 					    g_strdup("UNKNOWN_HOME_DIRECTORY");
 
 				play_command =
-				    spd_audio_get_playcmd(module_audio_id);
+				    opentts_audio_get_playcmd(module_audio_id);
 				if (play_command == NULL) {
 					dbg("This audio backend has no default play command; using \"play\"\n");
 					play_command = "play";

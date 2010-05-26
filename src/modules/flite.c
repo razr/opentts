@@ -195,7 +195,7 @@ int module_stop(void)
 	flite_stop = 1;
 	if (module_audio_id) {
 		dbg("Stopping audio");
-		ret = spd_audio_stop(module_audio_id);
+		ret = opentts_audio_stop(module_audio_id);
 		if (ret != 0)
 			dbg("WARNING: Non 0 value from spd_audio_stop: %d",
 			    ret);
@@ -235,7 +235,7 @@ void module_close(int status)
 	g_free(flite_voice);
 
 	dbg("Closing audio output");
-	spd_audio_close(module_audio_id);
+	opentts_audio_close(module_audio_id);
 
 	exit(status);
 }
@@ -281,7 +281,7 @@ void *_flite_speak(void *nothing)
 		flite_stop = 0;
 		flite_speaking = 1;
 
-		spd_audio_set_volume(module_audio_id, flite_volume);
+		opentts_audio_set_volume(module_audio_id, flite_volume);
 
 		/* TODO: free(buf) */
 		buf =
@@ -352,13 +352,13 @@ void *_flite_speak(void *nothing)
 					switch (module_audio_id->format) {
 					case SPD_AUDIO_LE:
 						ret =
-						    spd_audio_play
+						    opentts_audio_play
 						    (module_audio_id, track,
 						     SPD_AUDIO_LE);
 						break;
 					case SPD_AUDIO_BE:
 						ret =
-						    spd_audio_play
+						    opentts_audio_play
 						    (module_audio_id, track,
 						     SPD_AUDIO_BE);
 						break;

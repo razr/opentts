@@ -27,18 +27,18 @@
 
 #include <opentts/opentts_audio_plugin.h>
 
-AudioID *spd_audio_open(char *name, void **pars, char **error);
+AudioID *opentts_audio_open(char *name, void **pars, char **error);
 
-int spd_audio_play(AudioID * id, AudioTrack track, AudioFormat format);
+int opentts_audio_play(AudioID * id, AudioTrack track, AudioFormat format);
 
-int spd_audio_stop(AudioID * id);
+int opentts_audio_stop(AudioID * id);
 
-int spd_audio_close(AudioID * id);
+int opentts_audio_close(AudioID * id);
 
-int spd_audio_set_volume(AudioID * id, int volume);
+int opentts_audio_set_volume(AudioID * id, int volume);
 
-void spd_audio_set_loglevel(AudioID * id, int level);
+void opentts_audio_set_loglevel(AudioID * id, int level);
 
-char const *spd_audio_get_playcmd(AudioID * id);
+char const *opentts_audio_get_playcmd(AudioID * id);
 
 #endif /* ifndef #__SPD_AUDIO_H */

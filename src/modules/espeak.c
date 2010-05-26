@@ -510,7 +510,7 @@ void module_close(int status)
 
 	dbg("Espeak: Closing audio output");
 	if (module_audio_id) {
-		spd_audio_close(module_audio_id);
+		opentts_audio_close(module_audio_id);
 	}
 
 	dbg("Freeing resources.");
@@ -582,11 +582,11 @@ static void *_espeak_stop_or_pause(void *nothing)
 
 		if (module_audio_id) {
 			dbg("Espeak: Stopping audio.");
-			ret = spd_audio_stop(module_audio_id);
+			ret = opentts_audio_stop(module_audio_id);
 			DBG_WARN(ret == 0,
 				 "spd_audio_stop returned non-zero value.");
 			while (is_thread_busy(&espeak_play_suspended_mutex)) {
-				ret = spd_audio_stop(module_audio_id);
+				ret = opentts_audio_stop(module_audio_id);
 				DBG_WARN(ret == 0,
 					 "spd_audio_stop returned non-zero value.");
 				g_usleep(5000);
@@ -1050,8 +1050,8 @@ static gboolean espeak_send_to_audio(TPlaybackQueueEntry * playback_queue_entry)
 
 	dbg("Espeak: Sending %i samples to audio.", track.num_samples);
 	/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
-	spd_audio_set_volume(module_audio_id, 85);
-	ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+	opentts_audio_set_volume(module_audio_id, 85);
+	ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 	if (ret < 0) {
 		dbg("ERROR: Can't play track for unknown reason.");
 		return FALSE;
@@ -1217,8 +1217,8 @@ static gboolean espeak_play_file(char *filename)
 		track.num_samples = readcount / sfinfo.channels;
 		dbg("Espeak: Sending %i samples to audio.", track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
-		spd_audio_set_volume(module_audio_id, EspeakSoundIconVolume);
-		int ret = spd_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+		opentts_audio_set_volume(module_audio_id, EspeakSoundIconVolume);
+		int ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
 			dbg("ERROR: Can't play track for unknown reason.");
 			result = FALSE;

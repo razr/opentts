@@ -395,7 +395,7 @@ gchar *do_loglevel(void)
 					err = 2;
 					continue;
 				}
-				spd_audio_set_loglevel(module_audio_id, number);
+				opentts_audio_set_loglevel(module_audio_id, number);
 			} else
 				err = 2;	/* Unknown parameter */
 		}
@@ -1108,7 +1108,7 @@ int module_audio_init_spd(char **status_info)
 	outputs = g_strsplit(module_audio_pars[0], ",", 0);
 	while (NULL != outputs[i]) {
 		module_audio_id =
-		    spd_audio_open(outputs[i], (void **)&module_audio_pars[1],
+		    opentts_audio_open(outputs[i], (void **)&module_audio_pars[1],
 				   &error);
 		if (module_audio_id) {
 			dbg("Using %s audio output method", outputs[i]);
