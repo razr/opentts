@@ -1,5 +1,5 @@
 /*
- * libao.c -- The libao backend for the spd_audio library.
+ * libao.c -- The libao backend for opentts
  *
  * Author: Marco Skambraks <marco@openblinux.de>
  * Date:  2009-12-15
