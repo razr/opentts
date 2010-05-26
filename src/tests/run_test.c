@@ -3,6 +3,7 @@
  * run_test.c - Read a set of SSIP commands and try them
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,7 +20,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: run_test.c,v 1.14 2008-02-08 10:01:08 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,8 +29,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,27 +102,80 @@ void wait_for(int fd, char *event)
 	fflush(NULL);
 }
 
-int init(char *client_name, char *conn_name)
+/*
+ * set_socket_path: establish the pathname that our Unix socket should
+ * have.  If the SPEECHD_SOCKET environment variable is set, then that
+ * will be our pathname.  Otherwise, the pathname
+ * is ~/.opentts/openttsd.sock.
+ */
+
+void set_socket_path(struct sockaddr_un *address)
+{
+	const char default_socket_path[] = ".opentts/openttsd.sock";
+	size_t default_path_length = strlen(default_socket_path);
+	size_t path_max = sizeof(address->sun_path);
+	char *path;
+	char *pathcopy = NULL;
+	char *home_dir;
+	size_t home_dir_length;
+
+	path = getenv("SPEECHD_SOCKET");
+	if ((path == NULL) || (strlen(path) == 0)) {
+		home_dir = getenv("HOME");
+		if (home_dir == NULL)
+			FATAL
+			    ("Unable to find your home directory.  Cannot run tests.");
+
+		home_dir_length = strlen(home_dir);
+		if (home_dir_length == 0)
+			FATAL
+			    ("Unable to find your home directory.  Cannot run tests.");
+
+		pathcopy = malloc(default_path_length + home_dir_length + 2);
+		/* The + 2 accounts for an extra slash. */
+		if (pathcopy == NULL)
+			FATAL("Out of memory!");
+
+		strcpy(pathcopy, home_dir);
+		if (pathcopy[home_dir_length - 1] != '/') {
+			pathcopy[home_dir_length] = '/';
+			pathcopy[home_dir_length + 1] = '\0';
+		}
+		strcat(pathcopy, default_socket_path);
+		path = pathcopy;
+	}
+
+	strncpy(address->sun_path, path, path_max - 1);
+	address->sun_path[path_max - 1] = '\0';
+
+	if (pathcopy)
+		free(pathcopy);	/* Don't need it anymore. */
+}
+
+/*
+ * init: create and connect our Unix-domain socket.
+ * Returns the file descriptor of the socket on success, or -1 on
+ * failure.
+ */
+
+int init(void)
 {
 	int sockfd;
-	struct sockaddr_in address;
-	char *env_port;
-	int port;
+	int connect_success;
+	struct sockaddr_un address;
 
-	env_port = getenv("SPEECHD_PORT");
-	if (env_port != NULL)
-		port = strtol(env_port, NULL, 10);
-	else
-		port = SPEECHD_DEFAULT_PORT;
-
-	address.sin_addr.s_addr = inet_addr("127.0.0.1");
-	address.sin_port = htons(port);
-	address.sin_family = AF_INET;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-	/* connect to server */
-	if (connect(sockfd, (struct sockaddr *)&address, sizeof(address)) == -1)
-		return 0;
+	set_socket_path(&address);
+	address.sun_family = AF_UNIX;
+	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (sockfd != -1) {
+		connect_success =
+		    connect(sockfd, (struct sockaddr *)&address,
+			    sizeof(struct sockaddr_un));
+		if (connect_success == -1) {
+			close(sockfd);
+			sockfd = -1;
+		}
+	}
 
 	return sockfd;
 }
@@ -167,8 +219,8 @@ int main(int argc, char *argv[])
 	line = malloc(1024 * sizeof(char));
 	reply = malloc(4096 * sizeof(char));
 
-	sockk = init("run_test", "user_test");
-	if (sockk == 0)
+	sockk = init();
+	if (sockk == -1)
 		FATAL("Can't connect to openttsd");
 
 	assert(line != 0);
