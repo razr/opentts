@@ -1,6 +1,6 @@
 
 /*
- * oss.c -- The Open Sound System backend for the spd_audio library.
+ * oss.c -- The Open Sound System backend for opentts
  *
  * Copyright (C) 2004,2006 Brailcom, o.p.s.
  *
@@ -51,11 +51,11 @@ typedef struct {
 	pthread_mutex_t fd_mutex;
 	pthread_cond_t pt_cond;
 	pthread_mutex_t pt_mutex;
-} spd_oss_id_t;
+} oss_id_t;
 
-static int _oss_open(spd_oss_id_t * id);
-static int _oss_close(spd_oss_id_t * id);
-static int _oss_sync(spd_oss_id_t * id);
+static int _oss_open(oss_id_t * id);
+static int _oss_close(oss_id_t * id);
+static int _oss_sync(oss_id_t * id);
 
 /* Put a message into the logfile (stderr) */
 #define MSG(level, arg...) \
@@ -83,7 +83,7 @@ static int _oss_sync(spd_oss_id_t * id);
 static int oss_log_level;
 static char const *oss_play_cmd = "play";
 
-static int _oss_open(spd_oss_id_t * id)
+static int _oss_open(oss_id_t * id)
 {
 	MSG(1, "_oss_open()")
 	    pthread_mutex_lock(&id->fd_mutex);
@@ -101,7 +101,7 @@ static int _oss_open(spd_oss_id_t * id)
 	return 0;
 }
 
-static int _oss_close(spd_oss_id_t * id)
+static int _oss_close(oss_id_t * id)
 {
 	MSG(1, "_oss_close()")
 	    if (id == NULL)
@@ -124,13 +124,13 @@ static int _oss_close(spd_oss_id_t * id)
 */
 static AudioID *oss_open(void **pars)
 {
-	spd_oss_id_t *oss_id;
+	oss_id_t *oss_id;
 	int ret;
 
 	if (pars[0] == NULL)
 		return NULL;
 
-	oss_id = (spd_oss_id_t *) g_malloc(sizeof(spd_oss_id_t));
+	oss_id = (oss_id_t *) g_malloc(sizeof(oss_id_t));
 
 	oss_id->device_name = (char *)g_strdup((char *)pars[0]);
 
@@ -157,7 +157,7 @@ static AudioID *oss_open(void **pars)
 }
 
 /* Internal function. */
-static int _oss_sync(spd_oss_id_t * id)
+static int _oss_sync(oss_id_t * id)
 {
 	int ret;
 
@@ -187,7 +187,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 	float real_volume;
 	int i;
 	int re;
-	spd_oss_id_t *oss_id = (spd_oss_id_t *) id;
+	oss_id_t *oss_id = (oss_id_t *) id;
 
 	AudioTrack track_volume;
 
@@ -426,7 +426,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 static int oss_stop(AudioID * id)
 {
 	int ret;
-	spd_oss_id_t *oss_id = (spd_oss_id_t *) id;
+	oss_id_t *oss_id = (oss_id_t *) id;
 
 	if (oss_id == NULL)
 		return 0;
@@ -453,7 +453,7 @@ static int oss_stop(AudioID * id)
 /* Close the device */
 static int oss_close(AudioID * id)
 {
-	spd_oss_id_t *oss_id = (spd_oss_id_t *) id;
+	oss_id_t *oss_id = (oss_id_t *) id;
 
 	/* Does nothing because the device is being automatically openned and
 	   closed in oss_play before and after playing each sample. */

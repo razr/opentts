@@ -54,15 +54,15 @@ typedef struct {
 	struct pollfd *alsa_poll_fds;	/* Descriptors to poll */
 	int alsa_opened;	/* 1 between snd_pcm_open and _close, 0 otherwise */
 	char *alsa_device_name;	/* the name of the device to open */
-} spd_alsa_id_t;
+} alsa_id_t;
 
-static int _alsa_close(spd_alsa_id_t * id);
-static int _alsa_open(spd_alsa_id_t * id);
+static int _alsa_close(alsa_id_t * id);
+static int _alsa_open(alsa_id_t * id);
 
-static int xrun(spd_alsa_id_t * id);
-static int suspend(spd_alsa_id_t * id);
+static int xrun(alsa_id_t * id);
+static int suspend(alsa_id_t * id);
 
-static int wait_for_poll(spd_alsa_id_t * id, struct pollfd *alsa_poll_fds,
+static int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 			 unsigned int count, int draining);
 
 #ifndef timersub
@@ -104,7 +104,7 @@ static int alsa_log_level;
 static char const *alsa_play_cmd = "aplay";
 
 /* I/O error handler */
-static int xrun(spd_alsa_id_t * id)
+static int xrun(alsa_id_t * id)
 {
 	snd_pcm_status_t *status;
 	int res;
@@ -142,7 +142,7 @@ static int xrun(spd_alsa_id_t * id)
 }
 
 /* I/O suspend handler */
-static int suspend(spd_alsa_id_t * id)
+static int suspend(alsa_id_t * id)
 {
 	int res;
 
@@ -167,7 +167,7 @@ static int suspend(spd_alsa_id_t * id)
 
 /* Open the device so that it's ready for playing on the default
    device. Internal function used by the public alsa_open. */
-static int _alsa_open(spd_alsa_id_t * id)
+static int _alsa_open(alsa_id_t * id)
 {
 	int err;
 
@@ -201,7 +201,7 @@ static int _alsa_open(spd_alsa_id_t * id)
    Close the device. Internal function used by public alsa_close. 
 */
 
-static int _alsa_close(spd_alsa_id_t * id)
+static int _alsa_close(alsa_id_t * id)
 {
 	int err;
 
@@ -239,7 +239,7 @@ static int _alsa_close(spd_alsa_id_t * id)
 */
 static AudioID *alsa_open(void **pars)
 {
-	spd_alsa_id_t *alsa_id;
+	alsa_id_t *alsa_id;
 	int ret;
 
 	if (pars[1] == NULL) {
@@ -247,7 +247,7 @@ static AudioID *alsa_open(void **pars)
 		return NULL;
 	}
 
-	alsa_id = (spd_alsa_id_t *) g_malloc(sizeof(spd_alsa_id_t));
+	alsa_id = (alsa_id_t *) g_malloc(sizeof(alsa_id_t));
 
 	pthread_mutex_init(&alsa_id->alsa_pipe_mutex, NULL);
 
@@ -276,7 +276,7 @@ static AudioID *alsa_open(void **pars)
 static int alsa_close(AudioID * id)
 {
 	int err;
-	spd_alsa_id_t *alsa_id = (spd_alsa_id_t *) id;
+	alsa_id_t *alsa_id = (alsa_id_t *) id;
 
 	/* Close device */
 	if ((err = _alsa_close(alsa_id)) < 0) {
@@ -297,7 +297,7 @@ static int alsa_close(AudioID * id)
 Returns 0 if ALSA is ready for more input, +1 if a request to stop
 the sound output was received and a negative value on error.  */
 
-int wait_for_poll(spd_alsa_id_t * id, struct pollfd *alsa_poll_fds,
+int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 		  unsigned int count, int draining)
 {
 	unsigned short revents;
@@ -385,7 +385,7 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	snd_pcm_format_t format;
 	int bytes_per_sample;
 	int num_bytes;
-	spd_alsa_id_t *alsa_id = (spd_alsa_id_t *) id;
+	alsa_id_t *alsa_id = (alsa_id_t *) id;
 
 	signed short *output_samples;
 
@@ -822,7 +822,7 @@ static int alsa_stop(AudioID * id)
 {
 	char buf;
 	int ret;
-	spd_alsa_id_t *alsa_id = (spd_alsa_id_t *) id;
+	alsa_id_t *alsa_id = (alsa_id_t *) id;
 
 	MSG(1, "STOP!");
 

@@ -1,5 +1,5 @@
 /*
- * pulse.c -- The simple pulseaudio backend for the spd_audio library.
+ * pulse.c -- The simple pulseaudio backend for opentts
  *
  * Based on libao.c from Marco Skambraks <marco@openblinux.de>
  * Date:  2009-12-15
@@ -54,7 +54,7 @@ typedef struct {
 	int current_rate;
 	int current_bps;
 	int current_channels;
-} spd_pulse_id_t;
+} pulse_id_t;
 
 /* Switch this on to debug, see output log location in MSG() */
 /*#define DEBUG_PULSE*/
@@ -93,9 +93,9 @@ static void MSG(char *message, ...)
 
 static AudioID *pulse_open(void **pars)
 {
-	spd_pulse_id_t *pulse_id;
+	pulse_id_t *pulse_id;
 
-	pulse_id = (spd_pulse_id_t *) g_malloc(sizeof(spd_pulse_id_t));
+	pulse_id = (pulse_id_t *) g_malloc(sizeof(pulse_id_t));
 
 	pulse_id->pa_simple = NULL;
 	pulse_id->pa_server = (char *)pars[3];
@@ -125,7 +125,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 	pa_sample_spec ss;
 	pa_buffer_attr buffAttr;
 	int error;
-	spd_pulse_id_t *pulse_id = (spd_pulse_id_t *) id;
+	pulse_id_t *pulse_id = (pulse_id_t *) id;
 
 	if (id == NULL) {
 		return -1;
@@ -226,7 +226,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 /* stop the pulse_play() loop */
 static int pulse_stop(AudioID * id)
 {
-	spd_pulse_id_t *pulse_id = (spd_pulse_id_t *) id;
+	pulse_id_t *pulse_id = (pulse_id_t *) id;
 
 	pulse_id->pa_stop_playback = 1;
 	return 0;
@@ -234,7 +234,7 @@ static int pulse_stop(AudioID * id)
 
 static int pulse_close(AudioID * id)
 {
-	spd_pulse_id_t *pulse_id = (spd_pulse_id_t *) id;
+	pulse_id_t *pulse_id = (pulse_id_t *) id;
 
 	if (pulse_id->pa_simple != NULL) {
 		pa_simple_drain(pulse_id->pa_simple, NULL);

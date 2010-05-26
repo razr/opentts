@@ -1,5 +1,5 @@
 /*
- * nas.c -- The Network Audio System backend for the spd_audio library.
+ * nas.c -- The Network Audio System backend for opentts
  *
  * Copyright (C) 2004,2006 Brailcom, o.p.s.
  *
@@ -44,14 +44,14 @@ typedef struct {
 	pthread_t nas_event_handler;
 	pthread_cond_t pt_cond;
 	pthread_mutex_t pt_mutex;
-} spd_nas_id_t;
+} nas_id_t;
 
 static int nas_log_level;
 
 /* Internal event handler */
 static void *_nas_handle_events(void *par)
 {
-	spd_nas_id_t *nas_id = (spd_nas_id_t *) par;
+	nas_id_t *nas_id = (nas_id_t *) par;
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 	while (1)
@@ -87,11 +87,11 @@ static AuBool _nas_handle_server_error(AuServer * server, AuErrorEvent * event)
 
 static AudioID *nas_open(void **pars)
 {
-	spd_nas_id_t *nas_id;
+	nas_id_t *nas_id;
 	int ret;
 	AuBool r;
 
-	nas_id = (spd_nas_id_t *) g_malloc(sizeof(spd_nas_id_t));
+	nas_id = (nas_id_t *) g_malloc(sizeof(nas_id_t));
 
 	nas_id->aud = AuOpenServer(pars[2], 0, NULL, 0, NULL, NULL);
 	if (!nas_id->aud) {
@@ -133,7 +133,7 @@ static int nas_play(AudioID * id, AudioTrack track)
 	float lenght;
 	struct timeval now;
 	struct timespec timeout;
-	spd_nas_id_t *nas_id = (spd_nas_id_t *) id;
+	nas_id_t *nas_id = (nas_id_t *) id;
 
 	if (nas_id == NULL)
 		return -2;
@@ -186,7 +186,7 @@ static int nas_play(AudioID * id, AudioTrack track)
 static int nas_stop(AudioID * id)
 {
 	int ret;
-	spd_nas_id_t *nas_id = (spd_nas_id_t *) id;
+	nas_id_t *nas_id = (nas_id_t *) id;
 
 	if (nas_id == NULL)
 		return -2;
@@ -206,7 +206,7 @@ static int nas_stop(AudioID * id)
 
 static int nas_close(AudioID * id)
 {
-	spd_nas_id_t *nas_id = (spd_nas_id_t *) id;
+	nas_id_t *nas_id = (nas_id_t *) id;
 
 	if (nas_id == NULL)
 		return -2;
