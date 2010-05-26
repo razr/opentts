@@ -50,7 +50,7 @@
 #include <glib.h>
 #include <ltdl.h>
 
-static int spd_audio_log_level;
+static int audio_log_level;
 static lt_dlhandle lt_h;
 
 /* Open the audio device.
@@ -284,8 +284,8 @@ int spd_audio_set_volume(AudioID * id, int volume)
 void spd_audio_set_loglevel(AudioID * id, int level)
 {
 	if (level) {
-		spd_audio_log_level = level;
-		if (id != 0 && id->function != 0)
+		audio_log_level = level;
+		if (id != NULL && id->function != NULL)
 			id->function->set_loglevel(level);
 	}
 }
