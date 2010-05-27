@@ -422,6 +422,25 @@ static int alsa_play(AudioID * id, AudioTrack track)
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 		return 0;
 	}
+
+	/*
+	 * The system could have suspended to RAM between two calls
+	 * to alsa_play, in which case, the state of the device will
+	 * be SND_PCM_STATE_SUSPENDED.  We have to recover from that
+	 * state before we do anything else with the pcm handle.
+	 */
+	state = snd_pcm_state(alsa_id->alsa_pcm);
+	if (state == SND_PCM_STATE_SUSPENDED) {
+		err = suspend(alsa_id);
+		if (err != 0) {
+			/* Fatal error: can't recover from suspend. */
+			pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
+			MSG(1,
+			    "Audio playback could not be resumed after a recent suspend.");
+			ERROR_EXIT();
+		}
+	}
+
 	/* Allocate space for hw_params (description of the sound parameters) */
 	MSG(2, "Allocating new hw_params structure");
 	if ((err = snd_pcm_hw_params_malloc(&alsa_id->alsa_hw_params)) < 0) {
