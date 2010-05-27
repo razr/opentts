@@ -434,10 +434,9 @@ static int alsa_play(AudioID * id, AudioTrack track)
 		err = suspend(alsa_id);
 		if (err != 0) {
 			/* Fatal error: can't recover from suspend. */
+			ERR("Audio playback could not be resumed after a recent suspend.");
 			pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
-			MSG(1,
-			    "Audio playback could not be resumed after a recent suspend.");
-			ERROR_EXIT();
+			return -1;
 		}
 	}
 
