@@ -779,6 +779,10 @@ int make_local_socket(const char *filename)
 		FATAL("Can't bind local socket");
 	}
 
+	if (chmod(filename, S_IRUSR | S_IWUSR) == -1) {
+		MSG(2, "ERRNO:%s", strerror(errno));
+		FATAL("Unable to set permissions on local socket.");
+	}
 	if (listen(sock, 0) == -1) {
 		MSG(2, "ERRNO:%s", strerror(errno));
 		FATAL("listen() failed for local socket");
