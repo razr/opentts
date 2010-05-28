@@ -88,7 +88,10 @@ A copy of the license is included in the section entitled ``GNU
 General Public License''
 @end quotation
 
-Please contact us on @url{http://www.opentts.org}
+If you have questions about the protocol itself, Please contact Brailcom
+at @url{http://www.freebsoft.org}
+for questions about the OpenTTS implementation, please contact us
+at @url{http://www.opentts.org}
 
 @end ifnottex
 
