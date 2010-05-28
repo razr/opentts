@@ -743,6 +743,10 @@ void logging_init(void)
 				file_name);
 			logfile = stdout;
 		} else {
+			if (chmod(file_name, I_RUSR|I_WUSR) == -1) {
+				fprintf(stderr, "Unable to change permission for %s (%s)\n",
+				file_name, strerror(errno));
+			}
 			MSG(2, "openttsd is logging to file %s",
 			    file_name);
 		}
@@ -850,9 +854,6 @@ int main(int argc, char *argv[])
 	g_thread_init(NULL);
 
 	init_timestamps();	/* For correct timestamp generation. */
-
-	/* Strip all permisions for 'others' from the files created */
-	umask(007);
 
 	/* Initialize logging */
 	logfile = stderr;
