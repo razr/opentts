@@ -743,7 +743,7 @@ void logging_init(void)
 				file_name);
 			logfile = stdout;
 		} else {
-			if (chmod(file_name, I_RUSR|I_WUSR) == -1) {
+			if (chmod(file_name, S_IRUSR|S_IWUSR) == -1) {
 				fprintf(stderr, "Unable to change permission for %s (%s)\n",
 				file_name, strerror(errno));
 			}
