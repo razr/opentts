@@ -121,6 +121,7 @@ General Public License''
 * Basic Design::                How does it work?
 * Features Overview::           What are the assets?
 * Current State::               What is done?
+* Project History:: Some important historical background.
 @end menu
 
 @node Motivation, Basic Design, Introduction, Introduction
@@ -212,7 +213,7 @@ OpenTTS from application programmers's point of view:
 @item no need to take care about configuration of voice(s)
 @end itemize
 
-@node Current State,  , Features Overview, Introduction
+@node Current State, Project History, Features Overview, Introduction
 @section Current State
 @cindex Synthesizers
 @cindex Other programs
@@ -240,6 +241,20 @@ Festival, eSpeak, Flite, Cicero, IBM TTS, MBROLA, Epos, Dectalk software,
 Cepstral Swift and others. @xref{Supported Modules}.
 
 OpenTTS does not yet support hardware synthesizers, however there are plans to implement modules for these synthesizers.
+
+@node Project History,  , Current State, Introduction
+@section Project History
+
+The OpenTTS project is a fork of another project named Speech Dispatcher.
+Speech Dispatcher is primarily developed by an organization named
+Brailcom, though many others have contributed to it.
+We owe Brailcom our most sincere gratitude for their work on Speech Dispatcher.
+On the other hand, OpenTTS is developed by a community of its users.
+Brailcom is a not-for-proffit organization, and its funding drives the
+development of Speech Dispatcher.
+By contrast, OpenTTS is a volunteer effort, and it is developed by members
+of the community in their spare time.
+Presently, this is the primary difference between the two projects.
 
 @node User's Documentation, Technical Specifications, Introduction, Top
 @chapter User's Documentation
