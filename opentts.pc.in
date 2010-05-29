@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: @PACKAGE_NAME@
 Description: @PACKAGE_NAME@ provides a device independent layer for speech synthesis
 Version: @VERSION@
-Requires: glib-2.0 dotconf
+Requires: glib-2.0
 Libs: -L${libdir} -lopentts
 Cflags: -I${includedir}
