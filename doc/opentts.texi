@@ -1342,6 +1342,7 @@ about current external client libraries.
 @section C API
 
 @menu
+* Introducing libopentts:: A brief introduction to the C library.
 * Initializing and Terminating in C::  
 * Speech Synthesis Commands in C::  
 * Speech output control commands in C::  
@@ -1355,7 +1356,91 @@ about current external client libraries.
 * Direct SSIP Communication in C::  
 @end menu
 
-@node Initializing and Terminating in C, Speech Synthesis Commands in C, C API, C API
+@node Introducing libopentts, Initializing and Terminating in C, C API, C API
+@subsection A Brief Introduction to libopentts
+
+We provide a C library named @code{libopentts} for programmers who wish
+to use the facilities of OpenTTS from their C programs.  The API is defined
+by two header files: @file{opentts/libopentts.h} and
+@file{opentts/opentts_types.h}.  You only need to include
+@file{opentts/libopentts.h}, since this file includes the second header
+file.  The remainder of this subsection illustrates the use of the library.
+We will write a tiny example program, showing the steps one must take to
+build and run it.  Subsequent subsections contain reference material,
+and they describe the library in detail.
+
+Most C programming textbooks begin with a program named
+@emph{Hello World}.  This program displays a greeting to the user.  We
+are going to write our own @emph{Hello World} program, but instead of
+displaying a message on the screen, ours will speak the greeting via OpenTTS.
+Copy the following program into a file
+named @file{sayhello.c}.
+
+@verbatim
+#include <stdio.h>
+#include <stdlib.h>
+#include <opentts/libopentts.h>
+
+char text[] = "Hello world, from Open T T S";
+char client_name[] = "sayhello";
+char connection_name[] = "connection1";
+char *user_name = NULL;
+
+int main(void)
+{
+	SPDConnection *our_connection = spd_open(client_name, connection_name,
+						 user_name, SPD_MODE_SINGLE);
+
+	if (our_connection == NULL) {
+		fprintf(stderr,
+			"Unable to open connection to the OpenTTS daemon.\n");
+		fprintf(stderr, "Please check that openttsd is running.\n");
+		exit(1);
+	}
+
+	spd_say(our_connection, SPD_MESSAGE, text);
+	spd_close(our_connection);
+
+	return 0;
+}
+@end verbatim
+
+We won't bother with a detailed explanation of this program.  It
+only uses three functions from @code{libopentts}: @code{spd_open},
+@code{spd_say}, and @code{spd_close}.  @code{spd_open} and @code{spd_close}
+open and close the connection to the OpenTTS daemon, respectively.
+@code{spd_say} sends the text to the server.  You can read about these
+three functions in the reference material.
+
+Now, you are ready to build the program.  You can compile and link it
+in one step.  Just type the following command at a shell prompt:
+
+@example
+gcc -o sayhello sayhello.c -lopentts
+@end example
+
+That is the simplest way to build the program, but we suggest that
+you use the @code{pkg-config} tool to insert compiler flags and
+library options into the build command.
+The following invocation builds our @code{sayhello} program using values
+determined by @code{pkg-config}.
+Note that it is broken into two lines for readability.
+
+@example
+gcc -o sayhello `pkg-config opentts --cflags` sayhello.c \
+  `pkg-config opentts --libs`
+@end example
+
+If all went well, the program is ready to execute.  Just run it from
+your shell prompt, like this:
+
+@example
+./sayhello
+@end example
+
+You should hear the message ``Hello world, from Open T T S.''
+
+@node Initializing and Terminating in C, Speech Synthesis Commands in C, Introducing libopentts, C API
 @subsection Initializing and Terminating
 
 @deffn {C API function} SPDConnection* spd_open(char* client_name, char* connection_name, char* user_name, SPDConnectionMode connection_mode)
