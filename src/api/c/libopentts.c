@@ -264,7 +264,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 		if (env_port != NULL)
 			port = strtol(env_port, NULL, 10);
 		else
-			port = SPEECHD_DEFAULT_PORT;
+			port = OPENTTSD_DEFAULT_PORT;
 
 		address_inet.sin_addr.s_addr = inet_addr("127.0.0.1");
 		address_inet.sin_port = htons(port);

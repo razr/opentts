@@ -572,7 +572,7 @@ void load_default_global_set_options()
 	if (!options.socket_name)
 		 options.socket_name = g_strdup("default");
 	if (!options.port_set)
-		options.port = SPEECHD_DEFAULT_PORT;
+		options.port = OPENTTSD_DEFAULT_PORT;
 	if (!options.localhost_access_only_set)
 		options.localhost_access_only = 1;
 

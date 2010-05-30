@@ -27,6 +27,6 @@
 #ifndef SPEECHD_DEF_I
 #define SPEECHD_DEF_I
 
-#define SPEECHD_DEFAULT_PORT 6560
+#define OPENTTSD_DEFAULT_PORT 6560
 
 #endif
