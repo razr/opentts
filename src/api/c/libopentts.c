@@ -48,9 +48,9 @@
 #include <opentts/libopentts.h>
 
 /* Comment/uncomment to switch debugging on/off */
-// #define LIBSPEECHD_DEBUG 1
+// #define LIBOPENTTS_DEBUG 1
 
-#ifdef LIBSPEECHD_DEBUG
+#ifdef LIBOPENTTS_DEBUG
 /* Debugging */
 static FILE *spd_debug;
 #endif
@@ -226,7 +226,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 	else
 		conn_name = strdup(connection_name);
 
-#ifdef LIBSPEECHD_DEBUG
+#ifdef LIBOPENTTS_DEBUG
 	spd_debug = fopen("/tmp/libopentts.log", "w");
 	if (spd_debug == NULL)
 		SPD_FATAL("COULDN'T ACCES FILE INTENDED FOR DEBUG");
@@ -238,7 +238,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 		exit(1);
 	}
 	SPD_DBG("Debugging started");
-#endif /* LIBSPEECHD_DEBUG */
+#endif /* LIBOPENTTS_DEBUG */
 
 	/* Autospawn -- check if openttsd is not running and if so, start it */
 	if (autospawn) {
@@ -1640,7 +1640,7 @@ static char *escape_dot(const char *text)
 	return result;
 }
 
-#ifdef LIBSPEECHD_DEBUG
+#ifdef LIBOPENTTS_DEBUG
 static void SPD_DBG(char *format, ...)
 {
 	va_list args;
@@ -1653,8 +1653,8 @@ static void SPD_DBG(char *format, ...)
 	fflush(spd_debug);
 	pthread_mutex_unlock(&spd_logging_mutex);
 }
-#else /* LIBSPEECHD_DEBUG */
+#else /* LIBOPENTTS_DEBUG */
 static void SPD_DBG(char *format, ...)
 {
 }
-#endif /* LIBSPEECHD_DEBUG */
+#endif /* LIBOPENTTS_DEBUG */
