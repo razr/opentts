@@ -185,9 +185,9 @@ typedef struct {
 	int inside_block;
 	size_t o_bytes;
 	GString *o_buf;
-} TSpeechdSock;
+} sock_t;
 
-TSpeechdSock *openttsd_sockets;
+sock_t *openttsd_sockets;
 
 /* Debugging */
 void MSG(int level, char *format, ...);

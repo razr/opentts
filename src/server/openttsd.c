@@ -268,11 +268,11 @@ int connection_new(int server_socket)
 
 	/* Check if there is space for server status data; allocate it */
 	if (client_socket >= status.num_fds - 1) {
-		openttsd_sockets = (TSpeechdSock *) g_realloc(openttsd_sockets,
+		openttsd_sockets = (sock_t *) g_realloc(openttsd_sockets,
 							   status.num_fds
 							   * 2 *
 							   sizeof
-							   (TSpeechdSock));
+							   (sock_t));
 		status.num_fds *= 2;
 	}
 
@@ -507,7 +507,7 @@ static void init()
 	assert(output_modules != NULL);
 
 	openttsd_sockets =
-	    (TSpeechdSock *) g_malloc(START_NUM_FD * sizeof(TSpeechdSock));
+	    (sock_t *) g_malloc(START_NUM_FD * sizeof(sock_t));
 	status.num_fds = START_NUM_FD;
 	for (i = 0; i <= START_NUM_FD - 1; i++) {
 		openttsd_sockets[i].awaiting_data = 0;
