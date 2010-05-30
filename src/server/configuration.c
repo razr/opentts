@@ -108,7 +108,7 @@ void free_config_options(configoption_t * opts, int *num)
        return NULL; \
    }
 
-#define SPEECHD_OPTION_CB_STR_M(name, arg) \
+#define OPTION_CB_STR_M(name, arg) \
    DOTCONF_CB(cb_ ## name) \
    { \
        if (cl_spec_section) \
@@ -117,7 +117,7 @@ void free_config_options(configoption_t * opts, int *num)
        return NULL; \
    }
 
-#define SPEECHD_OPTION_CB_INT_M(name, arg, cond, str) \
+#define OPTION_CB_INT_M(name, arg, cond, str) \
    DOTCONF_CB(cb_ ## name) \
    { \
        int val = cmd->data.value; \
@@ -128,7 +128,7 @@ void free_config_options(configoption_t * opts, int *num)
        return NULL; \
    }
 
-#define SPEECHD_OPTION_CB_STR(name, arg) \
+#define OPTION_CB_STR(name, arg) \
    DOTCONF_CB(cb_ ## name) \
    { \
        if (cl_spec_section) \
@@ -137,7 +137,7 @@ void free_config_options(configoption_t * opts, int *num)
        return NULL; \
    }
 
-#define SPEECHD_OPTION_CB_INT(name, arg, cond, str) \
+#define OPTION_CB_INT(name, arg, cond, str) \
    DOTCONF_CB(cb_ ## name) \
    { \
        int val = cmd->data.value; \
@@ -184,11 +184,11 @@ GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
-SPEECHD_OPTION_CB_STR_M(CommunicationMethod, communication_method)
-SPEECHD_OPTION_CB_STR_M(SocketName, socket_name)
-SPEECHD_OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
+OPTION_CB_STR_M(CommunicationMethod, communication_method)
+OPTION_CB_STR_M(SocketName, socket_name)
+OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
 			 "Invalid access controll mode!")
-SPEECHD_OPTION_CB_INT_M(Port, port, val >= 0,
+OPTION_CB_INT_M(Port, port, val >= 0,
 			"Invalid port number!")
 GLOBAL_SET_LOGLEVEL(LogLevel,
 								    log_level,
@@ -196,7 +196,7 @@ GLOBAL_SET_LOGLEVEL(LogLevel,
 								    && (val <=
 									5),
 								    "Invalid log (verbosity) level!")
-SPEECHD_OPTION_CB_INT(MaxHistoryMessages, max_history_messages, val >= 0,
+OPTION_CB_INT(MaxHistoryMessages, max_history_messages, val >= 0,
 		      "Invalid parameter!")
 
 DOTCONF_CB(cb_DefaultCapLetRecognition)
