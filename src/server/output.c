@@ -231,9 +231,9 @@ int output_send_data(char *cmd, OutputModule * output, int wfr)
 		switch (response->str[0]) {
 		case '3':
 			MSG(2,
-			    "Error: Module reported error in request from speechd (code 3xx): %s.",
+			    "Error: Module reported error in request from openttsd (code 3xx): %s.",
 			    response->str);
-			ret = -2;	/* User (speechd) side error */
+			ret = -2;	/* User (openttsd) side error */
 			break;
 
 		case '4':
@@ -613,8 +613,8 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 	switch (response->str[0]) {
 	case '3':
 		MSG(2,
-		    "Error: Module reported error in request from speechd (code 3xx).");
-		retcode = -2;	/* User (speechd) side error */
+		    "Error: Module reported error in request from openttsd (code 3xx).");
+		retcode = -2;	/* User (openttsd) side error */
 		break;
 
 	case '4':
