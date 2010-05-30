@@ -4,11 +4,11 @@
 
 #include "alloc.h"
 
-TSpeechDQueue *speechd_queue_alloc()
+queue_t *speechd_queue_alloc()
 {
-	TSpeechDQueue *new;
+	queue_t *new;
 
-	new = g_malloc(sizeof(TSpeechDQueue));
+	new = g_malloc(sizeof(queue_t));
 
 	/* Initialize all the queues to be empty */
 	new->p1 = NULL;

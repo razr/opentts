@@ -90,9 +90,9 @@ typedef struct {
 	GList *p3;		/* message */
 	GList *p4;		/* notification */
 	GList *p5;		/* progress */
-} TSpeechDQueue;
+} queue_t;
 
-/*  openttsd_message is an element of TSpeechDQueue,
+/*  openttsd_message is an element in a message queue,
     that is, some text with or without index marks
     inside  and it's configuration. */
 typedef struct {
@@ -156,7 +156,7 @@ GHashTable *language_default_modules;
 GHashTable *fd_uid;
 
 /* Main priority queue for messages */
-TSpeechDQueue *MessageQueue;
+queue_t *MessageQueue;
 /* List of messages from paused clients waiting for resume */
 GList *MessagePausedList;
 /* List of settings related to history */

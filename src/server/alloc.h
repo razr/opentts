@@ -4,7 +4,7 @@
 #ifndef ALLOC_H
 #define ALLOC_H
 
-TSpeechDQueue *speechd_queue_alloc();
+queue_t *speechd_queue_alloc();
 
 /* Copy a message */
 openttsd_message *copy_message(openttsd_message * old);

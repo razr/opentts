@@ -484,7 +484,7 @@ static void init()
 	}
 
 	/* Initialize the OpenTTS daemon's priority queue */
-	MessageQueue = (TSpeechDQueue *) speechd_queue_alloc();
+	MessageQueue = (queue_t *) speechd_queue_alloc();
 	if (MessageQueue == NULL)
 		FATAL("Couldn't alocate memmory for MessageQueue.");
 
