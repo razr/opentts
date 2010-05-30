@@ -460,7 +460,7 @@ static void options_init(void)
 	options.localhost_access_only_set = 0;
 	options.pid_file = NULL;
 	options.conf_file = NULL;
-	options.home_speechd_dir = NULL;
+	options.opentts_dir = NULL;
 	options.log_dir = NULL;
 	options.debug = 0;
 	options.debug_destination = NULL;
@@ -546,12 +546,12 @@ static void init()
 
 	if (options.log_dir == NULL) {
 		options.log_dir =
-		    g_strdup_printf("%s/log/", options.home_speechd_dir);
+		    g_strdup_printf("%s/log/", options.opentts_dir);
 		mkdir(options.log_dir, S_IRWXU);
 		if (!options.debug_destination) {
 			options.debug_destination =
 			    g_strdup_printf("%slog/debug",
-					    options.home_speechd_dir);
+					    options.opentts_dir);
 			mkdir(options.debug_destination, S_IRWXU);
 		}
 	}
@@ -878,15 +878,15 @@ int main(int argc, char *argv[])
 
 		if (user_home_dir) {
 			/* Setup a ~/.opentts/ directory or create a new one */
-			options.home_speechd_dir =
+			options.opentts_dir =
 			    g_strdup_printf("%s/.opentts",
 					    user_home_dir);
 			MSG(4, "Home dir found, trying to find %s",
-			    options.home_speechd_dir);
-			g_mkdir(options.home_speechd_dir, S_IRWXU);
+			    options.opentts_dir);
+			g_mkdir(options.opentts_dir, S_IRWXU);
 			MSG(4,
 			    "Using home directory: %s for configuration, pidfile and logging",
-			    options.home_speechd_dir);
+			    options.opentts_dir);
 
 			/* Pidfile */
 			if (options.pid_file == NULL) {
@@ -894,7 +894,7 @@ int main(int argc, char *argv[])
 				options.pid_file =
 				    g_strdup_printf
 				    ("%s/pid/openttsd.pid",
-				     options.home_speechd_dir);
+				     options.opentts_dir);
 				g_mkdir(g_path_get_dirname
 					(options.pid_file), S_IRWXU);
 			}
@@ -904,7 +904,7 @@ int main(int argc, char *argv[])
 				/* If no conf_dir was specified on command line, try default local config dir */
 				options.conf_dir =
 				    g_strdup_printf("%s/conf/",
-						    options.home_speechd_dir);
+						    options.opentts_dir);
 				if (!g_file_test
 				    (options.conf_dir,
 				     G_FILE_TEST_IS_DIR)) {
@@ -997,11 +997,11 @@ int main(int argc, char *argv[])
 			 * we need to also consider the DotConf configuration,
 			 * which is read in init() */
 			socket_filename = g_string_new("");
-			if (options.home_speechd_dir) {
+			if (options.opentts_dir) {
 				g_string_printf(socket_filename,
 						"%s/openttsd.sock",
 						options.
-						home_speechd_dir);
+						opentts_dir);
 			} else {
 				FATAL
 				    ("Socket file name not set and user has no home directory");

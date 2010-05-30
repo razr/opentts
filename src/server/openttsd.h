@@ -117,7 +117,7 @@ struct {
 	char *pid_file;
 	char *conf_file;
 	char *conf_dir;
-	char *home_speechd_dir;
+char *opentts_dir;
 	char *log_dir;
 	int spawn;
 	int debug;
