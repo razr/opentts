@@ -430,10 +430,10 @@ static void flite_set_pitch(signed int pitch)
 	feat_set_float(flite_voice->features, "int_f0_target_mean", f0);
 }
 
+/*
+ * This function is a no-op, because we only support one flite voice.
+ */
 static void flite_set_voice(SPDVoiceType voice)
 {
-	if (voice == SPD_MALE1) {
-		g_free(flite_voice);
-		flite_voice = (cst_voice *) register_cmu_us_kal();
-	}
+	return;
 }
