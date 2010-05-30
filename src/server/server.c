@@ -62,7 +62,7 @@ negative, it's absolute value is the client uid and the
 message _new_ already contains a fully filled in settings
 structure which should not be overwritten (on must be cautius
 that the original client might not be still connected
-to speechd). _history_flag_ indicates if inclusion into
+to openttsd). _history_flag_ indicates if inclusion into
 history is desired and _reparted_ flag indicates whether
 this message is a part of a reparted message (one of a block
 of messages). */

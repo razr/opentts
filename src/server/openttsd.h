@@ -75,7 +75,7 @@ union semun {
 /* Size of the buffer for socket communication */
 #define BUF_SIZE 128
 
-/* Mode of speechd execution */
+/* Mode of openttsd execution */
 typedef enum {
 	DAEMON,	/* Run as daemon (background, ...) */
 	SESSION		/*  */
@@ -215,7 +215,7 @@ int isanum(const char *str);
  absolute (starting with slash) or relative. */
 char *get_path(char *filename, char *startdir);
 
-/* Functions used in speechd.c only */
+/* Functions used in openttsd.c only */
 int connection_new(int server_socket);
 int connection_destroy(int fd);
 gboolean client_terminate(gpointer key, gpointer value, gpointer user);

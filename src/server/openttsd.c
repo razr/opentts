@@ -18,7 +18,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: speechd.c,v 1.81 2008-07-10 15:36:49 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -447,7 +446,7 @@ void modules_nodebug(void)
 	g_hash_table_foreach(output_modules, module_nodebug, NULL);
 }
 
-/* --- SPEECHD START/EXIT FUNCTIONS --- */
+/* --- openttsd START/EXIT FUNCTIONS --- */
 
 static void options_init(void)
 {
