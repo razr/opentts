@@ -73,11 +73,13 @@ void options_print_help(char *argv[])
 	       "-D, --debug          -      Output debugging information into /tmp/openttsd-debug\n"
 	       "-h, --help           -      Print this info\n\n"
 	       "Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
+	       "Copyright (C) 2010 OpenTTS Developers\n"
 	       "This is free software; you can redistribute it and/or modify it\n"
 	       "under the terms of the GNU General Public License as published by\n"
 	       "the Free Software Foundation; either version 2, or (at your option)\n"
 	       "any later version. Please see COPYING for more details.\n\n"
-	       "Please report bugs to <speechd-bugs@freebsoft.org>\n\n");
+	       "Please report bugs on the issues page at http://opentts.org/,\n"
+	       "or on our mailing list at <%s>\n\n", PACKAGE_BUGREPORT);
 
 }
 
@@ -85,6 +87,7 @@ void options_print_version(void)
 {
 	printf("%s %s\n", PACKAGE, VERSION);
 	printf("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
+	       "Copyright (C) 2010 OpenTTS Developers\n"
 	       "OpenTTS comes with ABSOLUTELY NO WARRANTY.\n"
 	       "You may redistribute copies of OpenTTS\n"
 	       "under the terms of the GNU General Public License.\n"
