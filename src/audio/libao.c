@@ -102,9 +102,17 @@ static int libao_play(AudioID * id, AudioTrack track)
 
 	/* Choose the correct format */
 	format.bits = track.bits;
-	if (track.bits == 16)
+	if (track.bits == 16) {
 		bytes_per_sample = 2;
-	else if (track.bits == 8)
+		switch (id->format) {
+		case SPD_AUDIO_LE:
+			format.byte_format = AO_FMT_LITTLE;
+			break;
+		case SPD_AUDIO_BE:
+			format.byte_format = AO_FMT_BIG;
+			break;
+		}
+	} else if (track.bits == 8)
 		bytes_per_sample = 1;
 	else {
 		ERR("Audio: Unrecognized sound data format.\n");
@@ -112,7 +120,6 @@ static int libao_play(AudioID * id, AudioTrack track)
 	}
 	format.channels = track.num_channels;
 	format.rate = track.sample_rate;
-	format.byte_format = AO_FMT_LITTLE;
 	MSG(3, "Starting playback");
 	output_samples = track.samples;
 	num_bytes = track.num_samples * bytes_per_sample;
