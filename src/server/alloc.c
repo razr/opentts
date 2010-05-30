@@ -4,7 +4,7 @@
 
 #include "alloc.h"
 
-queue_t *speechd_queue_alloc()
+queue_t *queue_alloc()
 {
 	queue_t *new;
 
