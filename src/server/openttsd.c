@@ -145,15 +145,15 @@ void MSG2(int level, char *kind, char *format, ...)
 				/* Print timestamp */
 				char *tstr = get_timestamp();
 				if (std_log) {
-					fprintf(logfile, "%s speechd: ", tstr);
+					fprintf(logfile, "%s openttsd: ", tstr);
 				}
 				if (custom_log) {
 					fprintf(custom_logfile,
-						"%s speechd: ", tstr);
+						"%s openttsd: ", tstr);
 				}
 				if (options.debug) {
 					fprintf(debug_logfile,
-						"%s speechd: ", tstr);
+						"%s openttsd: ", tstr);
 				}
 				g_free(tstr);
 			}
@@ -210,10 +210,10 @@ void MSG(int level, char *format, ...)
 				/* Print timestamp */
 				char *tstr = get_timestamp();
 				if (level <= options.log_level)
-					fprintf(logfile, "%s speechd: ", tstr);
+					fprintf(logfile, "%s openttsd: ", tstr);
 				if (options.debug)
 					fprintf(debug_logfile,
-						"%s speechd: ", tstr);
+						"%s openttsd: ", tstr);
 				g_free(tstr);
 			}
 
