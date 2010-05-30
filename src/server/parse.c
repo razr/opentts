@@ -77,7 +77,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 
 	assert(fd > 0);
 	if ((buf == NULL) || (bytes == 0)) {
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			FATAL("invalid buffer for parse()\n");
 		return g_strdup(ERR_INTERNAL);
 	}
@@ -94,7 +94,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 		 * it with its parameters. */
 
 		if (command == NULL) {
-			if (SPEECHD_DEBUG)
+			if (OPENTTSD_DEBUG)
 				FATAL("Invalid buffer for parse()\n");
 			return g_strdup(ERR_INTERNAL);
 		}
@@ -198,7 +198,7 @@ enddata:
 			if ((msg_uid =
 			     queue_message(new, fd, 1, SPD_MSGTYPE_TEXT,
 					   reparted)) == 0) {
-				if (SPEECHD_DEBUG)
+				if (OPENTTSD_DEBUG)
 					FATAL("Can't queue message\n");
 				g_free(new->buf);
 				g_free(new);
@@ -817,7 +817,7 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 
 	if (queue_message(msg, fd, 1, type, SpeechdSocket[fd].inside_block) ==
 	    0) {
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			FATAL("Couldn't queue message\n");
 		MSG(2, "Error: Couldn't queue message!\n");
 	}

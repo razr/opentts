@@ -29,6 +29,4 @@
 
 #define SPEECHD_DEFAULT_PORT 6560
 
-#define SPEECHD_DEBUG 0
-
 #endif

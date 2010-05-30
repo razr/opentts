@@ -92,7 +92,7 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 	} else if (fd < 0) {
 		settings = get_client_settings_by_uid(-fd);
 	} else {
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			FATAL("fd == 0, this shouldn't happen...");
 		return -1;
 	}
@@ -155,7 +155,7 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 			message_history =
 			    g_list_append(message_history, hist_msg);
 		} else {
-			if (SPEECHD_DEBUG)
+			if (OPENTTSD_DEBUG)
 				FATAL("Can't include message into history\n");
 		}
 		pthread_mutex_unlock(&element_free_mutex);

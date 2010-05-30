@@ -156,7 +156,7 @@ char *history_get_message_list(guint client_id, int from, int num)
 		message = gl->data;
 
 		if (message == NULL) {
-			if (SPEECHD_DEBUG)
+			if (OPENTTSD_DEBUG)
 				FATAL("Internal error.\n");
 			return g_strdup(ERR_INTERNAL);
 		}

@@ -322,7 +322,7 @@ int speechd_connection_destroy(int fd)
 	if (fdset_element != NULL) {
 		fdset_element->fd = -1;
 		fdset_element->active = 0;
-	} else if (SPEECHD_DEBUG) {
+	} else if (OPENTTSD_DEBUG) {
 		DIE("Can't find settings for this client\n");
 	}
 
@@ -332,7 +332,7 @@ int speechd_connection_destroy(int fd)
 	MSG(4, "Closing clients file descriptor %d", fd);
 
 	if (close(fd) != 0)
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			DIE("Can't close file descriptor associated to this client");
 
 	FD_CLR(fd, &readfds);
@@ -351,7 +351,7 @@ gboolean speechd_client_terminate(gpointer key, gpointer value, gpointer user)
 	set = (TFDSetElement *) value;
 	if (set == NULL) {
 		MSG(2, "Error: Empty connection, internal error");
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			FATAL("Internal error");
 		return TRUE;
 	}
@@ -1070,7 +1070,7 @@ int main(int argc, char *argv[])
 						if (ret != 0) {
 							MSG(2,
 							    "Error: Failed to add new client!");
-							if (SPEECHD_DEBUG)
+							if (OPENTTSD_DEBUG)
 								FATAL
 								    ("Failed to add new client");
 						}

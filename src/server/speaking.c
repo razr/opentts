@@ -314,7 +314,7 @@ int reload_message(openttsd_message * msg)
 
 		if (queue_message(msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
 		    == 0) {
-			if (SPEECHD_DEBUG)
+			if (OPENTTSD_DEBUG)
 				FATAL("Can't queue message\n");
 			g_free(msg->buf);
 			g_free(msg);
@@ -327,7 +327,7 @@ int reload_message(openttsd_message * msg)
 
 		if (queue_message(msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
 		    == 0) {
-			if (SPEECHD_DEBUG)
+			if (OPENTTSD_DEBUG)
 				FATAL("Can't queue message\n");
 			g_free(msg->buf);
 			g_free(msg);
@@ -424,7 +424,7 @@ void speaking_stop_all()
 			speaking_set_queue(current_priority, queue);
 			return;
 		}
-		if (SPEECHD_DEBUG)
+		if (OPENTTSD_DEBUG)
 			assert(gl->data != NULL);
 
 		msg = (openttsd_message *) gl->data;
