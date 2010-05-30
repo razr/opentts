@@ -117,7 +117,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 			MSG(4, "Bye received.");
 			/* Send a reply to the socket */
 			write(fd, OK_BYE, strlen(OK_BYE));
-			speechd_connection_destroy(fd);
+			connection_destroy(fd);
 			/* This is an internal OpenTTS message, see serve() */
 			g_free(command);
 			return g_strdup("999 CLIENT GONE");	/* This is an internal message, not part of SSIP */

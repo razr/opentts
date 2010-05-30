@@ -409,10 +409,10 @@ int set_debug_uid(int uid, int debug)
 		g_free(debug_logfile_path);
 
 		/* Redirecting debugging for all output modules */
-		speechd_modules_debug();
+		modules_debug();
 	} else {
 		options.debug = 0;
-		speechd_modules_nodebug();
+		modules_nodebug();
 		fclose(debug_logfile);
 	}
 	return 0;

@@ -243,7 +243,7 @@ void MSG(int level, char *format, ...)
 /* --- CLIENTS / CONNECTIONS MANAGING --- */
 
 /* activity is on server_socket (request for a new connection) */
-int speechd_connection_new(int server_socket)
+int connection_new(int server_socket)
 {
 	TFDSetElement *new_fd_set;
 	struct sockaddr_in client_address;
@@ -310,7 +310,7 @@ int speechd_connection_new(int server_socket)
 	return 0;
 }
 
-int speechd_connection_destroy(int fd)
+int connection_destroy(int fd)
 {
 	TFDSetElement *fdset_element;
 
@@ -344,7 +344,7 @@ int speechd_connection_destroy(int fd)
 	return 0;
 }
 
-gboolean speechd_client_terminate(gpointer key, gpointer value, gpointer user)
+gboolean client_terminate(gpointer key, gpointer value, gpointer user)
 {
 	TFDSetElement *set;
 
@@ -358,7 +358,7 @@ gboolean speechd_client_terminate(gpointer key, gpointer value, gpointer user)
 
 	if (set->fd > 0) {
 		MSG(4, "Closing connection on fd %d\n", set->fd);
-		speechd_connection_destroy(set->fd);
+		connection_destroy(set->fd);
 	}
 	mem_free_fdset(set);
 	return TRUE;
@@ -366,7 +366,7 @@ gboolean speechd_client_terminate(gpointer key, gpointer value, gpointer user)
 
 /* --- OUTPUT MODULES MANAGING --- */
 
-gboolean speechd_modules_terminate(gpointer key, gpointer value, gpointer user)
+gboolean modules_terminate(gpointer key, gpointer value, gpointer user)
 {
 	OutputModule *module;
 
@@ -380,7 +380,7 @@ gboolean speechd_modules_terminate(gpointer key, gpointer value, gpointer user)
 	return TRUE;
 }
 
-void speechd_modules_reload(gpointer key, gpointer value, gpointer user)
+void modules_reload(gpointer key, gpointer value, gpointer user)
 {
 	OutputModule *module;
 
@@ -395,7 +395,7 @@ void speechd_modules_reload(gpointer key, gpointer value, gpointer user)
 	return;
 }
 
-void speechd_module_debug(gpointer key, gpointer value, gpointer user)
+void module_debug(gpointer key, gpointer value, gpointer user)
 {
 	OutputModule *module;
 
@@ -410,7 +410,7 @@ void speechd_module_debug(gpointer key, gpointer value, gpointer user)
 	return;
 }
 
-void speechd_module_nodebug(gpointer key, gpointer value, gpointer user)
+void module_nodebug(gpointer key, gpointer value, gpointer user)
 {
 	OutputModule *module;
 
@@ -428,23 +428,23 @@ void speechd_module_nodebug(gpointer key, gpointer value, gpointer user)
 static void reload_dead_modules(int sig)
 {
 	/* Reload dead modules */
-	g_hash_table_foreach(output_modules, speechd_modules_reload, NULL);
+	g_hash_table_foreach(output_modules, modules_reload, NULL);
 
 	/* Make sure there aren't any more child processes left */
 	while (waitpid(-1, NULL, WNOHANG) > 0) ;
 }
 
-void speechd_modules_debug(void)
+void modules_debug(void)
 {
 	/* Redirect output to debug for all modules */
-	g_hash_table_foreach(output_modules, speechd_module_debug, NULL);
+	g_hash_table_foreach(output_modules, module_debug, NULL);
 
 }
 
-void speechd_modules_nodebug(void)
+void modules_nodebug(void)
 {
 	/* Redirect output to normal for all modules */
-	g_hash_table_foreach(output_modules, speechd_module_nodebug, NULL);
+	g_hash_table_foreach(output_modules, module_nodebug, NULL);
 }
 
 /* --- SPEECHD START/EXIT FUNCTIONS --- */
@@ -582,7 +582,7 @@ static void load_configuration(int sig)
 
 	/* Clean previous configuration */
 	assert(output_modules != NULL);
-	g_hash_table_foreach_remove(output_modules, speechd_modules_terminate,
+	g_hash_table_foreach_remove(output_modules, modules_terminate,
 				    NULL);
 
 	/* Make sure there aren't any more child processes left */
@@ -625,7 +625,7 @@ static void quit(int sig)
 
 	MSG(2, "Closing open connections...");
 	/* We will browse through all the connections and close them. */
-	g_hash_table_foreach_remove(fd_settings, speechd_client_terminate,
+	g_hash_table_foreach_remove(fd_settings, client_terminate,
 				    NULL);
 	g_hash_table_destroy(fd_settings);
 
@@ -640,7 +640,7 @@ static void quit(int sig)
 
 	MSG(2, "Closing open output modules...");
 	/*  Call the close() function of each registered output module. */
-	g_hash_table_foreach_remove(output_modules, speechd_modules_terminate,
+	g_hash_table_foreach_remove(output_modules, modules_terminate,
 				    NULL);
 	g_hash_table_destroy(output_modules);
 
@@ -1065,7 +1065,7 @@ int main(int argc, char *argv[])
 					if (fd == server_socket) {
 						/* server activity (new client) */
 						ret =
-						    speechd_connection_new
+						    connection_new
 						    (server_socket);
 						if (ret != 0) {
 							MSG(2,
@@ -1081,7 +1081,7 @@ int main(int argc, char *argv[])
 
 						if (nread == 0) {
 							/* client has gone */
-							speechd_connection_destroy
+							connection_destroy
 							    (fd);
 							if (ret != 0)
 								MSG(2,

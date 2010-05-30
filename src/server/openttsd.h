@@ -216,13 +216,13 @@ int isanum(const char *str);
 char *get_path(char *filename, char *startdir);
 
 /* Functions used in speechd.c only */
-int speechd_connection_new(int server_socket);
-int speechd_connection_destroy(int fd);
-gboolean speechd_client_terminate(gpointer key, gpointer value, gpointer user);
-gboolean speechd_modules_terminate(gpointer key, gpointer value, gpointer user);
-void speechd_modules_reload(gpointer key, gpointer value, gpointer user);
-void speechd_modules_debug(void);
-void speechd_modules_nodebug(void);
+int connection_new(int server_socket);
+int connection_destroy(int fd);
+gboolean client_terminate(gpointer key, gpointer value, gpointer user);
+gboolean modules_terminate(gpointer key, gpointer value, gpointer user);
+void modules_reload(gpointer key, gpointer value, gpointer user);
+void modules_debug(void);
+void modules_nodebug(void);
 
 int create_pid_file(void);
 void destroy_pid_file(void);
