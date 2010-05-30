@@ -50,13 +50,13 @@
 #define CHECK_SSIP_COMMAND(cmd_name, parse_function, allowed_in_block)\
     if(!strcmp(command, cmd_name)){ \
         g_free(command); \
-        if ((allowed_in_block == BLOCK_NO) && SpeechdSocket[fd].inside_block) \
+        if ((allowed_in_block == BLOCK_NO) && openttsd_sockets[fd].inside_block) \
             return g_strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK); \
         return (char*) (parse_function) (buf, bytes, fd); \
     }
 
 #define NOT_ALLOWED_INSIDE_BLOCK() \
-    if(SpeechdSocket[fd].inside_block > 0) \
+    if(openttsd_sockets[fd].inside_block > 0) \
         return g_strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK);
 
 #define ALLOWED_INSIDE_BLOCK() ;
@@ -84,7 +84,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 
 	/* First the condition that we are not in data mode and we
 	 * are awaiting commands */
-	if (SpeechdSocket[fd].awaiting_data == 0) {
+	if (openttsd_sockets[fd].awaiting_data == 0) {
 		/* Read the command */
 		command = get_param(buf, 0, bytes, 1);
 
@@ -129,10 +129,10 @@ char *parse(const char *buf, const int bytes, const int fd)
 			 * this client, that can have higher file descriptor that
 			 * everything we got before */
 
-			SpeechdSocket[fd].awaiting_data = 1;
+			openttsd_sockets[fd].awaiting_data = 1;
 			/* Create new output buffer */
-			SpeechdSocket[fd].o_bytes = 0;
-			SpeechdSocket[fd].o_buf = g_string_new("");
+			openttsd_sockets[fd].o_bytes = 0;
+			openttsd_sockets[fd].o_buf = g_string_new("");
 
 			MSG(4, "Switching to data mode...");
 			return g_strdup(OK_RECEIVE_DATA);
@@ -156,24 +156,24 @@ enddata:
 
 			/* Set the flag to command mode */
 			MSG(5, "Switching back to command mode...");
-			SpeechdSocket[fd].awaiting_data = 0;
+			openttsd_sockets[fd].awaiting_data = 0;
 
 			/* Prepare element (text+settings commands) to be queued. */
 
 			/* TODO: Remove? */
-			if ((bytes == 3) && (SpeechdSocket[fd].o_bytes > 2))
-				SpeechdSocket[fd].o_bytes -= 2;
+			if ((bytes == 3) && (openttsd_sockets[fd].o_bytes > 2))
+				openttsd_sockets[fd].o_bytes -= 2;
 
 			/* Check if message contains any data */
-			if (SpeechdSocket[fd].o_bytes == 0) {
+			if (openttsd_sockets[fd].o_bytes == 0) {
 				server_data_off (fd);
 				return g_strdup(OK_MSG_CANCELED);
 			}
 
 			/* Check buffer for proper UTF-8 encoding */
 			if (!g_utf8_validate
-			    (SpeechdSocket[fd].o_buf->str,
-			     SpeechdSocket[fd].o_bytes, NULL)) {
+			    (openttsd_sockets[fd].o_buf->str,
+			     openttsd_sockets[fd].o_bytes, NULL)) {
 				MSG(3,
 				    "ERROR: Invalid character encoding on input (failed UTF-8 validation)");
 				MSG(3, "Rejecting this message.");
@@ -184,12 +184,12 @@ enddata:
 			new =
 			    (openttsd_message *)
 			    g_malloc(sizeof(openttsd_message));
-			new->bytes = SpeechdSocket[fd].o_bytes;
-			assert(SpeechdSocket[fd].o_buf != NULL);
+			new->bytes = openttsd_sockets[fd].o_bytes;
+			assert(openttsd_sockets[fd].o_buf != NULL);
 			new->buf =
-			    deescape_dot(SpeechdSocket[fd].o_buf->str,
+			    deescape_dot(openttsd_sockets[fd].o_buf->str,
 					 new->bytes);
-			reparted = SpeechdSocket[fd].inside_block;
+			reparted = openttsd_sockets[fd].inside_block;
 
 			/* Clear the counter of bytes in the output buffer. */
 			server_data_off(fd);
@@ -229,9 +229,9 @@ enddata:
 			}
 			/* Get the number of bytes read before, sum it with the number of bytes read
 			 * now and store again in the counter */
-			SpeechdSocket[fd].o_bytes += real_bytes;
+			openttsd_sockets[fd].o_bytes += real_bytes;
 
-			g_string_insert_len(SpeechdSocket[fd].o_buf, -1, buf,
+			g_string_insert_len(openttsd_sockets[fd].o_buf, -1, buf,
 					    real_bytes);
 		}
 	}
@@ -815,7 +815,7 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 	msg->bytes = strlen(param);
 	msg->buf = g_strdup(param);
 
-	if (queue_message(msg, fd, 1, type, SpeechdSocket[fd].inside_block) ==
+	if (queue_message(msg, fd, 1, type, openttsd_sockets[fd].inside_block) ==
 	    0) {
 		if (OPENTTSD_DEBUG)
 			FATAL("Couldn't queue message\n");
@@ -1016,18 +1016,18 @@ char *parse_block(const char *buf, const int bytes, const int fd)
 	GET_PARAM_STR(cmd_main, 1, CONV_DOWN);
 
 	if (TEST_CMD(cmd_main, "begin")) {
-		assert(SpeechdSocket[fd].inside_block >= 0);
-		if (SpeechdSocket[fd].inside_block == 0) {
-			SpeechdSocket[fd].inside_block =
+		assert(openttsd_sockets[fd].inside_block >= 0);
+		if (openttsd_sockets[fd].inside_block == 0) {
+			openttsd_sockets[fd].inside_block =
 			    ++status.max_gid;
 			return g_strdup(OK_INSIDE_BLOCK);
 		} else {
 			return g_strdup(ERR_ALREADY_INSIDE_BLOCK);
 		}
 	} else if (TEST_CMD(cmd_main, "end")) {
-		assert(SpeechdSocket[fd].inside_block >= 0);
-		if (SpeechdSocket[fd].inside_block > 0) {
-			SpeechdSocket[fd].inside_block = 0;
+		assert(openttsd_sockets[fd].inside_block >= 0);
+		if (openttsd_sockets[fd].inside_block > 0) {
+			openttsd_sockets[fd].inside_block = 0;
 			return g_strdup(OK_OUTSIDE_BLOCK);
 		} else {
 			return g_strdup(ERR_ALREADY_OUTSIDE_BLOCK);

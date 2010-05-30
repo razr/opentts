@@ -187,7 +187,7 @@ typedef struct {
 	GString *o_buf;
 } TSpeechdSock;
 
-TSpeechdSock *SpeechdSocket;
+TSpeechdSock *openttsd_sockets;
 
 /* Debugging */
 void MSG(int level, char *format, ...);

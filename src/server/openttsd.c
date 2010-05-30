@@ -269,7 +269,7 @@ int speechd_connection_new(int server_socket)
 
 	/* Check if there is space for server status data; allocate it */
 	if (client_socket >= status.num_fds - 1) {
-		SpeechdSocket = (TSpeechdSock *) g_realloc(SpeechdSocket,
+		openttsd_sockets = (TSpeechdSock *) g_realloc(openttsd_sockets,
 							   status.num_fds
 							   * 2 *
 							   sizeof
@@ -277,10 +277,10 @@ int speechd_connection_new(int server_socket)
 		status.num_fds *= 2;
 	}
 
-	SpeechdSocket[client_socket].o_buf = NULL;
-	SpeechdSocket[client_socket].o_bytes = 0;
-	SpeechdSocket[client_socket].awaiting_data = 0;
-	SpeechdSocket[client_socket].inside_block = 0;
+	openttsd_sockets[client_socket].o_buf = NULL;
+	openttsd_sockets[client_socket].o_bytes = 0;
+	openttsd_sockets[client_socket].awaiting_data = 0;
+	openttsd_sockets[client_socket].inside_block = 0;
 
 	/* Create a record in fd_settings */
 	new_fd_set = (TFDSetElement *) default_fd_set();
@@ -507,13 +507,13 @@ static void init()
 	output_modules = g_hash_table_new(g_str_hash, g_str_equal);
 	assert(output_modules != NULL);
 
-	SpeechdSocket =
+	openttsd_sockets =
 	    (TSpeechdSock *) g_malloc(START_NUM_FD * sizeof(TSpeechdSock));
 	status.num_fds = START_NUM_FD;
 	for (i = 0; i <= START_NUM_FD - 1; i++) {
-		SpeechdSocket[i].awaiting_data = 0;
-		SpeechdSocket[i].inside_block = 0;
-		SpeechdSocket[i].o_buf = 0;
+		openttsd_sockets[i].awaiting_data = 0;
+		openttsd_sockets[i].inside_block = 0;
+		openttsd_sockets[i].o_buf = 0;
 	}
 
 	pause_requested = 0;

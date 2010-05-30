@@ -222,11 +222,11 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 /* Switch data mode of for the particular client. */
 void server_data_off(int fd)
 {
-	assert(SpeechdSocket[fd].o_buf != NULL);
+	assert(openttsd_sockets[fd].o_buf != NULL);
 
-	SpeechdSocket[fd].o_bytes = 0;
-	g_string_free(SpeechdSocket[fd].o_buf, TRUE);
-	SpeechdSocket[fd].o_buf = NULL;
+	openttsd_sockets[fd].o_bytes = 0;
+	g_string_free(openttsd_sockets[fd].o_buf, TRUE);
+	openttsd_sockets[fd].o_buf = NULL;
 }
 
 /* Serve the client on _fd_ if we got some activity. */
