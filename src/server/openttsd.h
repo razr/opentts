@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SPEECHDH
-#define SPEECHDH
+#ifndef OPENTTSD_H
+#define OPENTTSD_H
 
 #define _GNU_SOURCE
 
