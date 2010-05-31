@@ -26,14 +26,16 @@
 @author Tom@'a@v{s} Cerha <@email{cerha@@brailcom.org}>
 @author Hynek Hanke <@email{hanke@@volny.cz}>
 @author Milan Zamazal <@email{pdm@@brailcom.org}>
+@author OpenTTS Developers <@email{opentts-dev@@lists.opentts.org}>
 
 @page
 @vskip 0pt plus 1filll
 
 This manual documents OpenTTS, version @value{VERSION}.
 
-Copyright @copyright{} 2010 OpenTTS developers
 Copyright @copyright{} 2001, 2002, 2003, 2006, 2007, 2008 Brailcom, o.p.s.
+
+Copyright @copyright{} 2010 OpenTTS developers
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -64,8 +66,9 @@ General Public License''
 
 This manual documents OpenTTS, version @value{VERSION}.
 
-Copyright @copyright{} 2010 OpenTTS developers
 Copyright @copyright{} 2001, 2002, 2003, 2006 Brailcom, o.p.s.
+
+Copyright @copyright{} 2010 OpenTTS developers
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
