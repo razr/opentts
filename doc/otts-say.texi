@@ -16,7 +16,9 @@
 
 @titlepage
 @title Say for OpenTTS: (otts-say)
+@author Hynek Hanke <@email{hanke@@freebsoft.org}>
 @author Steve Holmes <@email{steve.holmes88@@gmail.com}>
+@author OpenTTS Developers <@email{opentts-dev@@lists.opentts.org}>
 
 @page
 @vskip 0pt plus 1filll
@@ -24,6 +26,8 @@
 This manual documents Say for OpenTTS, version @value{VERSION}.
 
 Copyright @copyright{} 2001, 2002, 2003, 2006 Brailcom, o.p.s.
+
+Copyright @copyright{} 2010 OpenTTS Developers
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -42,6 +46,8 @@ Free Documentation License".
 This manual documents Say for OpenTTS, version @value{VERSION}.
 
 Copyright @copyright{} 2001, 2002, 2003, 2006 Brailcom, o.p.s.
+
+Copyright @copyright{} 2010 OpenTTS Developers
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document under the
