@@ -2903,8 +2903,7 @@ On module_close(), all lateral threads and processes should be terminated,
 all memory freed. Don't assume module_close() is always called before exit()
 and the sources will be freed automatically.
 @item
-%!!!change 
-We will be happy if all the copyrights are assigned to Brailcom, o.p.s.
+It would be best if all copyrights are assigned to OpenTTS Developers
 in order for us to be in a better legal position against possible intruders.
 @end itemize
 
