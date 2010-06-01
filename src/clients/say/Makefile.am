@@ -1,4 +1,4 @@
-c_api = $(top_srcdir)/src/api/c
+c_api = $(top_builddir)/src/api/c
 
 INCLUDES = -I$(top_srcdir)/include
 

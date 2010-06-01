@@ -1,5 +1,5 @@
 
-c_api = $(top_srcdir)/src/api/c
+c_api = $(top_builddir)/src/api/c
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/src/common
 
 check_PROGRAMS = long_message clibrary clibrary2 run_test connection_recovery
@@ -19,4 +19,4 @@ connection_recovery_LDADD = $(c_api)/libopentts.la $(EXTRA_SOCKET_LIBS)
 run_test_SOURCES = run_test.c
 run_test_LDADD = $(c_api)/libopentts.la $(EXTRA_SOCKET_LIBS)
 
-EXTRA_DIST= *.test *.wav
+EXTRA_DIST= basic.test general.test keys.test priority_progress.test pronunciation.test punctuation.test sound_icons.test spelling.test ssml.test stop_and_pause.test voices.test yo.wav

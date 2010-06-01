@@ -16,7 +16,7 @@
 
 @titlepage
 @title Say for OpenTTS: (otts-say)
-@author Steve Holmes <@email{steve.holmes88@gmail.com}>
+@author Steve Holmes <@email{steve.holmes88@@gmail.com}>
 
 @page
 @vskip 0pt plus 1filll

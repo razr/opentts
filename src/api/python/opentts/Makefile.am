@@ -16,4 +16,6 @@ spawn.py: Makefile
 
 spawn.py: $(srcdir)/spawn.py.in
 
+CLEANFILES = spawn.py
+
 EXTRA_DIST = spawn.py.in
