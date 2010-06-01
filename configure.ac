@@ -149,7 +149,7 @@ AS_IF([test $enable_python != "no"],
 AM_CONDITIONAL([HAVE_PYTHON], [test "$enable_python" = 'yes'])
 
 # Audio subsystem part
-AUDIO_DLOPEN_MODULES=
+AUDIO_DLOPEN_MODULES="-dlopen force"
 
 AS_IF([test $with_alsa != "no"],
 	[PKG_CHECK_MODULES([ALSA], [alsa],
@@ -208,6 +208,9 @@ AC_SUBST(PULSE_LIBS)
 AM_CONDITIONAL(pulse_support, test $with_pulse = "yes")
 
 AC_SUBST(AUDIO_DLOPEN_MODULES)
+
+AS_IF([test "$AUDIO_DLOPEN_MODULES" = "-dlopen force"],
+	[AC_MSG_WARN([openttsd is being built without audio support])])
 
 # speech synthesizers
 #
