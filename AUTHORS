@@ -2,6 +2,10 @@
 AUTHORS
 =======
 
+Luke Yelavich <themuso at opentts point org>
+* Luke is the lead developer of OpenTTS.
+* He has also contributed fixes for the audio subsystem.
+
 Jan Buchal <buchal at freebsoft point org>
     * ideas
     * design
@@ -42,14 +46,29 @@ eSpeak output module.
 
 Thanks to Steve Holmes <steve at holmesgrown point com> for his work on the
 generic output module.
-
-Thanks to Luke Yelavich <themuso at themuseo point com> for contributing
-fixes for the audio output subsystem.
+Steve also helped with documentation and reorganization.
 
 Thanks to Gilles Casse <gcasse at oralux point org> for contributing
 the PulseAudio output module.
 
 Thanks to Andrei Kholodnyi <andrei.kholodnyi at gmail point com>
-for his cleanup of the audio subsystem.
+for his cleanup of the audio subsystem, output modules, and server.
+
+Thanks to Rui Batista for updating the INSTALL document.
+
+Thanks to Trevor Saunders <trev.saunders at gmail point com> for renaming,
+code cleanup, and testing on Solaris.
+
+Thanks to Jose Vilmar Estacio de Souza <vilmar at informal point com point br>
+for fixing memory leaks.
+
+Thanks to Jason White <jason at jasonjgw point net>
+for a bugfix in the Python code.
+
+Thanks to Chris Brannon <cmbrannon79 at gmail point com> for various
+fixes.
+
+Thanks to William Hubbs <w.d.hubbs at gmail point com> for many
+improvements, especially related to the build system.
 
 ...and to many others.
