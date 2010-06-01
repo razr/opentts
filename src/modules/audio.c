@@ -50,6 +50,7 @@
 #include <glib.h>
 #include <ltdl.h>
 
+typedef spd_audio_plugin_t *(*plugin_entry_func) (void);
 static int audio_log_level;
 static lt_dlhandle lt_h;
 
@@ -73,7 +74,7 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 {
 	AudioID *id;
 	spd_audio_plugin_t const *p;
-	spd_audio_plugin_t *(*fn) (void);
+	plugin_entry_func fn;
 	gchar *libname;
 	int ret;
 
@@ -100,7 +101,7 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 		return (AudioID *) NULL;
 	}
 
-	fn = lt_dlsym(lt_h, SPD_AUDIO_PLUGIN_ENTRY_STR);
+	fn = (plugin_entry_func) lt_dlsym(lt_h, SPD_AUDIO_PLUGIN_ENTRY_STR);
 	if (NULL == fn) {
 		*error = (char *)g_strdup_printf("Cannot find symbol %s",
 						 SPD_AUDIO_PLUGIN_ENTRY_STR);
