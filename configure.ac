@@ -107,9 +107,12 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([dup2 gethostbyname gettimeofday memmove memset mkdir select socket strcasecmp strchr strcspn strdup strerror strncasecmp strndup strstr strcasestr strtol])
 
 # Checks for libraries.
-AC_SEARCH_LIBS([sqrt], [m])
-AC_SEARCH_LIBS([pthread_create], [pthread])
-AC_SEARCH_LIBS([lt_dlopen], [ltdl])
+AC_SEARCH_LIBS([sqrt], [m], [],
+	[AC_MSG_FAILURE([Math library missing])])
+AC_SEARCH_LIBS([pthread_create], [pthread], [],
+	[AC_MSG_FAILURE([Threads library missing])])
+AC_SEARCH_LIBS([lt_dlopen], [ltdl], [],
+	[AC_MSG_FAILURE([ltdl library missing])])
 
 PKG_CHECK_MODULES([GLIB], [glib-2.0])
 AC_SUBST(GLIB_CFLAGS)
