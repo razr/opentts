@@ -54,3 +54,28 @@ A: Are you sure you have installed festival-freebsoft-utils 0.3 or higher as
 
 A: Are you sure you are not running into the famous 'server_access_list'
    problem?  Please see the file INSTALL.
+
+Q: How can I install the ibmtts module on a 64-bit system?
+
+A: Unfortunately, the IBMTTS library is only available in a 32-bit version.
+Therefore, you need to build the module on a 32-bit system, perhaps
+running in a virtual machine.
+Once you have built it, you need to copy both the module and some audio
+plugins to the 64-bit system.  Here is a step-by-step explanation of
+what you must do on your 32-bit system to build the module.
+Note that these directions assume that your prefix is /usr/local.
+If you are using a different prefix, replace /usr/local with that prefix.
+
+1. Configure as usual.
+./configure --prefix=/usr/local
+2. Run make, but override the audiodir variable.
+make audiodir=/usr/local/lib/opentts/audio32
+3. And make install, using the same override.
+make install audiodir=/usr/local/lib/opentts/audio32
+4. Copy /usr/local/lib/opentts/modules/ibmtts to the
+/usr/local/lib/opentts/modules/ibmtts on the 64-bit system.
+5. Copy the whole /usr/local/lib/opentts/audio32 tree to
+/usr/local/lib/opentts/audio32 on the 64-bit system.
+
+Now, your 32-bit ibmtts module will look for the 32-bit audio plugins
+that it needs in /usr/local/lib/opentts/audio32.

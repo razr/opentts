@@ -141,6 +141,9 @@ You will also need libsndfile in order to enable sound icon emulation with the
 ibmtts output module.  (As of Apr 2006, the Debian packages you need are
 libsndfile1 and libsndfile1-dev.)
 
+The process of building the ibmtts output module for a 64-bit system is
+described in the FAQ file.
+
 Continue building OpenTTS
 ===================================
 
