@@ -28,11 +28,7 @@ A more convenient interface is provided by the 'Speaker' class.
 
 import socket, sys, os, subprocess, time, tempfile
 
-# IF session integration has been enabled, the spawn module will be available.
-try:
-    import opentts.spawn as spawn_mod
-except:
-    spawn_mod = None
+import opentts.spawn as spawn_mod
 
 try:
     import threading
@@ -128,7 +124,7 @@ class _SSIP_Connection:
 
         """
 
-        if autospawn and spawn_mod:
+        if autospawn:
             self.speechd_server_spawn()
 
         if method == 'unix_socket':
@@ -413,7 +409,7 @@ class SSIPClient(object):
     """Default name of the communication unix socket"""
     
     def __init__(self, name, component='default', user='unknown', host=None,
-                 port=None, method='unix_socket', socket_name=None, autospawn=None):
+                 port=None, method='unix_socket', socket_name=None, autospawn=True):
         """Initialize the instance and connect to the server.
 
         Arguments:
@@ -441,6 +437,9 @@ class SSIPClient(object):
         OpenTTS documentation.
           
         """
+
+        self._conn = conn = None
+
         if socket_name is None:
             socket_name = os.environ.get('OPENTTSD_SOCKET', os.path.expanduser(self.DEFAULT_SOCKET_PATH))
         if host is None:
@@ -451,15 +450,21 @@ class SSIPClient(object):
             except (ValueError, TypeError):
                 port = self.DEFAULT_OPENTTSD_PORT
 
-        # If autospawn is not specified, use system default
-        if autospawn is None:
-            if spawn_mod and spawn_mod.SPD_SPAWN_CMD != "":
-                autospawn = True
-            else:
-                autospawn = False
+        if autospawn:
+            # Try to connect to the server without autospawning.
+            # If that fails, conn will be None, and we'll try again,
+            # and the server will be spawned.
+            try:
+                self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
+                                                     host=host, port=port, autospawn=False)
+            except:
+                pass
 
-        self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
-                                             host=host, port=port, autospawn=autospawn)
+        # If we don't already have a connection, then connect to the server.
+        if conn is None:
+            self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
+                                                 host=host, port=port, autospawn=autospawn)
+
         full_name = '%s:%s:%s' % (user, name, component)
         conn.send_command('SET', Scope.SELF, 'CLIENT_NAME', full_name)
         code, msg, data = conn.send_command('HISTORY', 'GET', 'CLIENT_ID')
