@@ -228,10 +228,7 @@ gchar *do_set(void)
 					err = 2;
 			} else if (!strcmp(cur_item, "voice")) {
 				ret = str2voice(cur_value);
-				if (ret != SPD_VOICETYPE_ERR)
-					msg_settings.voice = ret;
-				else
-					err = 2;
+				msg_settings.voice = ret;
 			} else if (!strcmp(cur_item, "synthesis_voice")) {
 				g_free(msg_settings.synthesis_voice);
 				if (!strcmp(cur_value, "NULL"))

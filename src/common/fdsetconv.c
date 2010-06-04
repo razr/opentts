@@ -88,8 +88,6 @@ SPDVoiceType str2voice(char *str)
 		voice = SPD_CHILD_MALE;
 	else if (!strcmp(str, "child_female"))
 		voice = SPD_CHILD_FEMALE;
-	else
-		voice = SPD_VOICETYPE_ERR;
 
 	return voice;
 }

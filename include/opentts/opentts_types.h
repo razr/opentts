@@ -55,7 +55,6 @@ typedef enum {
 
 typedef enum {
 #ifdef OPENTTS_INTERNAL
-	SPD_VOICETYPE_ERR = -1,
 	SPD_NO_VOICE = 0,
 #endif
 	SPD_MALE1 = 1,

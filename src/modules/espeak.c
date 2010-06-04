@@ -765,9 +765,6 @@ static void espeak_set_language_and_voice(char *lang, SPDVoiceType voice_code)
 	case SPD_CHILD_FEMALE:
 		overlay = 14;
 		break;
-	case SPD_VOICETYPE_ERR:
-		/* Do nothing.  This code should never be reached. */
-		break;
 	}
 
 	char *name = g_strdup_printf("%s+%d", lang, overlay);

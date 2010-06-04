@@ -253,7 +253,7 @@ DOTCONF_CB(cb_DefaultVoiceType)
 	if (val_str == NULL)
 		cfg_fatal(errmsg);
 	val = str2voice(val_str);
-	if (val == SPD_VOICETYPE_ERR)
+	if (val == SPD_NO_VOICE)
 		cfg_fatal(errmsg);
 	g_free(errmsg);
 	g_free(val_str);
