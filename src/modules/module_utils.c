@@ -185,11 +185,13 @@ gchar *do_set(void)
 			cur_item = strtok(line, "=");
 			if (cur_item == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 			cur_value = strtok(NULL, "\n");
 			if (cur_value == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 
@@ -305,11 +307,13 @@ gchar *do_audio(void)
 			cur_item = strtok(line, "=");
 			if (cur_item == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 			cur_value = strtok(NULL, "\n");
 			if (cur_value == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 
@@ -378,11 +382,13 @@ gchar *do_loglevel(void)
 			cur_item = strtok(line, "=");
 			if (cur_item == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 			cur_value = strtok(NULL, "\n");
 			if (cur_value == NULL) {
 				err = 1;
+				xfree(line);
 				continue;
 			}
 
@@ -390,6 +396,7 @@ gchar *do_loglevel(void)
 				number = strtol(cur_value, &tptr, 10);
 				if (tptr == cur_value) {
 					err = 2;
+					xfree(line);
 					continue;
 				}
 				opentts_audio_set_loglevel(module_audio_id, number);
