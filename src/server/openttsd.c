@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <glib/gstdio.h>
 
 #include <timestamp.h>
 #include "openttsd.h"
@@ -44,8 +45,6 @@
 #include "options.h"
 #include "server.h"
 
-/* Glib g_makedir */
-int g_mkdir(const gchar * filename, int mode);
 /* Manipulating pid files */
 int create_pid_file();
 void destroy_pid_file();
