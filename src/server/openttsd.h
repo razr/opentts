@@ -119,7 +119,6 @@ struct {
 	char *conf_dir;
 char *opentts_dir;
 	char *log_dir;
-	int spawn;
 	int debug;
 	char *debug_destination;
 	char *debug_logfile;

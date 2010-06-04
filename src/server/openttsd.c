@@ -450,7 +450,6 @@ void modules_nodebug(void)
 
 static void options_init(void)
 {
-	options.spawn = FALSE;
 	options.communication_method = NULL;
 	options.communication_method_set = 0;
 	options.socket_name = NULL;
@@ -934,35 +933,6 @@ int main(int argc, char *argv[])
 	 */
 	if (create_pid_file() != 0)
 		exit(1);
-
-	/* Handle --spawn request */
-	if (options.spawn) {
-		/* Check whether spawning is not disabled */
-		gchar *config_contents;
-		int err;
-		GRegex *regexp;
-		int result;
-
-		err =
-		    g_file_get_contents(options.conf_file,
-					&config_contents, NULL, NULL);
-		if (err == FALSE) {
-			MSG(1, "Error openning %s", options.conf_file);
-			FATAL("Can't open conf file");
-		}
-		regexp =
-		    g_regex_new("^[ ]*DisableAutoSpawn", G_REGEX_MULTILINE, 0,
-				NULL);
-		result = g_regex_match(regexp, config_contents, 0, NULL);
-		if (result) {
-			MSG(4,
-			    "Autospawn requested but disabled in configuration");
-			exit(1);
-		}
-		g_free(config_contents);
-		g_regex_unref(regexp);
-		MSG(2, "Starting openttsd due to auto-spawn");
-	}
 
 	/* Initialize logging mutex to workaround ctime threading bug */
 	/* Must be done no later than here */

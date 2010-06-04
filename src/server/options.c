@@ -35,7 +35,6 @@
 static struct option long_options[] = {
 	{"run-daemon", 0, 0, 'd'},
 	{"run-single", 0, 0, 's'},
-	{"spawn", 0, 0, 'a'},
 	{"log-level", 1, 0, 'l'},
 	{"communication-method", 1, 0, 'c'},
 	{"socket-name", 1, 0, 'S'},
@@ -48,7 +47,7 @@ static struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
-static char *short_options = "dsal:c:S:p:P:C:vDh";
+static char *short_options = "dsl:c:S:p:P:C:vDh";
 
 void options_print_help(char *argv[])
 {
@@ -62,7 +61,6 @@ void options_print_help(char *argv[])
 	    ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n");
 	printf("-d, --run-daemon     -      Run as a daemon\n"
 	       "-s, --run-single     -      Run as single application\n"
-	       "-a, --spawn          -      Start only if autospawn is not disabled\n"
 	       "-l, --log-level      -      Set log level (1..5)\n"
 	       "-c, --communication-method  Communication method to use (unix_socket or inet_socket)\n"
 	       "-S, --socket-name    -      Socket name to use for 'unix_socket' method (filesystem path or 'default')\n"
@@ -146,9 +144,6 @@ void options_parse(int argc, char *argv[])
 			break;
 		case 'p':
 			OPTION_SET_INT(port);
-			break;
-		case 'a':
-			options.spawn = TRUE;
 			break;
 		case 'P':
 			OPTION_SET_STR(pid_file);

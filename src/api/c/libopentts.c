@@ -208,7 +208,7 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 
 	/* Autospawn related */
 	const char *pidof_speechd[] = { "pidof", "openttsd", NULL };
-	const char *speechd_cmd[] = { SPD_SPAWN_CMD, "--spawn", NULL };
+	const char *speechd_cmd[] = { SPD_SPAWN_CMD, NULL };
 	gchar *speechd_pid = NULL;
 	GError *error = NULL;
 	gint exit_status;
