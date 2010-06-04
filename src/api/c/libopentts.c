@@ -72,6 +72,18 @@ static void xfree(void *ptr);
 static int ret_ok(char *reply);
 static void SPD_DBG(char *format, ...);
 static void *spd_events_handler(void *);
+static void init_debugging(void);
+static void do_autospawn(void);
+static SPDConnection *make_connection(SPDConnectionMethod method);
+static SPDConnection *init_connection_state(SPDConnection * connection,
+					    const char *client_name,
+					    const char *connection_name,
+					    const char *user_name,
+					    SPDConnectionMode mode);
+static pthread_mutex_t *new_mutex(void);
+static void destroy_mutex(pthread_mutex_t * mutex);
+static pthread_cond_t *new_cond_variable(void);
+static void destroy_cond_variable(pthread_cond_t * cond);
 
 pthread_mutex_t spd_logging_mutex;
 
@@ -197,182 +209,36 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 			 SPDConnectionMethod method, int autospawn)
 {
 	SPDConnection *connection;
-	char *set_client_name;
-	char *conn_name;
-	char *usr_name;
-	char *env_port;
-	char *env_socket;
-	int port;
-	int ret;
-	char tcp_no_delay = 1;
-
-	/* Autospawn related */
-	const char *pidof_speechd[] = { "pidof", "openttsd", NULL };
-	const char *speechd_cmd[] = { SPD_SPAWN_CMD, NULL };
-	gchar *speechd_pid = NULL;
-	GError *error = NULL;
-	gint exit_status;
+	const char *conn_name;
+	const char *usr_name;
 
 	if (client_name == NULL)
 		return NULL;
 
-	if (user_name == NULL) {
-		usr_name = strdup((char *)g_get_user_name());
-	} else
-		usr_name = strdup(user_name);
+	if (user_name == NULL)
+		usr_name = (char *)g_get_user_name();
+	else
+		usr_name = user_name;
 
 	if (connection_name == NULL)
-		conn_name = strdup("main");
+		conn_name = "main";
 	else
-		conn_name = strdup(connection_name);
+		conn_name = connection_name;
 
-#ifdef LIBOPENTTS_DEBUG
-	spd_debug = fopen("/tmp/libopentts.log", "w");
-	if (spd_debug == NULL)
-		SPD_FATAL("COULDN'T ACCES FILE INTENDED FOR DEBUG");
+	init_debugging();
 
-	ret = pthread_mutex_init(&spd_logging_mutex, NULL);
-	if (ret != 0) {
-		fprintf(stderr, "Mutex initialization failed");
-		fflush(stderr);
-		exit(1);
-	}
-	SPD_DBG("Debugging started");
-#endif /* LIBOPENTTS_DEBUG */
+	connection = make_connection(method);
 
 	/* Autospawn -- check if openttsd is not running and if so, start it */
-	if (autospawn) {
-		if (g_spawn_sync
-		    (NULL, (gchar **) pidof_speechd, NULL, G_SPAWN_SEARCH_PATH,
-		     NULL, NULL, &speechd_pid, NULL, &exit_status, &error)
-		    && strlen(speechd_pid) == 0) {
-			g_spawn_sync(NULL, (gchar **) speechd_cmd, NULL,
-				     G_SPAWN_SEARCH_PATH |
-				     G_SPAWN_STDOUT_TO_DEV_NULL |
-				     G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL,
-				     NULL, NULL, &exit_status, &error);
-			sleep(1);
-		}
+	if (autospawn && connection == NULL) {
+		do_autospawn();
+		connection = make_connection(method);
 	}
 
-/* Connect to server using the selected method */
-	connection = xmalloc(sizeof(SPDConnection));
-	if (method == SPD_METHOD_INET_SOCKET) {
-		struct sockaddr_in address_inet;
-
-		env_port = getenv("OPENTTSD_PORT");
-		if (env_port != NULL)
-			port = strtol(env_port, NULL, 10);
-		else
-			port = OPENTTSD_DEFAULT_PORT;
-
-		address_inet.sin_addr.s_addr = inet_addr("127.0.0.1");
-		address_inet.sin_port = htons(port);
-		address_inet.sin_family = AF_INET;
-		connection->socket = socket(AF_INET, SOCK_STREAM, 0);
-		ret =
-		    connect(connection->socket,
-			    (struct sockaddr *)&address_inet,
-			    sizeof(address_inet));
-		if (ret == -1) {
-			SPD_DBG
-			    ("Error: Can't connect to localhost on port %d using inet sockets: %s",
-			     port, strerror(errno));
-			close(connection->socket);
-			return NULL;
-		}
-		setsockopt(connection->socket, IPPROTO_TCP, TCP_NODELAY,
-			   &tcp_no_delay, sizeof(int));
-	} else if (method == SPD_METHOD_UNIX_SOCKET) {
-		struct sockaddr_un address_unix;
-		GString *socket_filename;
-/* Determine address for the unix socket */
-		env_socket = getenv("OPENTTSD_SOCKET");
-		if (env_socket) {
-			socket_filename = g_string_new(env_socket);
-		} else {
-			const char *homedir = g_getenv("HOME");
-			if (!homedir)
-				homedir = g_get_home_dir();
-			socket_filename = g_string_new("");
-			g_string_printf(socket_filename,
-					"%s/.opentts/openttsd.sock",
-					homedir);
-		}
-/* Create the unix socket */
-		address_unix.sun_family = AF_UNIX;
-		strncpy(address_unix.sun_path, socket_filename->str,
-			sizeof(address_unix.sun_path));
-		address_unix.sun_path[sizeof(address_unix.sun_path) - 1] = '\0';
-		connection->socket = socket(AF_UNIX, SOCK_STREAM, 0);
-		ret =
-		    connect(connection->socket,
-			    (struct sockaddr *)&address_unix,
-			    SUN_LEN(&address_unix));
-		if (ret == -1) {
-			SPD_DBG("Error: Can't connect to unix socket %s: %s",
-				socket_filename->str, strerror(errno));
-			close(connection->socket);
-			return NULL;
-		}
-		g_string_free(socket_filename, 0);
-	} else
-		SPD_FATAL("Unsupported connection method to spd_open");
-
-	connection->callback_begin = NULL;
-	connection->callback_end = NULL;
-	connection->callback_im = NULL;
-	connection->callback_pause = NULL;
-	connection->callback_resume = NULL;
-	connection->callback_cancel = NULL;
-
-	connection->mode = mode;
-
-	/* Create a stream from the socket */
-	connection->stream = fdopen(connection->socket, "r");
-	if (!connection->stream)
-		SPD_FATAL("Can't create a stream for socket, fdopen() failed.");
-	/* Switch to line buffering mode */
-	ret = setvbuf(connection->stream, NULL, _IONBF, SPD_REPLY_BUF_SIZE);
-	if (ret)
-		SPD_FATAL("Can't set buffering, setvbuf failed.");
-
-	connection->ssip_mutex = xmalloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(connection->ssip_mutex, NULL);
-
-	if (mode == SPD_MODE_THREADED) {
-		SPD_DBG
-		    ("Initializing threads, condition variables and mutexes...");
-		connection->events_thread = xmalloc(sizeof(pthread_t));
-		connection->cond_reply_ready = xmalloc(sizeof(pthread_cond_t));
-		connection->mutex_reply_ready =
-		    xmalloc(sizeof(pthread_mutex_t));
-		connection->cond_reply_ack = xmalloc(sizeof(pthread_cond_t));
-		connection->mutex_reply_ack = xmalloc(sizeof(pthread_mutex_t));
-		pthread_cond_init(connection->cond_reply_ready, NULL);
-		pthread_mutex_init(connection->mutex_reply_ready, NULL);
-		pthread_cond_init(connection->cond_reply_ack, NULL);
-		pthread_mutex_init(connection->mutex_reply_ack, NULL);
-		ret =
-		    pthread_create(connection->events_thread, NULL,
-				   spd_events_handler, connection);
-		if (ret != 0) {
-			SPD_DBG("Thread initialization failed");
-			return NULL;
-		}
-	}
-
-	/* By now, the connection is created and operational */
-
-	set_client_name =
-	    g_strdup_printf("SET SELF CLIENT_NAME \"%s:%s:%s\"", usr_name,
-			    client_name, conn_name);
-
-	ret = spd_execute_command_wo_mutex(connection, set_client_name);
-
-	xfree(usr_name);
-	xfree(conn_name);
-	xfree(set_client_name);
+	if (connection != NULL)
+		connection = init_connection_state(connection,
+						   client_name, conn_name,
+						   usr_name, mode);
 
 	return connection;
 }
@@ -387,24 +253,36 @@ SPDConnection *spd_open2(const char *client_name, const char *connection_name,
 void spd_close(SPDConnection * connection)
 {
 
-	pthread_mutex_lock(connection->ssip_mutex);
+	if (connection->ssip_mutex != NULL) {
+		pthread_mutex_lock(connection->ssip_mutex);
 
-	if (connection->mode == SPD_MODE_THREADED) {
-		pthread_cancel(*connection->events_thread);
-		pthread_mutex_destroy(connection->mutex_reply_ready);
-		pthread_mutex_destroy(connection->mutex_reply_ack);
-		pthread_cond_destroy(connection->cond_reply_ready);
-		pthread_cond_destroy(connection->cond_reply_ack);
-		pthread_join(*connection->events_thread, NULL);
-		connection->mode = SPD_MODE_SINGLE;
+		if (connection->mode == SPD_MODE_THREADED) {
+			if (connection->events_thread != NULL) {
+				pthread_cancel(*connection->events_thread);
+				pthread_join(*connection->events_thread, NULL);
+				free(connection->events_thread);
+			}
+			destroy_mutex(connection->mutex_reply_ready);
+			destroy_mutex(connection->mutex_reply_ack);
+			destroy_cond_variable(connection->cond_reply_ready);
+			destroy_cond_variable(connection->cond_reply_ack);
+			connection->mode = SPD_MODE_SINGLE;
+		}
+
+		pthread_mutex_unlock(connection->ssip_mutex);
+		destroy_mutex(connection->ssip_mutex);
 	}
 
-	/* close the socket */
-	close(connection->socket);
+	/* close the stream and socket */
+	if (connection->stream != NULL) {
+		fclose(connection->stream);
+		connection->socket = -1;
+		/* So we don't try to close the socket twice. */
+	}
 
-	pthread_mutex_unlock(connection->ssip_mutex);
+	if (connection->socket != -1)
+		close(connection->socket);
 
-	pthread_mutex_destroy(connection->ssip_mutex);
 	xfree(connection);
 }
 
@@ -1658,3 +1536,286 @@ static void SPD_DBG(char *format, ...)
 {
 }
 #endif /* LIBOPENTTS_DEBUG */
+
+static void init_debugging(void)
+{
+#ifdef LIBOPENTTS_DEBUG
+	/*
+	 * Don't try to initialize debugging if debugging is already
+	 * initialized.  I.E., if the debug file is open, don't reopen it.
+	 */
+	if (spd_debug != NULL)
+		return;
+
+	spd_debug = fopen("/tmp/libopentts.log", "w");
+	if (spd_debug == NULL)
+		SPD_FATAL("COULDN'T ACCES FILE INTENDED FOR DEBUG");
+
+	ret = pthread_mutex_init(&spd_logging_mutex, NULL);
+	if (ret != 0) {
+		fprintf(stderr, "Mutex initialization failed");
+		fflush(stderr);
+		exit(1);
+	}
+	SPD_DBG("Debugging started");
+#endif /* LIBOPENTTS_DEBUG */
+}
+
+static void do_autospawn(void)
+{
+	const char *speechd_cmd[] = { SPD_SPAWN_CMD, NULL };
+	gint exit_status;
+	GError *error = NULL;
+
+	g_spawn_sync(NULL, (gchar **) speechd_cmd, NULL,
+		     G_SPAWN_SEARCH_PATH |
+		     G_SPAWN_STDOUT_TO_DEV_NULL |
+		     G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL,
+		     NULL, NULL, &exit_status, &error);
+	sleep(1);
+}
+
+/*
+ * Make the connection to the server, using the chosen method.
+ * Return a pointer to a heap-allocated SPDConnection, or NULL if the
+ * connection could not be made.
+ */
+
+static SPDConnection *make_connection(SPDConnectionMethod method)
+{
+	char *env_port;
+	char *env_socket;
+	int port;
+	int ret;
+	char tcp_no_delay = 1;
+	SPDConnection *connection = xmalloc(sizeof(SPDConnection));
+
+	memset(connection, '\0', sizeof(SPDConnection));
+
+	if (method == SPD_METHOD_INET_SOCKET) {
+		struct sockaddr_in address_inet;
+
+		env_port = getenv("OPENTTSD_PORT");
+		if (env_port != NULL)
+			port = strtol(env_port, NULL, 10);
+		else
+			port = OPENTTSD_DEFAULT_PORT;
+
+		address_inet.sin_addr.s_addr = inet_addr("127.0.0.1");
+		address_inet.sin_port = htons(port);
+		address_inet.sin_family = AF_INET;
+		connection->socket = socket(AF_INET, SOCK_STREAM, 0);
+		if (connection->socket == -1) {
+			SPD_DBG("Unable to allocate a socket: %s",
+				strerror(errno));
+			free(connection);
+			return NULL;
+		}
+		ret =
+		    connect(connection->socket,
+			    (struct sockaddr *)&address_inet,
+			    sizeof(address_inet));
+		if (ret == -1) {
+			SPD_DBG
+			    ("Error: Can't connect to localhost on port %d using inet sockets: %s",
+			     port, strerror(errno));
+			close(connection->socket);
+			free(connection);
+			return NULL;
+		}
+		setsockopt(connection->socket, IPPROTO_TCP, TCP_NODELAY,
+			   &tcp_no_delay, sizeof(int));
+	} else if (method == SPD_METHOD_UNIX_SOCKET) {
+		struct sockaddr_un address_unix;
+		GString *socket_filename;
+/* Determine address for the unix socket */
+		env_socket = getenv("OPENTTSD_SOCKET");
+		if (env_socket) {
+			socket_filename = g_string_new(env_socket);
+		} else {
+			const char *homedir = g_getenv("HOME");
+			if (!homedir)
+				homedir = g_get_home_dir();
+			socket_filename = g_string_new("");
+			g_string_printf(socket_filename,
+					"%s/.opentts/openttsd.sock", homedir);
+		}
+/* Create the unix socket */
+		address_unix.sun_family = AF_UNIX;
+		strncpy(address_unix.sun_path, socket_filename->str,
+			sizeof(address_unix.sun_path));
+		address_unix.sun_path[sizeof(address_unix.sun_path) - 1] = '\0';
+		connection->socket = socket(AF_UNIX, SOCK_STREAM, 0);
+		if (connection->socket == -1) {
+			SPD_DBG("Unable to allocate a socket: %s",
+				strerror(errno));
+			g_string_free(socket_filename, TRUE);
+			free(connection);
+			return NULL;
+		}
+		ret =
+		    connect(connection->socket,
+			    (struct sockaddr *)&address_unix,
+			    SUN_LEN(&address_unix));
+		if (ret == -1) {
+			SPD_DBG("Error: Can't connect to unix socket %s: %s",
+				socket_filename->str, strerror(errno));
+			g_string_free(socket_filename, TRUE);
+			close(connection->socket);
+			free(connection);
+			return NULL;
+		}
+		g_string_free(socket_filename, TRUE);
+	} else
+		SPD_FATAL("Unsupported connection method to spd_open");
+
+	return connection;
+}
+
+/*
+ * Initialize the state of the connection, after we've connected to
+ * the server.  This includes tasks such as spawning threads, initializing
+ * mutexes, and so forth.  Also, send the username, client name, and
+ * connection name to the server.
+ * If initialization was successful, return the connection.  Otherwise,
+ * return NULL.  The connection and its resources are freed on failure.
+ * This function calls on spd_close to free the connection's resources.
+ */
+
+static SPDConnection *init_connection_state(SPDConnection * connection,
+					    const char *client_name,
+					    const char *connection_name,
+					    const char *user_name,
+					    SPDConnectionMode mode)
+{
+	int ret;
+	char *set_client_name = NULL;
+	pthread_t *our_thread = NULL;
+
+	connection->callback_begin = NULL;
+	connection->callback_end = NULL;
+	connection->callback_im = NULL;
+	connection->callback_pause = NULL;
+	connection->callback_resume = NULL;
+	connection->callback_cancel = NULL;
+
+	connection->mode = mode;
+
+	/* Create a stream from the socket */
+	connection->stream = fdopen(connection->socket, "r");
+	if (!connection->stream)
+		SPD_FATAL("Can't create a stream for socket, fdopen() failed.");
+	/* Switch to line buffering mode */
+	ret = setvbuf(connection->stream, NULL, _IONBF, SPD_REPLY_BUF_SIZE);
+	if (ret)
+		SPD_FATAL("Can't set buffering, setvbuf failed.");
+
+	connection->ssip_mutex = new_mutex();
+	if (connection->ssip_mutex == NULL) {
+		spd_close(connection);
+		return NULL;
+	}
+
+	if (mode == SPD_MODE_THREADED) {
+		SPD_DBG
+		    ("Initializing threads, condition variables and mutexes...");
+		connection->cond_reply_ready = new_cond_variable();
+		if (connection->cond_reply_ready == NULL) {
+			spd_close(connection);
+			return NULL;
+		}
+		connection->cond_reply_ack = new_cond_variable();
+		if (connection->cond_reply_ack == NULL) {
+			spd_close(connection);
+			return NULL;
+		}
+		connection->mutex_reply_ready = new_mutex();
+		if (connection->mutex_reply_ready == NULL) {
+			spd_close(connection);
+			return NULL;
+		}
+		connection->mutex_reply_ack = new_mutex();
+		if (connection->mutex_reply_ack == NULL) {
+			spd_close(connection);
+			return NULL;
+		}
+
+		our_thread = xmalloc(sizeof(pthread_t));
+		ret =
+		    pthread_create(our_thread, NULL,
+				   spd_events_handler, connection);
+		if (ret != 0) {
+			SPD_DBG("Thread initialization failed");
+			spd_close(connection);
+			free(our_thread);
+			return NULL;
+		}
+		connection->events_thread = our_thread;
+	}
+
+	/* By now, the connection is created and operational */
+
+	set_client_name =
+	    g_strdup_printf("SET SELF CLIENT_NAME \"%s:%s:%s\"", user_name,
+			    client_name, connection_name);
+	ret = spd_execute_command_wo_mutex(connection, set_client_name);
+	g_free(set_client_name);
+
+	if (ret) {
+		spd_close(connection);
+		connection = NULL;
+	}
+
+	return connection;
+}
+
+/*
+ * Functions for creating and destroying condition variables and mutexes
+ * on the heap.
+ */
+
+static pthread_cond_t *new_cond_variable(void)
+{
+	int ret;
+	pthread_cond_t *cond = xmalloc(sizeof(pthread_cond_t));
+
+	memset(cond, '\0', sizeof(pthread_cond_t));
+	ret = pthread_cond_init(cond, NULL);
+
+	if (ret != 0) {
+		free(cond);
+		cond = NULL;
+	}
+
+	return cond;
+}
+
+static void destroy_cond_variable(pthread_cond_t * cond)
+{
+	if (cond != NULL) {
+		pthread_cond_destroy(cond);
+		free(cond);
+	}
+}
+
+static pthread_mutex_t *new_mutex(void)
+{
+	int ret;
+	pthread_mutex_t *mutex = xmalloc(sizeof(pthread_mutex_t));
+
+	memset(mutex, '\0', sizeof(pthread_mutex_t));
+	ret = pthread_mutex_init(mutex, NULL);
+	if (ret != 0) {
+		free(mutex);
+		mutex = NULL;
+	}
+	return mutex;
+}
+
+static void destroy_mutex(pthread_mutex_t * mutex)
+{
+	if (mutex != NULL) {
+		pthread_mutex_destroy(mutex);
+		free(mutex);
+	}
+}
