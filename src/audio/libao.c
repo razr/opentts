@@ -146,6 +146,7 @@ static int libao_play(AudioID * id, AudioTrack track)
 			ao_close(device);
 			device = NULL;
 			ERR("Audio: ao_play() - closing device - re-open it in next run\n");
+			return -1;
 		}
 		outcnt += i;
 	}
