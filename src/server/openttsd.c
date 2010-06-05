@@ -45,6 +45,9 @@
 #include "options.h"
 #include "server.h"
 
+/* Private constants. */
+static const int OTTS_MAX_QUEUE_LEN = 50;
+
 /* Manipulating pid files */
 int create_pid_file();
 void destroy_pid_file();
@@ -784,7 +787,7 @@ int make_local_socket(const char *filename)
 		MSG(2, "ERRNO:%s", strerror(errno));
 		FATAL("Unable to set permissions on local socket.");
 	}
-	if (listen(sock, 0) == -1) {
+	if (listen(sock, OTTS_MAX_QUEUE_LEN) == -1) {
 		MSG(2, "ERRNO:%s", strerror(errno));
 		FATAL("listen() failed for local socket");
 	}
@@ -827,7 +830,7 @@ int make_inet_socket(const int port)
 		FATAL("Couldn't open inet socket, try a few minutes later.");
 	}
 
-	if (listen(server_socket, 50) == -1) {
+	if (listen(server_socket, OTTS_MAX_QUEUE_LEN) == -1) {
 		MSG(2, "ERRNO:%s", strerror(errno));
 		FATAL
 		    ("listen() failed for inet socket, is another openttsd running?");
