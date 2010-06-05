@@ -335,6 +335,7 @@ class _SSIP_Connection:
                         stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             # Todo: log output from stdout.
             time.sleep(0.5)
+            speechd_server.wait()
             return speechd_server.pid
         else:
             raise "Can't find openttsd spawn command %s" % (spawn_mod.SPD_SPAWN_CMD,)
