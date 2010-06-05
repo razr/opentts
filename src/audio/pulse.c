@@ -164,6 +164,9 @@ static int pulse_play(AudioID * id, AudioTrack track)
 			case SPD_AUDIO_BE:
 				ss.format = PA_SAMPLE_S16BE;
 				break;
+			default:
+				ERR("invalid format %d", id->format);
+				return -1;
 			}
 		} else {
 			ss.format = PA_SAMPLE_U8;
