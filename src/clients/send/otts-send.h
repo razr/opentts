@@ -20,9 +20,9 @@
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA.
 */
 
-#ifndef __SPDSEND_H
+#ifndef __OTTS_SEND_H
 
-#define __SPDSEND_H
+#define __OTTS_SEND_H
 
 #define _GNU_SOURCE
 
