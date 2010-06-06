@@ -67,7 +67,7 @@ static lt_dlhandle lt_h;
 
    Return value:
    Newly allocated AudioID structure that can be passed to
-   all other spd_audio functions, or NULL in case of failure.
+   all other opentts_audio functions, or NULL in case of failure.
 
 */
 AudioID *opentts_audio_open(char *name, void **pars, char **error)
@@ -136,7 +136,7 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 /* Play a track on the audio device (blocking).
 
    Arguments:
-   id -- the AudioID* of the device returned by spd_audio_open
+   id -- the AudioID* of the device returned by opentts_audio_open
    track -- a track to play (see opentts_audio_plugin.h)
 
    Return value:
@@ -145,10 +145,10 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
    meaning of these non-zero values.
 
    Comment:
-   spd_audio_play() is a blocking function. It returns exactly
+   opentts_audio_play() is a blocking function. It returns exactly
    when the given track stopped playing. However, it's possible
-   to safely interrupt it using spd_audio_stop() described bellow.
-   (spd_audio_stop() needs to be called from another thread, obviously.)
+   to safely interrupt it using opentts_audio_stop() described bellow.
+   (opentts_audio_stop() needs to be called from another thread, obviously.)
 
 */
 int opentts_audio_play(AudioID * id, AudioTrack track, AudioFormat format)
@@ -183,7 +183,7 @@ int opentts_audio_play(AudioID * id, AudioTrack track, AudioFormat format)
 /* Stop playing the current track on device id
 
 Arguments:
-   id -- the AudioID* of the device returned by spd_audio_open
+   id -- the AudioID* of the device returned by opentts_audio_open
 
 Return value:
    0 if everything is ok, a non-zero value in case of failure.
@@ -191,18 +191,18 @@ Return value:
    meaning of these non-zero values.
 
 Comment:
-   spd_audio_stop() safely interrupts spd_audio_play() when called
+   opentts_audio_stop() safely interrupts opentts_audio_play() when called
    from another thread. It shouldn't cause any clicks or unwanted
    effects in the sound output.
 
-   It's safe to call spd_audio_stop() even if the device isn't playing
+   It's safe to call opentts_audio_stop() even if the device isn't playing
    any track. In that case, it does nothing. However, there is a danger
-   when using spd_audio_stop(). Since you must obviously do it from
-   another thread than where spd_audio_play is running, you must make
+   when using opentts_audio_stop(). Since you must obviously do it from
+   another thread than where opentts_audio_play is running, you must make
    yourself sure that the device is still open and the id you pass it
-   is valid and will be valid until spd_audio_stop returns. In other words,
+   is valid and will be valid until opentts_audio_stop returns. In other words,
    you should use some mutex or other synchronization device to be sure
-   spd_audio_close isn't called before or during spd_audio_stop execution.
+   opentts_audio_close isn't called before or during opentts_audio_stop execution.
 */
 
 int opentts_audio_stop(AudioID * id)
@@ -220,15 +220,15 @@ int opentts_audio_stop(AudioID * id)
 /* Close the audio device id
 
 Arguments:
-   id -- the AudioID* of the device returned by spd_audio_open
+   id -- the AudioID* of the device returned by opentts_audio_open
 
 Return value:
    0 if everything is ok, a non-zero value in case of failure.
 
 Comments:
 
-   Please make sure no other spd_audio function with this device id
-   is running in another threads. See spd_audio_stop() for detailed
+   Please make sure no other opentts_audio function with this device id
+   is running in another threads. See opentts_audio_stop() for detailed
    description of possible problems.
 */
 int opentts_audio_close(AudioID * id)
@@ -252,7 +252,7 @@ int opentts_audio_close(AudioID * id)
 /* Set volume for playing tracks on the device id
 
 Arguments:
-   id -- the AudioID* of the device returned by spd_audio_open
+   id -- the AudioID* of the device returned by opentts_audio_open
    volume -- a value in the range <-100:100> where -100 means the
              least volume (probably silence), 0 the default volume
 	     and +100 the highest volume possible to make on that
