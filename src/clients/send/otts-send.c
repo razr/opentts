@@ -32,7 +32,7 @@
 
 #include "otts-send.h"
 
-const char *const SPDSEND_VERSION = "0.0.0";
+const char *const SEND_VERSION = "0.0.0";
 
 static void usage(const char *const message)
 {
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		int port;
 
 		if (!strcmp(action, "--version")) {
-			printf("otts-send %s\n", SPDSEND_VERSION);
+			printf("otts-send %s\n", VERSION);
 			exit(EXIT_OK);
 		}
 
