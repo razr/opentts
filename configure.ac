@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([OpenTTS], [0.0], [opentts-dev@lists.opentts.org])
+AC_INIT([OpenTTS], [0.1], [opentts-dev@lists.opentts.org])
 AM_INIT_AUTOMAKE([foreign])
 LT_PREREQ([2.2])
 LT_INIT([dlopen])
