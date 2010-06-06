@@ -498,7 +498,7 @@ gchar *do_list_voices(void)
 	}
 	g_string_append(voice_list, "200 OK VOICE LIST SENT");
 
-	dbg("Voice prepared to  sens to speechd");
+	dbg("Voice list prepared to  send to openttsd");
 
 	return voice_list->str;
 }
