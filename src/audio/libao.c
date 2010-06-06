@@ -32,7 +32,7 @@
 #include <glib.h>
 #include <timestamp.h>
 
-#define SPD_AUDIO_PLUGIN_ENTRY libao_LTX_spd_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY libao_LTX_spd_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 
 /* send a packet of XXX bytes to the sound device */
@@ -212,7 +212,7 @@ spd_audio_plugin_t *libao_plugin_get(void)
 	return &libao_functions;
 }
 
-spd_audio_plugin_t *SPD_AUDIO_PLUGIN_ENTRY(void)
+spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("libao_plugin_get")));
 #undef MSG
 #undef ERR

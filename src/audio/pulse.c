@@ -42,7 +42,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#define SPD_AUDIO_PLUGIN_ENTRY pulse_LTX_spd_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY pulse_LTX_spd_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 
 typedef struct {
@@ -283,5 +283,5 @@ spd_audio_plugin_t *pulse_plugin_get(void)
 	return &pulse_functions;
 }
 
-spd_audio_plugin_t *SPD_AUDIO_PLUGIN_ENTRY(void)
+spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("pulse_plugin_get")));
