@@ -489,7 +489,7 @@ static char const *oss_get_playcmd(void)
 }
 
 /* Provide the OSS backend. */
-static spd_audio_plugin_t oss_functions = {
+static audio_plugin_t oss_functions = {
 	"oss",
 	oss_open,
 	oss_play,
@@ -500,12 +500,12 @@ static spd_audio_plugin_t oss_functions = {
 	oss_get_playcmd
 };
 
-spd_audio_plugin_t *oss_plugin_get(void)
+audio_plugin_t *oss_plugin_get(void)
 {
 	return &oss_functions;
 }
 
-spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
+audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("oss_plugin_get")));
 #undef MSG
 #undef ERR

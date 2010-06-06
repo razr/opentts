@@ -243,7 +243,7 @@ static char const *nas_get_playcmd(void)
 }
 
 /* Provide the NAS backend */
-static spd_audio_plugin_t nas_functions = {
+static audio_plugin_t nas_functions = {
 	"nas",
 	nas_open,
 	nas_play,
@@ -254,10 +254,10 @@ static spd_audio_plugin_t nas_functions = {
 	nas_get_playcmd
 };
 
-spd_audio_plugin_t *nas_plugin_get(void)
+audio_plugin_t *nas_plugin_get(void)
 {
 	return &nas_functions;
 }
 
-spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
+audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("nas_plugin_get")));

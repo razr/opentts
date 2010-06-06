@@ -196,7 +196,7 @@ static char const *libao_get_playcmd(void)
 }
 
 /* Provide the libao backend. */
-static spd_audio_plugin_t libao_functions = {
+static audio_plugin_t libao_functions = {
 	"libao",
 	libao_open,
 	libao_play,
@@ -207,12 +207,12 @@ static spd_audio_plugin_t libao_functions = {
 	libao_get_playcmd
 };
 
-spd_audio_plugin_t *libao_plugin_get(void)
+audio_plugin_t *libao_plugin_get(void)
 {
 	return &libao_functions;
 }
 
-spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
+audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("libao_plugin_get")));
 #undef MSG
 #undef ERR

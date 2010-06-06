@@ -44,20 +44,20 @@ typedef struct {
 	signed short *samples;
 } AudioTrack;
 
-struct spd_audio_plugin;
+struct audio_plugin;
 
 typedef struct {
 
 	int volume;
 	AudioFormat format;
 
-	struct spd_audio_plugin const *function;
+	struct audio_plugin const *function;
 	void *private_data;
 
 	int working;
 } AudioID;
 
-typedef struct spd_audio_plugin {
+typedef struct audio_plugin {
 	const char *name;
 	AudioID *(*open) (void **pars);
 	int (*play) (AudioID * id, AudioTrack track);
@@ -66,7 +66,7 @@ typedef struct spd_audio_plugin {
 	int (*set_volume) (AudioID * id, int);
 	void (*set_loglevel) (int level);
 	char const *(*get_playcmd) (void);
-} spd_audio_plugin_t;
+} audio_plugin_t;
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

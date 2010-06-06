@@ -868,7 +868,7 @@ static char const *alsa_get_playcmd(void)
 }
 
 /* Provide the Alsa backend. */
-static spd_audio_plugin_t alsa_functions = {
+static audio_plugin_t alsa_functions = {
 	"alsa",
 	alsa_open,
 	alsa_play,
@@ -879,12 +879,12 @@ static spd_audio_plugin_t alsa_functions = {
 	alsa_get_playcmd
 };
 
-spd_audio_plugin_t *alsa_plugin_get(void)
+audio_plugin_t *alsa_plugin_get(void)
 {
 	return &alsa_functions;
 }
 
-spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
+audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("alsa_plugin_get")));
 #undef MSG
 #undef ERR

@@ -267,7 +267,7 @@ static char const *pulse_get_playcmd(void)
 }
 
 /* Provide the pulse backend. */
-static spd_audio_plugin_t pulse_functions = {
+static audio_plugin_t pulse_functions = {
 	"pulse",
 	pulse_open,
 	pulse_play,
@@ -278,10 +278,10 @@ static spd_audio_plugin_t pulse_functions = {
 	pulse_get_playcmd
 };
 
-spd_audio_plugin_t *pulse_plugin_get(void)
+audio_plugin_t *pulse_plugin_get(void)
 {
 	return &pulse_functions;
 }
 
-spd_audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
+audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("pulse_plugin_get")));

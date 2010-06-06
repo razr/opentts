@@ -50,7 +50,7 @@
 #include <glib.h>
 #include <ltdl.h>
 
-typedef spd_audio_plugin_t *(*plugin_entry_func) (void);
+typedef audio_plugin_t *(*plugin_entry_func) (void);
 static int audio_log_level;
 static lt_dlhandle lt_h;
 
@@ -73,7 +73,7 @@ static lt_dlhandle lt_h;
 AudioID *opentts_audio_open(char *name, void **pars, char **error)
 {
 	AudioID *id;
-	spd_audio_plugin_t const *p;
+	audio_plugin_t const *p;
 	plugin_entry_func fn;
 	gchar *libname;
 	int ret;
