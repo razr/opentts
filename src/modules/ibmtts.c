@@ -73,7 +73,7 @@ typedef enum {
 } TIbmttsSuccess;
 
 /* TODO: These defines are in src/server/index_marking.h, but including that
-         file here causes a redefinition error on FATAL macro in speechd.h. */
+         file here causes a redefinition error on FATAL macro in openttsd.h. */
 #define SD_MARK_BODY_LEN 6
 #define SD_MARK_BODY "__spd_"
 #define SD_MARK_HEAD "<mark name=\""SD_MARK_BODY
