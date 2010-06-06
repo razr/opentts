@@ -1,6 +1,6 @@
 
 /*
- * def.h - Some global definitions for OpenTTS
+ * def.h - internal global definitions for OpenTTS
  *
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
  *
@@ -18,15 +18,19 @@
  * along with this package; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
- *
- * $Id: def.h,v 1.19 2006-07-11 16:12:26 hanke Exp $
  */
-
-/* some constants common for speech server and client part */
 
 #ifndef SPEECHD_DEF_I
 #define SPEECHD_DEF_I
 
 #define OPENTTSD_DEFAULT_PORT 6560
+
+typedef enum {
+	SPD_MSGTYPE_TEXT = 0,
+	SPD_MSGTYPE_SOUND_ICON = 1,
+	SPD_MSGTYPE_CHAR = 2,
+	SPD_MSGTYPE_KEY = 3,
+	SPD_MSGTYPE_SPELL = 99
+} SPDMessageType;
 
 #endif

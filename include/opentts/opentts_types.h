@@ -110,14 +110,4 @@ typedef enum {
 	SPD_PROGRESS = 5
 } SPDPriority;
 
-#ifdef OPENTTS_INTERNAL
-typedef enum {
-	SPD_MSGTYPE_TEXT = 0,
-	SPD_MSGTYPE_SOUND_ICON = 1,
-	SPD_MSGTYPE_CHAR = 2,
-	SPD_MSGTYPE_KEY = 3,
-	SPD_MSGTYPE_SPELL = 99
-} SPDMessageType;
-#endif /* #ifdef OPENTTS_INTERNAL */
-
 #endif /* ifndef _OPENTTS_TYPES_H */
