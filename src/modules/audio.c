@@ -82,13 +82,13 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 	ret = lt_dlinit();
 	if (ret != 0) {
 		*error = (char *)g_strdup_printf("lt_dlinit() failed");
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	ret = lt_dlsetsearchpath(PLUGIN_DIR);
 	if (ret != 0) {
 		*error = (char *)g_strdup_printf("lt_dlsetsearchpath() failed");
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	libname = g_strdup_printf("%s", name);
@@ -98,27 +98,27 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 		*error =
 		    (char *)g_strdup_printf("Cannot open plugin %s. error: %s",
 					    name, lt_dlerror());
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	fn = (plugin_entry_func) lt_dlsym(lt_h, SPD_AUDIO_PLUGIN_ENTRY_STR);
 	if (NULL == fn) {
 		*error = (char *)g_strdup_printf("Cannot find symbol %s",
 						 SPD_AUDIO_PLUGIN_ENTRY_STR);
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	p = fn();
 	if (p == NULL || p->name == NULL) {
 		*error = (char *)g_strdup_printf("plugin %s not found", name);
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	id = p->open(pars);
 	if (id == NULL) {
 		*error =
 		    (char *)g_strdup_printf("Couldn't open %s plugin", name);
-		return (AudioID *) NULL;
+		return NULL;
 	}
 
 	id->function = p;
