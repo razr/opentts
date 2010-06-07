@@ -83,6 +83,15 @@ AC_ARG_WITH([ivona],
 	[],
 	[with_ivona=check])
 
+#
+# Setup GETTEXT
+#
+GETTEXT_PACKAGE=opentts
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
+AM_GLIB_GNU_GETTEXT
+IT_PROG_INTLTOOL([0.40.0])
+
 # checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -345,6 +354,7 @@ AC_CONFIG_FILES([Makefile
                  config/modules/Makefile
                  doc/Makefile
                  include/Makefile
+                 po/Makefile.in
                  src/Makefile
                  src/api/Makefile
                  src/api/c/Makefile
