@@ -1,0 +1,17 @@
+"""
+otts-conf i18n support
+
+This was adapted from orca's i18n support code
+"""
+
+import gettext  # to get gettext (i18n) support
+
+# Alias gettext.gettext to _ and gettext.ngettext to ngettext
+#
+_ = gettext.gettext
+ngettext = gettext.ngettext
+
+# Tell gettext where to find localized strings.
+#
+gettext.bindtextdomain ("@GETTEXT_PACKAGE@", "@localedir@")
+gettext.textdomain("@GETTEXT_PACKAGE@")
