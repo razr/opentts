@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <opentts/opentts_types.h>
 #include "options.h"
+#include <glib/gi18n.h>
 
 /* Definitions of global variables. */
 signed int rate;
@@ -82,64 +83,72 @@ void options_print_help(char *argv[])
 	assert(argv);
 	assert(argv[0]);
 
-	printf("Usage: %s [options] \"some text\"\n", argv[0]);
-	printf
-	    ("otts-say -- a simple client for speech synthesis (GNU GPL)\n\n");
-	printf("-r, --rate             -     Set the rate of the speech\n"
-	       "                               (between %d and %d, default: %d)\n"
-	       "-p, --pitch            -     Set the pitch of the speech\n"
-	       "                               (between %d and %d, default: %d)\n"
-	       "-i, --volume           -     Set the volume (intensity) of the speech\n"
-	       "                               (between %d and %d, default: %d) \n"
-	       "-o, --output-module    -     Set the output module\n"
-	       "-l, --language         -     Set the language (iso code)\n"
-	       "-t, --voice-type       -     Set the prefered voice type\n"
-	       "                               (male1, male2, male3, female1, female2\n"
-	       "                                female3, child_male, child_female)\n"
-	       "-m, --punctuation-mode -     Set the punctuation mode (none, some, all) \n"
-	       "-s, --spelling         -     Spell the message\n"
-	       "-x, --ssml             -     Set SSML mode on (default: off)\n"
-	       "\n"
-	       "-e, --pipe-mode        -     Pipe from stdin to stdout plus openttsd\n"
-	       "-P, --priority         -     Set priority of the message (important, message,\n"
-	       "                                text, notification, progress; default: text)\n"
-	       "-N, --application-name -     Set the application name used to estabilish\n"
-	       "                                the connection to specified string value\n"
-	       "                                (default: otts-say)\n"
-	       "-n, --connection-name  -     Set the connection name used to estabilish\n"
-	       "                                the connection to specified string value\n"
-	       "                                (default: main)\n" "\n"
-	       "-w, --wait             -     Wait till the message is spoken or discarded\n"
-	       "-S, --stop             -     Stop speaking the message being spoken\n"
-	       "                                in openttsd\n"
-	       "-C, --cancel           -     Cancel all messages in openttsd\n"
-	       "\n"
-	       "-v, --version          -     Print version and copyright info\n"
-	       "-h, --help             -     Print this info\n" "\n"
+	printf(_("Usage: %s [options] \"some text\"\n"), argv[0]);
+	printf(_("otts-say -- a simple client for speech synthesis (GNU GPL)\n\n"));
+	printf("-r, --rate\t");
+	printf(_("Set the rate of the speech (between %d and %d, default: %d)\n"),
+	OTTS_VOICE_RATE_MIN, OTTS_VOICE_RATE_MAX, OTTS_VOICE_RATE_DEFAULT);
+	printf("-p, --pitch\t");
+	printf(_("Set the pitch of the speech (between %d and %d, default: %d)\n"),
+	OTTS_VOICE_PITCH_MIN, OTTS_VOICE_PITCH_MAX, OTTS_VOICE_PITCH_DEFAULT);
+	printf("-i, --volume\t");
+	printf(_("Set the volume (intensity) of the speech (between %d and %d, default: %d) \n"),
+	OTTS_VOICE_VOLUME_MIN, OTTS_VOICE_VOLUME_MAX, OTTS_VOICE_VOLUME_DEFAULT);
+	printf("-o, --output-module\t");
+	printf(_("Set the output module\n"));
+	printf("-l, --language\t");
+	printf(_("Set the language (iso code)\n"));
+	printf("-t, --voice-type \t");
+	printf(_("Set the preferred voice type, (%s)\n"),
+	"male1, male2, male3, female1, female2, female3, child_male, child_female");
+	printf("-m, --punctuation-mode\t");
+	printf(_("Set the punctuation mode (%s)\n"), "none, some, all");
+	printf("-s, --spelling\t");
+	printf(_("Spell the message\n"));
+	printf("-x, --ssml\t");
+	printf(_("Set SSML mode on (default: off)\n"));
+	printf("\n");
+	printf("-e, --pipe-mode\t");
+	printf(_("Pipe from stdin to stdout plus openttsd\n"));
+	printf("-P, --priority\t");
+	printf(_("Set priority of the message (%s)\n"),
+	"important, message, text, notification, progress; default: text");
+	printf("-N, --application-name\t");
+	printf(_("Set the application name for the connection (default: %s)\n"),
+	"otts-say");
+	printf("-n, --connection-name\t");
+	printf(_("Set the connection name (default: main)\n"));
+	printf("\n");
+	printf("-w, --wait \t");
+	printf(_("Wait until the message is spoken or discarded\n"));
+	printf("-S, --stop\t");
+	printf(_("Stop speaking the message being spoken in openttsd\n"));
+	printf("-C, --cancel\t");
+	printf(_("Cancel all messages in openttsd\n"));
+	printf("\n");
+	printf("-v, --version\t");
+	printf(_("Print version and copyright information\n"));
+	printf("-h, --help\t");
+	printf(_("Print this information\n"));
+	printf("\n"
 	       "Copyright (C) 2003 Brailcom, o.p.s.\n"
 	       "Copyright (C) 2010 OpenTTS Developers.\n"
 	       "This is free software; you can redistribute it and/or modify it\n"
 	       "under the terms of the GNU General Public License as published by\n"
 	       "the Free Software Foundation; either version 2, or (at your option)\n"
-	       "any later version. Please see COPYING for more details.\n\n"
-	       "Please report bugs on the Issues page at <http://opentts.org/>.\n\n",
-	       OTTS_VOICE_RATE_MIN, OTTS_VOICE_RATE_MAX,
-	       OTTS_VOICE_RATE_DEFAULT, OTTS_VOICE_PITCH_MIN,
-	       OTTS_VOICE_PITCH_MAX, OTTS_VOICE_PITCH_DEFAULT,
-	       OTTS_VOICE_VOLUME_MIN, OTTS_VOICE_VOLUME_MAX,
-	       OTTS_VOICE_VOLUME_DEFAULT);
-
+	       "any later version. Please see COPYING for more details.\n\n");
+	printf(_("Please report bugs on the Issues page at <http://opentts.org/>.\n\n"));
 }
 
 void options_print_version()
 {
 	printf("otts-say: " PACKAGE " " VERSION "\n");
 	printf("Copyright (C) 2002-2006 Brailcom, o.p.s.\n"
-	       "Copyright (C) 2010 OpenTTS Developers.\n"
-	       "otts-say comes with ABSOLUTELY NO WARRANTY.\n"
-	       "You may redistribute copies of otts-say\n"
-	       "under the terms of the GNU General Public License.\n"
-	       "For more information about these matters, see the file named COPYING.\n");
+		 "Copyright (C) 2010 OpenTTS Developers.\n"
+		 "otts-say comes with ABSOLUTELY NO WARRANTY.\n"
+		 "You may redistribute copies of otts-say\n"
+		 "under the terms of the GNU General Public License.\n"
+		 "For more information about these matters, see the file named COPYING.\n");
 }
 
 #define OPT_SET_INT(param) \
@@ -236,7 +245,7 @@ int options_parse(int argc, char *argv[])
 			exit(0);
 			break;
 		default:
-			printf("Unrecognized option\n");
+			printf(_("Unrecognized option\n"));
 			options_print_help(argv);
 			exit(1);
 		}

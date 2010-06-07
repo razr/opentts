@@ -34,6 +34,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <opentts/libopentts.h>
+#include <glib/gi18n.h>
 #include "options.h"
 
 #define FATAL(msg) { perror("client: "msg); exit(1); }
@@ -57,6 +58,11 @@ int main(int argc, char **argv)
 	int msg_arg_required = 0;
 	int option_ret;
 	char *line;
+
+	/* init i18n support */
+	setlocale(LC_ALL,"");
+	bindtextdomain(GETTEXT_PACKAGE,LOCALEDIR);
+	textdomain(GETTEXT_PACKAGE);
 
 	rate = OTTS_VOICE_RATE_MIN - 1;
 	pitch = OTTS_VOICE_PITCH_MIN - 1;
@@ -104,11 +110,11 @@ int main(int argc, char **argv)
 
 	if (language != NULL)
 		if (spd_set_language(conn, language))
-			printf("Invalid language!\n");
+			printf(_("Invalid language!\n"));
 
 	if (output_module != NULL)
 		if (spd_set_output_module(conn, output_module))
-			printf("Invalid output module!\n");
+			printf(_("Invalid output module!\n"));
 
 	if (voice_type != NULL) {
 		if (!strcmp(voice_type, "male1")) {
@@ -142,23 +148,23 @@ int main(int argc, char **argv)
 
 	if (ssml_mode == SPD_DATA_SSML)
 		if (spd_execute_command(conn, "SET SELF SSML_MODE ON"))
-			printf("Failed to set SSML mode.\n");
+			printf(_("Failed to set SSML mode.\n"));
 
 	if (rate != (OTTS_VOICE_RATE_MIN - 1))
 		if (spd_set_voice_rate(conn, rate))
-			printf("Invalid rate!\n");
+			printf(_("Invalid rate!\n"));
 
 	if (pitch != (OTTS_VOICE_PITCH_MIN - 1))
 		if (spd_set_voice_pitch(conn, pitch))
-			printf("Invalid pitch!\n");
+			printf(_("Invalid pitch!\n"));
 
 	if (volume != (OTTS_VOICE_VOLUME_MIN - 1))
 		if (spd_set_volume(conn, volume))
-			printf("Invalid volume!\n");
+			printf(_("Invalid volume!\n"));
 
 	if (spelling == 1)
 		if (spd_set_spelling(conn, SPD_SPELL_ON))
-			printf("Can't set spelling to on!\n");
+			printf(_("Can't enable spelling!\n"));
 
 	if (punctuation_mode != NULL) {
 		if (!strcmp(punctuation_mode, "none")) {
@@ -176,11 +182,11 @@ int main(int argc, char **argv)
 	}
 
 	/* Set default priority... */
-	if (1 == pipe_mode)
+	if (pipe_mode == 1)
 		spd_priority = SPD_MESSAGE;
 	else
 		spd_priority = SPD_TEXT;
-	/* ...and look if it wasn't overriden */
+	/* ...and be sure it wasn't overridden */
 	if (priority != NULL) {
 		if (!strcmp(priority, "important"))
 			spd_priority = SPD_IMPORTANT;
@@ -193,7 +199,7 @@ int main(int argc, char **argv)
 		else if (!strcmp(priority, "progress"))
 			spd_priority = SPD_PROGRESS;
 		else {
-			printf("Invalid priority.\n");
+			printf(_("Invalid priority.\n"));
 		}
 	}
 
@@ -215,9 +221,9 @@ int main(int argc, char **argv)
 	/* In pipe mode, read from stdin, write to stdout, and also to openttsd. */
 	if (pipe_mode == 1) {
 		line = (char *)malloc(MAX_LINELEN);
-		while (NULL != fgets(line, MAX_LINELEN, stdin)) {
+		while (fgets(line, MAX_LINELEN, stdin) != NULL) {
 			fputs(line, stdout);
-			if (0 == strncmp(line, "!-!", 3)) {
+			if (strncmp(line, "!-!", 3) == 0) {
 				/* Remove EOL */
 				line[strlen(line) - 1] = 0;
 				spd_execute_command(conn, line + 3);
@@ -228,13 +234,11 @@ int main(int argc, char **argv)
 			}
 		}
 		free(line);
-
 	} else {
 		/* Say the message with priority "text" */
 		/* Or do nothing in case of -C or -S with no message. */
 		if (optind < argc) {
-			err =
-			    spd_sayf(conn, spd_priority, (char *)argv[optind]);
+			err = spd_sayf(conn, spd_priority, (char *)argv[optind]);
 			if (err == -1)
 				FATAL("openttsd failed to say message");
 
