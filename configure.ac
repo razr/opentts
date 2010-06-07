@@ -324,7 +324,8 @@ modulebindir='${libdir}/opentts/modules'
 AC_SUBST(modulebindir)
 audiodir='${libdir}/opentts/audio'
 AC_SUBST(audiodir)
-
+localedir=${datadir}/locale
+AC_SUBST(localedir)
 
 # Extra libraries for sockets added by Willie Walker
 # based upon how SunStudio libraries work.  Also
