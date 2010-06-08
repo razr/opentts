@@ -358,9 +358,9 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	espeak_state = BEFORE_SYNTH;
 
 	/* Setting speech parameters. */
-	UPDATE_STRING_PARAMETER(language, espeak_set_language);
-	UPDATE_PARAMETER(voice, espeak_set_voice);
-	UPDATE_STRING_PARAMETER(synthesis_voice, espeak_set_synthesis_voice);
+	UPDATE_STRING_PARAMETER(voice.language, espeak_set_language);
+	UPDATE_PARAMETER(voice_type, espeak_set_voice);
+	UPDATE_STRING_PARAMETER(voice.name, espeak_set_synthesis_voice);
 
 	UPDATE_PARAMETER(rate, espeak_set_rate);
 	UPDATE_PARAMETER(volume, espeak_set_volume);
@@ -781,13 +781,13 @@ static void espeak_set_language_and_voice(char *lang, SPDVoiceType voice_code)
 
 static void espeak_set_voice(SPDVoiceType voice)
 {
-	assert(msg_settings.language);
-	espeak_set_language_and_voice(msg_settings.language, voice);
+	assert(msg_settings.voice.language);
+	espeak_set_language_and_voice(msg_settings.voice.language, voice);
 }
 
 static void espeak_set_language(char *lang)
 {
-	espeak_set_language_and_voice(lang, msg_settings.voice);
+	espeak_set_language_and_voice(lang, msg_settings.voice_type);
 }
 
 static void espeak_set_synthesis_voice(char *synthesis_voice)

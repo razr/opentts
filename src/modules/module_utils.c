@@ -230,20 +230,20 @@ gchar *do_set(void)
 					err = 2;
 			} else if (!strcmp(cur_item, "voice")) {
 				ret = str2voice(cur_value);
-				msg_settings.voice = ret;
+				msg_settings.voice_type = ret;
 			} else if (!strcmp(cur_item, "synthesis_voice")) {
-				g_free(msg_settings.synthesis_voice);
+				g_free(msg_settings.voice.name);
 				if (!strcmp(cur_value, "NULL"))
-					msg_settings.synthesis_voice = NULL;
+					msg_settings.voice.name = NULL;
 				else
-					msg_settings.synthesis_voice =
+					msg_settings.voice.name =
 					    g_strdup(cur_value);
 			} else if (!strcmp(cur_item, "language")) {
-				g_free(msg_settings.language);
+				g_free(msg_settings.voice.language);
 				if (!strcmp(cur_value, "NULL"))
-					msg_settings.language = NULL;
+					msg_settings.voice.language = NULL;
 				else
-					msg_settings.language =
+					msg_settings.voice.language =
 					    g_strdup(cur_value);
 			} else
 				err = 2;	/* Unknown parameter */
@@ -1139,9 +1139,9 @@ void clean_old_settings_table()
 	msg_settings_old.punctuation_mode = -1;
 	msg_settings_old.spelling_mode = -1;
 	msg_settings_old.cap_let_recogn = -1;
-	msg_settings_old.language = NULL;
-	msg_settings_old.voice = SPD_NO_VOICE;
-	msg_settings_old.synthesis_voice = NULL;
+	msg_settings_old.voice_type = SPD_NO_VOICE;
+	msg_settings_old.voice.name = NULL;
+	msg_settings_old.voice.language = NULL;
 }
 
 void init_settings_tables()
@@ -1153,9 +1153,9 @@ void init_settings_tables()
 	msg_settings.punctuation_mode = SPD_PUNCT_NONE;
 	msg_settings.spelling_mode = SPD_SPELL_OFF;
 	msg_settings.cap_let_recogn = SPD_CAP_NONE;
-	msg_settings.language = NULL;
-	msg_settings.voice = SPD_MALE1;
-	msg_settings.synthesis_voice = NULL;
+	msg_settings.voice_type = SPD_MALE1;
+	msg_settings.voice.name = NULL;
+	msg_settings.voice.language = NULL;
 	clean_old_settings_table();
 }
 

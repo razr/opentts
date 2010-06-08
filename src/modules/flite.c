@@ -174,7 +174,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	flite_message_type = SPD_MSGTYPE_TEXT;
 
 	/* Setting voice */
-	UPDATE_PARAMETER(voice, flite_set_voice);
+	UPDATE_PARAMETER(voice_type, flite_set_voice);
 	UPDATE_PARAMETER(rate, flite_set_rate);
 	UPDATE_PARAMETER(volume, flite_set_volume);
 	UPDATE_PARAMETER(pitch, flite_set_pitch);

@@ -367,19 +367,19 @@ int module_speak(char *data, size_t bytes, SPDMessageType msgtype)
 
 	/* If the voice was changed, re-set all the parameters */
 	// TODO: Handle synthesis_voice change too 
-	if ((msg_settings.voice != msg_settings_old.voice)
-	    || (msg_settings.language != NULL)
-	    && (msg_settings_old.language != NULL)
-	    && (strcmp(msg_settings.language, msg_settings_old.language))) {
+	if ((msg_settings.voice_type != msg_settings_old.voice_type)
+	    || (msg_settings.voice.language != NULL)
+	    && (msg_settings_old.voice.language != NULL)
+	    && (strcmp(msg_settings.voice.language, msg_settings_old.voice.language))) {
 		dbg("Cleaning old settings table");
 		clean_old_settings_table();
 	}
 
 	/* Setting voice parameters */
 	dbg("Updating parameters");
-	UPDATE_STRING_PARAMETER(language, festival_set_language);
-	UPDATE_PARAMETER(voice, festival_set_voice);
-	UPDATE_STRING_PARAMETER(synthesis_voice, festival_set_synthesis_voice);
+	UPDATE_STRING_PARAMETER(voice.language, festival_set_language);
+	UPDATE_PARAMETER(voice_type, festival_set_voice);
+	UPDATE_STRING_PARAMETER(voice.name, festival_set_synthesis_voice);
 	UPDATE_PARAMETER(rate, festival_set_rate);
 	UPDATE_PARAMETER(pitch, festival_set_pitch);
 	UPDATE_PARAMETER(volume, festival_set_volume);
@@ -970,14 +970,14 @@ char *cache_gen_key(SPDMessageType type)
 	char ktype;
 	int kpitch = 0, krate = 0, kvoice = 0;
 
-	if (msg_settings.language == NULL)
+	if (msg_settings.voice.language == NULL)
 		return NULL;
 
 	dbg("v, p, r = %d %d %d", FestivalCacheDistinguishVoices,
 	    FestivalCacheDistinguishPitch, FestivalCacheDistinguishRate);
 
 	if (FestivalCacheDistinguishVoices)
-		kvoice = msg_settings.voice;
+		kvoice = msg_settings.voice_type;
 	if (FestivalCacheDistinguishPitch)
 		kpitch = msg_settings.pitch;
 	if (FestivalCacheDistinguishRate)
@@ -995,7 +995,7 @@ char *cache_gen_key(SPDMessageType type)
 	}
 
 	key =
-	    g_strdup_printf("%c_%s_%d_%d_%d", ktype, msg_settings.language,
+	    g_strdup_printf("%c_%s_%d_%d_%d", ktype, msg_settings.voice.language,
 			    kvoice, krate, kpitch);
 
 	return key;

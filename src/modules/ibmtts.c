@@ -595,9 +595,9 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 		ibmtts_message_type = SPD_MSGTYPE_SPELL;
 
 	/* Setting speech parameters. */
-	UPDATE_STRING_PARAMETER(language, ibmtts_set_language);
-	UPDATE_PARAMETER(voice, ibmtts_set_voice);
-	UPDATE_STRING_PARAMETER(synthesis_voice, ibmtts_set_synthesis_voice);
+	UPDATE_STRING_PARAMETER(voice.language, ibmtts_set_language);
+	UPDATE_PARAMETER(voice_type, ibmtts_set_voice);
+	UPDATE_STRING_PARAMETER(voice.name, ibmtts_set_synthesis_voice);
 	UPDATE_PARAMETER(rate, ibmtts_set_rate);
 	UPDATE_PARAMETER(volume, ibmtts_set_volume);
 	UPDATE_PARAMETER(pitch, ibmtts_set_pitch);
@@ -1303,15 +1303,15 @@ ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice, char *dialect)
 
 static void ibmtts_set_voice(SPDVoiceType voice)
 {
-	if (msg_settings.language) {
-		ibmtts_set_language_and_voice(msg_settings.language, voice,
-					      NULL);
+	if (msg_settings.voice.language) {
+		ibmtts_set_language_and_voice(msg_settings.voice.language,
+		                              voice, NULL);
 	}
 }
 
 static void ibmtts_set_language(char *lang)
 {
-	ibmtts_set_language_and_voice(lang, msg_settings.voice, NULL);
+	ibmtts_set_language_and_voice(lang, msg_settings.voice_type, NULL);
 }
 
 /* sets the IBM voice according to its name. */
@@ -1328,7 +1328,7 @@ static void ibmtts_set_synthesis_voice(char *synthesis_voice)
 	for (i = 0; i < MAX_NB_OF_LANGUAGES; i++) {
 		if (!strcasecmp(eciLocales[i].name, synthesis_voice)) {
 			ibmtts_set_language_and_voice(eciLocales[i].lang,
-						      msg_settings.voice,
+						      msg_settings.voice_type,
 						      eciLocales[i].dialect);
 			break;
 		}
@@ -1637,7 +1637,7 @@ static char *ibmtts_subst_keys(char *key)
 	g_string_append(tmp, key);
 
 	GList *keyTable =
-	    g_hash_table_lookup(IbmttsKeySubstitution, msg_settings.language);
+	    g_hash_table_lookup(IbmttsKeySubstitution, msg_settings.voice.language);
 
 	if (keyTable)
 		g_list_foreach(keyTable, ibmtts_subst_keys_cb, tmp);

@@ -193,8 +193,8 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	UPDATE_STRING_PARAMETER(language, generic_set_language);
-	UPDATE_PARAMETER(voice, generic_set_voice);
+	UPDATE_STRING_PARAMETER(voice.language, generic_set_language);
+	UPDATE_PARAMETER(voice_type, generic_set_voice);
 	UPDATE_PARAMETER(punctuation_mode, generic_set_punct);
 	UPDATE_PARAMETER(pitch, generic_set_pitch);
 	UPDATE_PARAMETER(rate, generic_set_rate);
@@ -628,7 +628,7 @@ void generic_set_language(char *lang)
 		generic_msg_language->name = g_strdup("english");
 	}
 
-	generic_set_voice(msg_settings.voice);
+	generic_set_voice(msg_settings.voice_type);
 }
 
 void generic_set_voice(SPDVoiceType voice)

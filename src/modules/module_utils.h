@@ -59,10 +59,8 @@ typedef struct {
 	SPDSpelling spelling_mode;
 	SPDCapitalLetters cap_let_recogn;
 
-	char *language;
-
-	SPDVoiceType voice;
-	char *synthesis_voice;
+	SPDVoiceType voice_type;
+	SPDVoice voice;
 } SPDMsgSettings;
 
 extern AudioID *module_audio_id;
