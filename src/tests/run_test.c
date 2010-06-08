@@ -170,7 +170,7 @@ int init(void)
 	if (sockfd != -1) {
 		connect_success =
 		    connect(sockfd, (struct sockaddr *)&address,
-			    sizeof(struct sockaddr_un));
+			    SUN_LEN(&address));
 		if (connect_success == -1) {
 			close(sockfd);
 			sockfd = -1;
