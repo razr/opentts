@@ -24,7 +24,7 @@
 #ifndef __OPENTTS_AUDIO_PLUGIN_H
 #define __OPENTTS_AUDIO_PLUGIN_H
 
-#define SPD_AUDIO_PLUGIN_ENTRY_STR "spd_audio_plugin_get"
+#define AUDIO_PLUGIN_ENTRY_STR "audio_plugin_get"
 
 /* Tell indent to ignore the following ifdef. */
 /* *INDENT-OFF* */

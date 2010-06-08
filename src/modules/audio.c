@@ -101,10 +101,10 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 		return NULL;
 	}
 
-	fn = (plugin_entry_func) lt_dlsym(lt_h, SPD_AUDIO_PLUGIN_ENTRY_STR);
+	fn = (plugin_entry_func) lt_dlsym(lt_h, AUDIO_PLUGIN_ENTRY_STR);
 	if (NULL == fn) {
 		*error = (char *)g_strdup_printf("Cannot find symbol %s",
-						 SPD_AUDIO_PLUGIN_ENTRY_STR);
+						 AUDIO_PLUGIN_ENTRY_STR);
 		return NULL;
 	}
 
