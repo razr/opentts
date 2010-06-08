@@ -56,7 +56,7 @@ int set_priority_uid(int uid, SPDPriority priority)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int((int *)&settings->priority, priority);
+	settings->priority = priority;
 	return 0;
 }
 
@@ -97,7 +97,7 @@ int set_rate_uid(int uid, int rate)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->msg_settings.rate, rate);
+	settings->msg_settings.rate = rate;
 	return 0;
 }
 
@@ -114,7 +114,7 @@ int set_pitch_uid(int uid, int pitch)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->msg_settings.pitch, pitch);
+	settings->msg_settings.pitch = pitch;
 	return 0;
 }
 
@@ -131,7 +131,7 @@ int set_volume_uid(int uid, int volume)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->msg_settings.volume, volume);
+	settings->msg_settings.volume = volume;
 	return 0;
 }
 
@@ -181,7 +181,7 @@ int set_punctuation_mode_uid(int uid, SPDPunctuation punctuation)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int((int *)&settings->msg_settings.punctuation_mode, punctuation);
+	settings->msg_settings.punctuation_mode = punctuation;
 	return 0;
 }
 
@@ -195,7 +195,7 @@ int set_capital_letter_recognition_uid(int uid, SPDCapitalLetters recogn)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int((int *)&settings->msg_settings.cap_let_recogn, (int)recogn);
+	settings->msg_settings.cap_let_recogn = recogn;
 	return 0;
 }
 
@@ -211,7 +211,7 @@ int set_spelling_uid(int uid, SPDSpelling spelling)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int((int *)&settings->msg_settings.spelling_mode, (int)spelling);
+	settings->msg_settings.spelling_mode = spelling;
 	return 0;
 }
 
@@ -362,7 +362,7 @@ int set_pause_context_uid(int uid, int pause_context)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int(&settings->pause_context, pause_context);
+	settings->pause_context = pause_context;
 	return 0;
 }
 
@@ -376,7 +376,7 @@ int set_ssml_mode_uid(int uid, SPDDataMode ssml_mode)
 	if (settings == NULL)
 		return 1;
 
-	set_param_int((int *)&settings->ssml_mode, ssml_mode);
+	settings->ssml_mode = ssml_mode;
 	return 0;
 }
 
@@ -534,11 +534,6 @@ TFDSetElement *get_client_settings_by_uid(int uid)
 
 	element = g_hash_table_lookup(fd_settings, &uid);
 	return element;
-}
-
-void set_param_int(int *parameter, int value)
-{
-	*parameter = value;
 }
 
 char *set_param_str(char *parameter, char *value)

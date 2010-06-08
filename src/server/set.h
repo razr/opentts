@@ -93,7 +93,6 @@ int set_debug_destination_all(char *debug_destination);
 
 TFDSetElement *default_fd_set(void);
 
-void set_param_int(int *parameter, int value);
 char *set_param_str(char *parameter, char *value);
 
 void update_cl_settings(gpointer data, gpointer user_data);
