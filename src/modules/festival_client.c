@@ -33,6 +33,7 @@
 /*             Author :  Alan W Black (awb@cstr.ed.ac.uk)                */
 /*             Date   :  March 1999                                      */
 /*             Modified: Hynek Hanke (hanke@brailcom.org) (2003-2005)    */
+/*             Modified: Christopher Brannon <cmbrannon79@gmail.com> 2010*/
 /*-----------------------------------------------------------------------*/
 /*                                                                       */
 /* Client end of Festival server API in C designed specifically formerly */

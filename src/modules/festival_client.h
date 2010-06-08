@@ -32,6 +32,7 @@
 /*************************************************************************/
 /*             Author :  Alan W Black (awb@cstr.ed.ac.uk)                */
 /*             Date   :  March 1999                                      */
+/*             Modifed:  OpenTTS Developers (www.opentts.org) 2010       */
 /*-----------------------------------------------------------------------*/
 /*                                                                       */
 /* Client end of Festival server API (in C) designed specifically for    */

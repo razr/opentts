@@ -2,6 +2,7 @@
  * module_utils.h - Module utilities
  *           Functions to help writing output modules for OpenTTS
  * Copyright (C) 2003, 2004, 2007 Brailcom, o.p.s.
+ * Copyright (c) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
