@@ -108,8 +108,8 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 		new->settings.index_mark = NULL;
 		COPY_SET_STR(client_name);
 		COPY_SET_STR(output_module);
-		COPY_SET_STR(language);
-		COPY_SET_STR(synthesis_voice);
+		COPY_SET_STR(msg_settings.voice.language);
+		COPY_SET_STR(msg_settings.voice.name);
 
 		/* And we set the global id (note that this is really global, not
 		 * depending on the particular client, but unique) */

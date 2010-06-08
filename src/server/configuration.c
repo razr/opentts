@@ -164,7 +164,7 @@ void free_config_options(configoption_t * opts, int *num)
 
 /* == CALLBACK DEFINITIONS == */
 GLOBAL_FDSET_OPTION_CB_STR(DefaultModule, output_module)
-GLOBAL_FDSET_OPTION_CB_STR(DefaultLanguage, language)
+GLOBAL_FDSET_OPTION_CB_STR(DefaultLanguage, msg_settings.voice.language)
 GLOBAL_FDSET_OPTION_CB_STR(DefaultClientName, client_name)
 
 GLOBAL_FDSET_OPTION_CB_STR(AudioOutputMethod, audio_output_method)
@@ -174,13 +174,13 @@ GLOBAL_FDSET_OPTION_CB_STR(AudioNASServer, audio_nas_server)
 GLOBAL_FDSET_OPTION_CB_STR(AudioPulseServer, audio_pulse_server)
 GLOBAL_FDSET_OPTION_CB_INT(AudioPulseMinLength, audio_pulse_min_length, 1, "")
 
-GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, rate, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, msg_settings.rate, (val >= -100)
 			   && (val <= +100), "Rate out of range.")
-GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, pitch, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, msg_settings.pitch, (val >= -100)
 			   && (val <= +100), "Pitch out of range.")
-GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, volume, (val >= -100)
+GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, msg_settings.volume, (val >= -100)
 			   && (val <= +100), "Volume out of range.")
-GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, spelling_mode, 1,
+GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, msg_settings.spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
 
@@ -214,9 +214,9 @@ DOTCONF_CB(cb_DefaultCapLetRecognition)
 	g_free(errmsg);
 	g_free(val_str);
 	if (!cl_spec_section)
-		GlobalFDSet.cap_let_recogn = val;
+		GlobalFDSet.msg_settings.cap_let_recogn = val;
 	else
-		cl_spec_section->val.cap_let_recogn = val;
+		cl_spec_section->val.msg_settings.cap_let_recogn = val;
 	return NULL;
 }
 
@@ -236,9 +236,9 @@ DOTCONF_CB(cb_DefaultPunctuationMode)
 	g_free(errmsg);
 	g_free(val_str);
 	if (!cl_spec_section)
-		GlobalFDSet.punctuation_mode = val;
+		GlobalFDSet.msg_settings.punctuation_mode = val;
 	else
-		cl_spec_section->val.punctuation_mode = val;
+		cl_spec_section->val.msg_settings.punctuation_mode = val;
 	return NULL;
 }
 
@@ -258,9 +258,9 @@ DOTCONF_CB(cb_DefaultVoiceType)
 	g_free(errmsg);
 	g_free(val_str);
 	if (!cl_spec_section)
-		GlobalFDSet.voice = val;
+		GlobalFDSet.msg_settings.voice_type = val;
 	else
-		cl_spec_section->val.voice = val;
+		cl_spec_section->val.msg_settings.voice_type = val;
 	return NULL;
 }
 
@@ -425,16 +425,16 @@ DOTCONF_CB(cb_BeginClient)
 	MSG(3, "Reading configuration for pattern %s", cl_spec->pattern);
 
 	/*  Warning: If you modify this, you must also modify update_cl_settings() in set.c ! */
-	SET_PAR(rate, -101)
-	    SET_PAR(pitch, -101)
-	    SET_PAR(volume, -101)
-	    SET_PAR(punctuation_mode, -1)
-	    SET_PAR(spelling_mode, -1)
-	    SET_PAR(voice, -1)
-	    SET_PAR(cap_let_recogn, -1)
+	SET_PAR(msg_settings.rate, -101)
+	    SET_PAR(msg_settings.pitch, -101)
+	    SET_PAR(msg_settings.volume, -101)
+	    SET_PAR(msg_settings.punctuation_mode, -1)
+	    SET_PAR(msg_settings.spelling_mode, -1)
+	    SET_PAR(msg_settings.voice_type, -1)
+	    SET_PAR(msg_settings.cap_let_recogn, -1)
 	    SET_PAR(pause_context, -1);
 	SET_PAR(ssml_mode, -1);
-	SET_PAR_STR(language)
+	SET_PAR_STR(msg_settings.voice.language)
 	    SET_PAR_STR(output_module)
 
 	    return NULL;
@@ -521,16 +521,16 @@ configoption_t *load_config_options(int *num_options)
 void load_default_global_set_options()
 {
 	GlobalFDSet.priority = SPD_MESSAGE;
-	GlobalFDSet.punctuation_mode = SPD_PUNCT_NONE;
-	GlobalFDSet.spelling_mode = SPD_SPELL_OFF;
-	GlobalFDSet.rate = 0;
-	GlobalFDSet.pitch = 0;
-	GlobalFDSet.volume = 0;
+	GlobalFDSet.msg_settings.punctuation_mode = SPD_PUNCT_NONE;
+	GlobalFDSet.msg_settings.spelling_mode = SPD_SPELL_OFF;
+	GlobalFDSet.msg_settings.rate = 0;
+	GlobalFDSet.msg_settings.pitch = 0;
+	GlobalFDSet.msg_settings.volume = 0;
 	GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");
-	GlobalFDSet.language = g_strdup("en");
+	GlobalFDSet.msg_settings.voice.language = g_strdup("en");
 	GlobalFDSet.output_module = NULL;
-	GlobalFDSet.voice = SPD_MALE1;
-	GlobalFDSet.cap_let_recogn = SPD_CAP_NONE;
+	GlobalFDSet.msg_settings.voice_type = SPD_MALE1;
+	GlobalFDSet.msg_settings.cap_let_recogn = SPD_CAP_NONE;
 	GlobalFDSet.min_delay_progress = 2000;
 	GlobalFDSet.pause_context = 0;
 	GlobalFDSet.ssml_mode = SPD_DATA_TEXT;

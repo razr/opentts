@@ -60,8 +60,10 @@ openttsd_message *copy_message(openttsd_message * old)
 
 	new->settings = old->settings;
 
-	new->settings.language = g_strdup(old->settings.language);
-	new->settings.synthesis_voice = g_strdup(old->settings.synthesis_voice);
+	new->settings.msg_settings.voice.language =
+		g_strdup(old->settings.msg_settings.voice.language);
+	new->settings.msg_settings.voice.name =
+		g_strdup(old->settings.msg_settings.voice.name);
 	new->settings.client_name = g_strdup(old->settings.client_name);
 	new->settings.output_module = g_strdup(old->settings.output_module);
 	new->settings.index_mark = g_strdup(old->settings.index_mark);
@@ -74,8 +76,8 @@ void mem_free_fdset(TFDSetElement * fdset)
 	/* Don't forget that only these items are filled in
 	   in a openttsd_message */
 	g_free(fdset->client_name);
-	g_free(fdset->language);
-	g_free(fdset->synthesis_voice);
+	g_free(fdset->msg_settings.voice.language);
+	g_free(fdset->msg_settings.voice.name);
 	g_free(fdset->output_module);
 	g_free(fdset->index_mark);
 }

@@ -41,8 +41,8 @@ AudioID *module_audio_id;
 
 int current_index_mark;
 
-SPDMsgSettings msg_settings;
-SPDMsgSettings msg_settings_old;
+OTTS_MsgSettings msg_settings;
+OTTS_MsgSettings msg_settings_old;
 
 int Debug;
 FILE *CustomDebugFile;

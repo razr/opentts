@@ -938,7 +938,7 @@ char *parse_get(const char *buf, const int bytes, const int fd)
 	if (TEST_CMD(get_type, "voice")) {
 		result = g_string_new("");
 
-		switch (settings->voice) {
+		switch (settings->msg_settings.voice_type) {
 		case SPD_MALE1:
 			g_string_append_printf(result, C_OK_GET "-MALE1\r\n");
 			break;

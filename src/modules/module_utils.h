@@ -50,23 +50,10 @@
 #include <timestamp.h>
 #include "audio.h"
 
-typedef struct {
-	signed int rate;
-	signed int pitch;
-	signed int volume;
-
-	SPDPunctuation punctuation_mode;
-	SPDSpelling spelling_mode;
-	SPDCapitalLetters cap_let_recogn;
-
-	SPDVoiceType voice_type;
-	SPDVoice voice;
-} SPDMsgSettings;
-
 extern AudioID *module_audio_id;
 
-extern SPDMsgSettings msg_settings;
-extern SPDMsgSettings msg_settings_old;
+extern OTTS_MsgSettings msg_settings;
+extern OTTS_MsgSettings msg_settings_old;
 
 extern int Debug;
 extern FILE *CustomDebugFile;

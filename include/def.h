@@ -25,6 +25,8 @@
 
 #define OPENTTSD_DEFAULT_PORT 6560
 
+#include "opentts/opentts_types.h"
+
 typedef enum {
 	SPD_MSGTYPE_TEXT = 0,
 	SPD_MSGTYPE_SOUND_ICON = 1,
@@ -32,5 +34,18 @@ typedef enum {
 	SPD_MSGTYPE_KEY = 3,
 	SPD_MSGTYPE_SPELL = 99
 } SPDMessageType;
+
+typedef struct {
+	signed int rate;
+	signed int pitch;
+	signed int volume;
+
+	SPDPunctuation punctuation_mode;
+	SPDSpelling spelling_mode;
+	SPDCapitalLetters cap_let_recogn;
+
+	SPDVoiceType voice_type;
+	SPDVoice voice;
+} OTTS_MsgSettings;
 
 #endif
