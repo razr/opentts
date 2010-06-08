@@ -2,6 +2,7 @@
  * parse.c - Parses commands which openttsd receives from clients
  *
  * Copyright (C) 2001, 2002, 2003, 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
