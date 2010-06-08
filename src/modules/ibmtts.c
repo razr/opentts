@@ -255,6 +255,7 @@ static void ibmtts_set_synthesis_voice(char *);
 static void ibmtts_set_rate(signed int rate);
 static void ibmtts_set_pitch(signed int pitch);
 static void ibmtts_set_volume(signed int pitch);
+static void ibmtts_set_punctuation_mode(SPDPunctuation punct_mode);
 
 /* Internal function prototypes for synthesis thread. */
 static char *ibmtts_extract_mark_name(char *mark);
@@ -302,7 +303,7 @@ MOD_OPTION_1_INT(IbmttsMaxChunkLength);
 MOD_OPTION_1_STR(IbmttsDelimiters);
 
 MOD_OPTION_1_INT(IbmttsUseSSML);
-
+MOD_OPTION_1_STR(IbmttsPunctuationList);
 MOD_OPTION_1_INT(IbmttsUseAbbreviation);
 MOD_OPTION_1_INT(IbmttsAudioChunkSize);
 MOD_OPTION_1_STR(IbmttsSoundIconFolder);
@@ -386,6 +387,7 @@ int module_load(void)
 
 	MOD_OPTION_1_INT_REG(IbmttsUseSSML, 1);
 	MOD_OPTION_1_INT_REG(IbmttsUseAbbreviation, 1);
+	MOD_OPTION_1_STR_REG(IbmttsPunctuationList, "()?");
 
 	MOD_OPTION_1_INT_REG(IbmttsAudioChunkSize, 20000);
 	MOD_OPTION_1_STR_REG(IbmttsSoundIconFolder,
@@ -468,9 +470,15 @@ int module_init(char **status_info)
 
 	eciSetParam(eciHandle, eciDictionary, !IbmttsUseAbbreviation);
 
+	/* enable annotations */
 	eciSetParam(eciHandle, eciInputType, 1);
+
 	/* load possibly the ssml filter */
 	eciAddText(eciHandle, " `gfa1 ");
+
+	/* load possibly the punctuation filter */
+	eciAddText(eciHandle, " `gfa2 ");
+	ibmtts_set_punctuation_mode(msg_settings.punctuation_mode);
 
 	alloc_voice_list();
 
@@ -604,8 +612,8 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	UPDATE_PARAMETER(rate, ibmtts_set_rate);
 	UPDATE_PARAMETER(volume, ibmtts_set_volume);
 	UPDATE_PARAMETER(pitch, ibmtts_set_pitch);
+	UPDATE_PARAMETER(punctuation_mode, ibmtts_set_punctuation_mode);
 	/* TODO: Handle these in _ibmtts_synth() ?
-	   UPDATE_PARAMETER(punctuation_mode, festival_set_punctuation_mode);
 	   UPDATE_PARAMETER(cap_let_recogn, festival_set_cap_let_recogn);
 	 */
 
@@ -1010,10 +1018,6 @@ static void *_ibmtts_synth(void *nothing)
 			}
 
 			/* TODO: How to map these msg_settings to ibm tts?
-			   EPunctMode punctuation_mode;
-			   PUNCT_NONE = 0,
-			   PUNCT_ALL = 1,
-			   PUNCT_SOME = 2
 			   ESpellMode spelling_mode;
 			   SPELLING_ON already handled in module_speak()
 			   ECapLetRecogn cap_let_recogn;
@@ -1122,6 +1126,32 @@ static void ibmtts_set_pitch(signed int pitch)
 		ibmtts_log_eci_error();
 	} else
 		dbg("Ibmtts: Pitch set to %i.", pitchBaseline);
+}
+
+static void ibmtts_set_punctuation_mode(SPDPunctuation punct_mode)
+{
+	const char *fmt = "`Pf%d%s";
+	gchar *msg;
+	int ibmtts_punct_mode = 0;
+
+	switch (punct_mode) {
+	case SPD_PUNCT_NONE:
+		ibmtts_punct_mode = 0;
+		break;
+	case SPD_PUNCT_SOME:
+		ibmtts_punct_mode = 2;
+		break;
+	case SPD_PUNCT_ALL:
+		ibmtts_punct_mode = 1;
+		break;
+	case SPD_PUNCT_ERR:
+		dbg("Unable to set punctuation mode.");
+		return;
+	}
+
+	msg = g_strdup_printf(fmt, ibmtts_punct_mode, IbmttsPunctuationList);
+	eciAddText(eciHandle, msg);
+	g_free(msg);
 }
 
 static char *ibmtts_voice_enum_to_str(SPDVoiceType voice)
