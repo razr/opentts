@@ -301,7 +301,6 @@ static void *_ibmtts_stop_or_pause(void *);
 MOD_OPTION_1_INT(IbmttsMaxChunkLength);
 MOD_OPTION_1_STR(IbmttsDelimiters);
 
-/* Does IBM TTS support SSML or should we strip it off? */
 MOD_OPTION_1_INT(IbmttsUseSSML);
 
 MOD_OPTION_1_INT(IbmttsUseAbbreviation);
@@ -385,7 +384,7 @@ int module_load(void)
 	MOD_OPTION_1_INT_REG(IbmttsMaxChunkLength, 3000);
 	MOD_OPTION_1_STR_REG(IbmttsDelimiters, "");
 
-	MOD_OPTION_1_INT_REG(IbmttsUseSSML, 0);
+	MOD_OPTION_1_INT_REG(IbmttsUseSSML, 1);
 	MOD_OPTION_1_INT_REG(IbmttsUseAbbreviation, 1);
 
 	MOD_OPTION_1_INT_REG(IbmttsAudioChunkSize, 20000);
@@ -468,6 +467,10 @@ int module_init(char **status_info)
 	}
 
 	eciSetParam(eciHandle, eciDictionary, !IbmttsUseAbbreviation);
+
+	eciSetParam(eciHandle, eciInputType, 1);
+	/* load possibly the ssml filter */
+	eciAddText(eciHandle, " `gfa1 ");
 
 	alloc_voice_list();
 
