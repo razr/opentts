@@ -62,8 +62,8 @@ extern pthread_mutex_t module_stdout_mutex;
 extern configoption_t *module_dc_options;
 extern int module_num_dc_options;
 
-void clean_old_settings_table();
-void init_settings_tables();
+void clean_old_settings_table(void);
+void init_settings_tables(void);
 void dbg(char *fmt, ...);
 
 #define FATAL(msg) { \
@@ -121,7 +121,7 @@ int module_get_message_part(const char *message, char *part,
 			    unsigned int *pos, size_t maxlen,
 			    const char *dividers);
 
-void set_speaking_thread_parameters();
+void set_speaking_thread_parameters(void);
 
 void module_parent_dp_init(TModuleDoublePipe dpipe);
 void module_child_dp_init(TModuleDoublePipe dpipe);
@@ -190,9 +190,9 @@ int semaphore_post(int sem_id);
 void *module_get_ht_option(GHashTable * hash_table, const char *key);
 
 configoption_t *module_add_config_option(configoption_t * options,
-				  int *num_config_options, char *name, int type,
-				  dotconf_callback_t callback, info_t * info,
-				  unsigned long context);
+					 int *num_config_options, char *name,
+					 int type, dotconf_callback_t callback,
+					 info_t * info, unsigned long context);
 
 /* --- MODULE DOTCONF OPTIONS DEFINITION AND REGISTRATION --- */
 

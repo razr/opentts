@@ -282,8 +282,6 @@ gchar *do_audio(void)
 	char *line = NULL;
 	int ret;
 	size_t n;
-	int number;
-	char *tptr;
 	int err = 0;		/* Error status */
 	char *status;
 	char *msg;
@@ -360,7 +358,6 @@ gchar *do_loglevel(void)
 	int number;
 	char *tptr;
 	int err = 0;		/* Error status */
-	char *status;
 	char *msg;
 
 	printf("207 OK RECEIVING LOGLEVEL SETTINGS\n");
@@ -399,7 +396,8 @@ gchar *do_loglevel(void)
 					xfree(line);
 					continue;
 				}
-				opentts_audio_set_loglevel(module_audio_id, number);
+				opentts_audio_set_loglevel(module_audio_id,
+							   number);
 			} else
 				err = 2;	/* Unknown parameter */
 		}
@@ -834,8 +832,23 @@ void module_child_dp_close(TModuleDoublePipe dpipe)
 void
 module_child_dp_write(TModuleDoublePipe dpipe, const char *msg, size_t bytes)
 {
+	int ret;
 	assert(msg != NULL);
-	write(dpipe.cp[1], msg, bytes);
+	do {
+		ret = write(dpipe.cp[1], msg, bytes);
+		if (ret < 0) {
+			if (errno == EINTR)
+				continue;	/* Try again. */
+			else
+				FATAL("Unable to write data.");
+		} else if (ret == bytes)
+			break;
+		else {
+			/* ret < bytes.  We haven't written it all. */
+			bytes -= ret;
+			msg += ret;
+		}
+	} while (bytes > 0);
 }
 
 int
@@ -902,7 +915,7 @@ void module_sigblockusr(sigset_t * some_signals)
 
 }
 
-void set_speaking_thread_parameters()
+void set_speaking_thread_parameters(void)
 {
 	int ret;
 	sigset_t all_signals;
@@ -1008,7 +1021,7 @@ void module_send_asynchronous(char *text)
 {
 	pthread_mutex_lock(&module_stdout_mutex);
 	dbg("Printing reply: %s", text);
-	fprintf(stdout, text);
+	fprintf(stdout, "%s", text);
 	fflush(stdout);
 	dbg("Printed");
 	pthread_mutex_unlock(&module_stdout_mutex);
@@ -1112,8 +1125,8 @@ int module_audio_init_spd(char **status_info)
 	outputs = g_strsplit(module_audio_pars[0], ",", 0);
 	while (NULL != outputs[i]) {
 		module_audio_id =
-		    opentts_audio_open(outputs[i], (void **)&module_audio_pars[1],
-				   &error);
+		    opentts_audio_open(outputs[i],
+				       (void **)&module_audio_pars[1], &error);
 		if (module_audio_id) {
 			dbg("Using %s audio output method", outputs[i]);
 			g_strfreev(outputs);
@@ -1131,7 +1144,7 @@ int module_audio_init_spd(char **status_info)
 
 }
 
-void clean_old_settings_table()
+void clean_old_settings_table(void)
 {
 	msg_settings_old.rate = -101;
 	msg_settings_old.pitch = -101;
@@ -1144,7 +1157,7 @@ void clean_old_settings_table()
 	msg_settings_old.voice.language = NULL;
 }
 
-void init_settings_tables()
+void init_settings_tables(void)
 {
 	module_dc_options = NULL;
 	msg_settings.rate = 0;
