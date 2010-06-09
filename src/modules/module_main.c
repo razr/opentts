@@ -2,6 +2,7 @@
  * module_main.c - One way of doing main() in output modules.
  * 
  * Copyright (C) 2001, 2002, 2003, 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *
- * $Id: module_main.c,v 1.17 2008-10-15 17:05:37 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H

@@ -6,6 +6,7 @@
  * an error message in various ways.
  *
  * Copyright (C) 2008 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -22,7 +23,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: dummy.c,v 1.3 2008-06-09 10:32:00 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H

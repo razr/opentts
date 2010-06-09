@@ -3,6 +3,7 @@
  * generic.c - OpenTTS generic output module
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,7 +20,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: generic.c,v 1.30 2008-07-30 09:15:51 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H

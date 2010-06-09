@@ -3,6 +3,7 @@
  * ibmtts.c - OpenTTS backend for IBM TTS
  *
  * Copyright (C) 2006, 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +21,6 @@
  *
  * @author  Gary Cramblitt <garycramblitt@comcast.net> (original author)
  *
- * $Id: ibmtts.c,v 1.30 2008-06-30 14:34:02 gcasse Exp $
  */
 
 /* This output module operates with four threads:

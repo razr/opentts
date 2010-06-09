@@ -3,6 +3,7 @@
  * ivona_client.c - OpenTTS backend for Ivona (IVO Software)
  *
  * Copyright (C) Bohdan R. Rau 2008 <ethanak@polip.com>
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by

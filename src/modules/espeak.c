@@ -3,6 +3,7 @@
  * espeak.c - OpenTTS backend for espeak
  *
  * Copyright (C) 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -22,7 +23,6 @@
  * @author Lukas Loehrer
  * Based on ibmtts.c.
  *
- * $Id: espeak.c,v 1.11 2008-10-15 17:04:36 hanke Exp $
  */
 
 /* < Includes*/

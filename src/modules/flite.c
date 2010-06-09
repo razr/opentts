@@ -3,6 +3,7 @@
  * flite.c - OpenTTS backend for Flite (Festival Lite)
  *
  * Copyright (C) 2001, 2002, 2003, 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,7 +20,6 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: flite.c,v 1.59 2008-06-09 10:38:02 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H

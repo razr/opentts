@@ -2,6 +2,7 @@
  * module_utils_addvoice.c - Functionality for the DotConf AddVoice feature
  * 
  * Copyright (C) 2001, 2002, 2003, 2006, 2007 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
@@ -18,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *
- * $Id: module_utils_addvoice.c,v 1.5 2007-07-29 23:43:33 hanke Exp $
  */
 
 #ifdef HAVE_CONFIG_H

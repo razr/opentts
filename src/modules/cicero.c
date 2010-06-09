@@ -2,6 +2,7 @@
  * cicero.c - OpenTTS backend for Cicero French TTS engine
  *
  * Copyright (C) 2006 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
