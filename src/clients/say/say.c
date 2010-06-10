@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 	/* Check if the text to say or options are specified in the argument */
 	msg_arg_required = (pipe_mode != 1) && (stop_previous != 1)
 	    && (cancel_previous != 1);
-	if ((optind < argc) && msg_arg_required) {
+	if ((optind >= argc) && msg_arg_required) {
 		/*
 		 * We require a message on the command-line, but there
 		 * are no arguments.
