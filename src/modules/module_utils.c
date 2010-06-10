@@ -865,14 +865,22 @@ module_parent_dp_write(TModuleDoublePipe dpipe, const char *msg, size_t bytes)
 int module_child_dp_read(TModuleDoublePipe dpipe, char *msg, size_t maxlen)
 {
 	int bytes;
-	bytes = read(dpipe.pc[0], msg, maxlen);
+	while ((bytes = read(dpipe.pc[0], msg, maxlen)) < 0) {
+		if (errno != EINTR) {
+			FATAL("Unable to read data");
+		}
+	}
 	return bytes;
 }
 
 int module_parent_dp_read(TModuleDoublePipe dpipe, char *msg, size_t maxlen)
 {
 	int bytes;
-	bytes = read(dpipe.cp[0], msg, maxlen);
+	while ((bytes = read(dpipe.cp[0], msg, maxlen)) < 0) {
+		if (errno != EINTR) {
+			FATAL("Unable to read data");
+		}
+	}
 	return bytes;
 }
 
