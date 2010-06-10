@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <getopt.h>
 #include <semaphore.h>
 #include <errno.h>
 #include <opentts/libopentts.h>
@@ -53,6 +54,7 @@ int main(int argc, char **argv)
 	SPDPriority spd_priority;
 	int err;
 	int ret;
+	int msg_arg_required = 0;
 	int option_ret;
 	char *line;
 
@@ -75,7 +77,13 @@ int main(int argc, char **argv)
 	option_ret = options_parse(argc, argv);
 
 	/* Check if the text to say or options are specified in the argument */
-	if ((argc < 2) && (pipe_mode != 1)) {
+	msg_arg_required = (pipe_mode != 1) && (stop_previous != 1)
+	    && (cancel_previous != 1);
+	if ((optind < argc) && msg_arg_required) {
+		/*
+		 * We require a message on the command-line, but there
+		 * are no arguments.
+		 */
 		options_print_help(argv);
 		return 1;
 	}
@@ -223,14 +231,17 @@ int main(int argc, char **argv)
 
 	} else {
 		/* Say the message with priority "text" */
-		assert(argv[argc - 1]);
-		err = spd_sayf(conn, spd_priority, (char *)argv[argc - 1]);
-		if (err == -1)
-			FATAL("openttsd failed to say message");
+		/* Or do nothing in case of -C or -S with no message. */
+		if (optind < argc) {
+			err =
+			    spd_sayf(conn, spd_priority, (char *)argv[optind]);
+			if (err == -1)
+				FATAL("openttsd failed to say message");
 
-		/* Wait till the callback is called */
-		if (wait_till_end)
-			sem_wait(&semaphore);
+			/* Wait till the callback is called */
+			if (wait_till_end)
+				sem_wait(&semaphore);
+		}
 	}
 
 	/* Close the connection */
