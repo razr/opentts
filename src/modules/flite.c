@@ -428,8 +428,8 @@ static void flite_set_pitch(signed int pitch)
 {
 	float f0;
 
-	assert(pitch >= -100 && pitch <= +100);
-	f0 = (((float)pitch) * 0.8) + 100;
+	assert(pitch >= OTTS_VOICE_PITCH_MIN && pitch <= OTTS_VOICE_PITCH_MAX);
+	f0 = (((float)pitch) * 0.8) + 100.0;
 	feat_set_float(flite_voice->features, "int_f0_target_mean", f0);
 }
 

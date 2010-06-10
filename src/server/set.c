@@ -107,7 +107,7 @@ int set_pitch_uid(int uid, int pitch)
 {
 	TFDSetElement *settings;
 
-	if ((pitch > 100) || (pitch < -100))
+	if ((pitch > OTTS_VOICE_PITCH_MAX) || (pitch < OTTS_VOICE_PITCH_MIN))
 		return 1;
 
 	settings = get_client_settings_by_uid(uid);
@@ -279,7 +279,7 @@ void update_cl_settings(gpointer data, gpointer user_data)
 
 	/*  Warning: If you modify this, you must also modify cb_BeginClient in config.c ! */
 	CHECK_SET_PAR(msg_settings.rate, (OTTS_VOICE_RATE_MIN - 1))
-	CHECK_SET_PAR(msg_settings.pitch, -101)
+	CHECK_SET_PAR(msg_settings.pitch, (OTTS_VOICE_PITCH_MIN -1))
 	CHECK_SET_PAR(msg_settings.volume, -101)
 	CHECK_SET_PAR(msg_settings.punctuation_mode, -1)
 	CHECK_SET_PAR(msg_settings.spelling_mode, -1)

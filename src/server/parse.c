@@ -502,9 +502,9 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		signed int pitch;
 		GET_PARAM_INT(pitch, 3);
 
-		if (pitch < -100)
+		if (pitch < OTTS_VOICE_PITCH_MIN)
 			return g_strdup(ERR_PITCH_TOO_LOW);
-		if (pitch > +100)
+		if (pitch > OTTS_VOICE_PITCH_MAX)
 			return g_strdup(ERR_PITCH_TOO_HIGH);
 
 		SSIP_SET_COMMAND(pitch);

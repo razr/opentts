@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	char *line;
 
 	rate = OTTS_VOICE_RATE_MIN - 1;
-	pitch = -101;
+	pitch = OTTS_VOICE_PITCH_MIN - 1;
 	volume = -101;
 	language = NULL;
 	voice_type = NULL;
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 		if (spd_set_voice_rate(conn, rate))
 			printf("Invalid rate!\n");
 
-	if (pitch != -101)
+	if (pitch != (OTTS_VOICE_PITCH_MIN - 1))
 		if (spd_set_voice_pitch(conn, pitch))
 			printf("Invalid pitch!\n");
 

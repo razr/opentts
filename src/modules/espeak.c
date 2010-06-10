@@ -660,19 +660,21 @@ static void espeak_set_volume(signed int volume)
 
 static void espeak_set_pitch(signed int pitch)
 {
-	assert(pitch >= -100 && pitch <= +100);
 	int pitchBaseline;
+
+	assert(pitch >= OTTS_VOICE_PITCH_MIN && pitch <= OTTS_VOICE_PITCH_MAX);
+
 	/* Possible range 0 to 100. */
-	if (pitch < 0) {
+	if (pitch < OTTS_VOICE_PITCH_DEFAULT) {
 		pitchBaseline =
-		    ((float)(pitch + 100) * espeak_voice_pitch_baseline) /
-		    (float)100;
+		    ((OTTS_VOICE_PITCH_DEFAULT - pitch) * espeak_voice_pitch_baseline) /
+		    (OTTS_VOICE_PITCH_DEFAULT - OTTS_VOICE_PITCH_MIN);
 	} else {
-		pitchBaseline =
-		    (((float)pitch * (100 - espeak_voice_pitch_baseline))
-		     / (float)100) + espeak_voice_pitch_baseline;
+		pitchBaseline = espeak_voice_pitch_baseline
+			+ (((pitch - OTTS_VOICE_PITCH_DEFAULT) * (100 - espeak_voice_pitch_baseline))
+			/ (OTTS_VOICE_PITCH_MAX - OTTS_VOICE_PITCH_DEFAULT));
 	}
-	assert(pitchBaseline >= 0 && pitchBaseline <= 100);
+
 	espeak_ERROR ret = espeak_SetParameter(espeakPITCH, pitchBaseline, 0);
 	if (ret != EE_OK) {
 		dbg("Espeak: Error setting pitch %i.", pitchBaseline);

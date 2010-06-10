@@ -1104,24 +1104,25 @@ static void ibmtts_set_volume(signed int volume)
 
 static void ibmtts_set_pitch(signed int pitch)
 {
+	int pitchBaseline;
+
+	assert(pitch >= OTTS_VOICE_PITCH_MIN && pitch <= OTTS_VOICE_PITCH_MAX);
+
 	/* Setting pitch to midpoint is to low.  eci values between 65 and 89
 	   are "normal".
 	   See chart on pg 38 of the ECI manual. */
-	assert(pitch >= -100 && pitch <= +100);
-	int pitchBaseline;
+
 	/* Possible range 0 to 100. */
-	if (pitch < 0)
+	if (pitch < OTTS_VOICE_PITCH_DEFAULT)
 		/* Map -100 to 0 onto 0 to ibmtts_voice_pitch_baseline */
-		pitchBaseline =
-		    ((float)(pitch + 100) * ibmtts_voice_pitch_baseline) /
-		    (float)100;
+		pitchBaseline = (pitch - OTTS_VOICE_PITCH_MIN) * ibmtts_voice_pitch_baseline
+			/ (OTTS_VOICE_PITCH_DEFAULT - OTTS_VOICE_PITCH_MIN);
 	else
 		/* Map 0 to 100 onto ibmtts_voice_pitch_baseline to 100 */
-		pitchBaseline =
-		    (((float)pitch * (100 - ibmtts_voice_pitch_baseline)) /
-		     (float)100)
-		    + ibmtts_voice_pitch_baseline;
-	assert(pitchBaseline >= 0 && pitchBaseline <= 100);
+		pitchBaseline = ibmtts_voice_pitch_baseline
+			+ ((pitch - OTTS_VOICE_PITCH_DEFAULT) * (100 - ibmtts_voice_pitch_baseline)
+			/ (OTTS_VOICE_PITCH_MAX - OTTS_VOICE_PITCH_DEFAULT));
+
 	int ret =
 	    eciSetVoiceParam(eciHandle, 0, eciPitchBaseline, pitchBaseline);
 	if (-1 == ret) {

@@ -26,6 +26,10 @@
 #define OTTS_VOICE_RATE_MAX		(100)
 #define OTTS_VOICE_RATE_DEFAULT		(0)
 
+#define OTTS_VOICE_PITCH_MIN		(-100)
+#define OTTS_VOICE_PITCH_MAX		(100)
+#define OTTS_VOICE_PITCH_DEFAULT	(0)
+
 /*
  * Constants surrounded by #ifdef OPENTTS_INTERNAL are not meant for use
  * by clients.
