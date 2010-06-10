@@ -768,18 +768,19 @@ spd_w_set_voice_type(SPDConnection * connection, SPDVoiceType type,
         return spd_w_set_ ## param (connection, val, who); \
     }
 
-SPD_SET_COMMAND_INT(voice_rate, RATE, ((val >= -100) && (val <= +100)))
-    SPD_SET_COMMAND_INT(voice_pitch, PITCH, ((val >= -100) && (val <= +100)))
-    SPD_SET_COMMAND_INT(volume, VOLUME, ((val >= -100) && (val <= +100)))
+	SPD_SET_COMMAND_INT(voice_rate, RATE, ((val >= OTTS_VOICE_RATE_MIN)
+	                                       && (val <= OTTS_VOICE_RATE_MAX)))
+	SPD_SET_COMMAND_INT(voice_pitch, PITCH, ((val >= -100) && (val <= +100)))
+	SPD_SET_COMMAND_INT(volume, VOLUME, ((val >= -100) && (val <= +100)))
 
-    SPD_SET_COMMAND_STR(language, LANGUAGE)
-    SPD_SET_COMMAND_STR(output_module, OUTPUT_MODULE)
-    SPD_SET_COMMAND_STR(synthesis_voice, SYNTHESIS_VOICE)
+	SPD_SET_COMMAND_STR(language, LANGUAGE)
+	SPD_SET_COMMAND_STR(output_module, OUTPUT_MODULE)
+	SPD_SET_COMMAND_STR(synthesis_voice, SYNTHESIS_VOICE)
 
-    SPD_SET_COMMAND_SPECIAL(punctuation, SPDPunctuation)
-    SPD_SET_COMMAND_SPECIAL(capital_letters, SPDCapitalLetters)
-    SPD_SET_COMMAND_SPECIAL(spelling, SPDSpelling)
-    SPD_SET_COMMAND_SPECIAL(voice_type, SPDVoiceType)
+	SPD_SET_COMMAND_SPECIAL(punctuation, SPDPunctuation)
+	SPD_SET_COMMAND_SPECIAL(capital_letters, SPDCapitalLetters)
+	SPD_SET_COMMAND_SPECIAL(spelling, SPDSpelling)
+	SPD_SET_COMMAND_SPECIAL(voice_type, SPDVoiceType)
 #undef SPD_SET_COMMAND_INT
 #undef SPD_SET_COMMAND_STR
 #undef SPD_SET_COMMAND_SPECIAL

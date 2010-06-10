@@ -453,10 +453,17 @@ static void cicero_set_rate(signed int rate)
 		3.0000
 	};
 	float expand;
-	rate -= 100;
-	rate = abs(rate);
-	rate /= 10;
-	expand = spkRateTable[rate];
+	int pos, size = sizeof(spkRateTable) / sizeof(float);
+
+	/*
+	 * Map values in the range -100 to 100 to the range 20 to 0.
+	 * -100 maps to 20, 0 maps to 10, and 100 maps to 0.
+	 * Then use table lookup to find the appropriate value.
+	 */
+	rate -= OTTS_RATE_MAX;
+	pos = abs(rate) * (size - 1) / (OTTS_RATE_MAX - OTTS_RATE_MIN);
+	expand = spkRateTable[pos];
+
 	unsigned char *p = (unsigned char *)&expand;
 	unsigned char l[5];
 	l[0] = 3;

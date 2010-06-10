@@ -622,14 +622,20 @@ static void *_espeak_stop_or_pause(void *nothing)
 
 static void espeak_set_rate(signed int rate)
 {
-	assert(rate >= -100 && rate <= +100);
 	int speed;
 	int normal_rate = 170, max_rate = 390, min_rate = 80;
 
-	if (rate < 0)
-		speed = normal_rate + (normal_rate - min_rate) * rate / 100;
+	assert(rate >= OTTS_VOICE_RATE_MIN && rate <= OTTS_VOICE_RATE_MAX);
+	if (rate < OTTS_VOICE_RATE_DEFAULT)
+		speed = min_rate + ((normal_rate - min_rate)
+				    * (rate - OTTS_VOICE_RATE_MIN)
+				    / (OTTS_VOICE_RATE_DEFAULT -
+				       OTTS_VOICE_RATE_MIN));
 	else
-		speed = normal_rate + (max_rate - normal_rate) * rate / 100;
+		speed = normal_rate + ((max_rate - normal_rate)
+				       * (rate - OTTS_VOICE_RATE_DEFAULT)
+				       / (OTTS_VOICE_RATE_MAX -
+					  OTTS_VOICE_RATE_DEFAULT));
 
 	espeak_ERROR ret = espeak_SetParameter(espeakRATE, speed, 0);
 	if (ret != EE_OK) {

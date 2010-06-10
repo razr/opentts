@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	int option_ret;
 	char *line;
 
-	rate = -101;
+	rate = OTTS_VOICE_RATE_MIN - 1;
 	pitch = -101;
 	volume = -101;
 	language = NULL;
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 		if (spd_execute_command(conn, "SET SELF SSML_MODE ON"))
 			printf("Failed to set SSML mode.\n");
 
-	if (rate != -101)
+	if (rate != (OTTS_VOICE_RATE_MIN - 1))
 		if (spd_set_voice_rate(conn, rate))
 			printf("Invalid rate!\n");
 

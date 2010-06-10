@@ -1052,21 +1052,24 @@ static void *_ibmtts_synth(void *nothing)
 
 static void ibmtts_set_rate(signed int rate)
 {
+	int speed;
+
 	/* Setting rate to midpoint is too fast.  An eci value of 50 is "normal".
 	   See chart on pg 38 of the ECI manual. */
-	assert(rate >= -100 && rate <= +100);
-	int speed;
+	assert(rate >= OTTS_VOICE_RATE_MIN && rate <= OTTS_VOICE_RATE_MAX);
 	/* Possible ECI range is 0 to 250. */
 	/* Map rate -100 to 100 onto speed 0 to 140. */
-	if (rate < 0)
+	if (rate < OTTS_VOICE_RATE_DEFAULT)
 		/* Map -100 to 0 onto 0 to ibmtts_voice_speed */
-		speed = ((float)(rate + 100) * ibmtts_voice_speed) / (float)100;
+		speed = (rate - OTTS_VOICE_RATE_MIN) * ibmtts_voice_speed
+		    / (OTTS_VOICE_RATE_DEFAULT - OTTS_VOICE_RATE_MIN);
 	else
 		/* Map 0 to 100 onto ibmtts_voice_speed to 140 */
-		speed =
-		    (((float)rate * (140 - ibmtts_voice_speed)) / (float)100)
-		    + ibmtts_voice_speed;
-	assert(speed >= 0 && speed <= 140);
+		speed = ibmtts_voice_speed
+		    + (rate - OTTS_VOICE_RATE_DEFAULT) * (140 -
+							  ibmtts_voice_speed)
+		    / (OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_DEFAULT);
+
 	int ret = eciSetVoiceParam(eciHandle, 0, eciSpeed, speed);
 	if (-1 == ret) {
 		dbg("Ibmtts: Error setting rate %i.", speed);

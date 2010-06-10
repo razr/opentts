@@ -489,9 +489,9 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		signed int rate;
 		GET_PARAM_INT(rate, 3);
 
-		if (rate < -100)
+		if (rate < OTTS_VOICE_RATE_MIN)
 			return g_strdup(ERR_RATE_TOO_LOW);
-		if (rate > +100)
+		if (rate > OTTS_VOICE_RATE_MAX)
 			return g_strdup(ERR_RATE_TOO_HIGH);
 
 		SSIP_SET_COMMAND(rate);

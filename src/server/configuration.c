@@ -174,8 +174,9 @@ GLOBAL_FDSET_OPTION_CB_STR(AudioNASServer, audio_nas_server)
 GLOBAL_FDSET_OPTION_CB_STR(AudioPulseServer, audio_pulse_server)
 GLOBAL_FDSET_OPTION_CB_INT(AudioPulseMinLength, audio_pulse_min_length, 1, "")
 
-GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, msg_settings.rate, (val >= -100)
-			   && (val <= +100), "Rate out of range.")
+GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, msg_settings.rate,
+                           (val >= OTTS_VOICE_RATE_MIN)
+			   && (val <= OTTS_VOICE_RATE_MAX), "Rate out of range.")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, msg_settings.pitch, (val >= -100)
 			   && (val <= +100), "Pitch out of range.")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, msg_settings.volume, (val >= -100)
@@ -425,19 +426,19 @@ DOTCONF_CB(cb_BeginClient)
 	MSG(3, "Reading configuration for pattern %s", cl_spec->pattern);
 
 	/*  Warning: If you modify this, you must also modify update_cl_settings() in set.c ! */
-	SET_PAR(msg_settings.rate, -101)
-	    SET_PAR(msg_settings.pitch, -101)
-	    SET_PAR(msg_settings.volume, -101)
-	    SET_PAR(msg_settings.punctuation_mode, -1)
-	    SET_PAR(msg_settings.spelling_mode, -1)
-	    SET_PAR(msg_settings.voice_type, -1)
-	    SET_PAR(msg_settings.cap_let_recogn, -1)
-	    SET_PAR(pause_context, -1);
+	SET_PAR(msg_settings.rate, (OTTS_VOICE_RATE_MIN - 1))
+	SET_PAR(msg_settings.pitch, -101)
+	SET_PAR(msg_settings.volume, -101)
+	SET_PAR(msg_settings.punctuation_mode, -1)
+	SET_PAR(msg_settings.spelling_mode, -1)
+	SET_PAR(msg_settings.voice_type, -1)
+	SET_PAR(msg_settings.cap_let_recogn, -1)
+	SET_PAR(pause_context, -1);
 	SET_PAR(ssml_mode, -1);
 	SET_PAR_STR(msg_settings.voice.language)
-	    SET_PAR_STR(output_module)
+	SET_PAR_STR(output_module)
 
-	    return NULL;
+	return NULL;
 }
 
 #undef SET_PAR
@@ -523,7 +524,7 @@ void load_default_global_set_options()
 	GlobalFDSet.priority = SPD_MESSAGE;
 	GlobalFDSet.msg_settings.punctuation_mode = SPD_PUNCT_NONE;
 	GlobalFDSet.msg_settings.spelling_mode = SPD_SPELL_OFF;
-	GlobalFDSet.msg_settings.rate = 0;
+	GlobalFDSet.msg_settings.rate = OTTS_VOICE_RATE_DEFAULT;
 	GlobalFDSet.msg_settings.pitch = 0;
 	GlobalFDSet.msg_settings.volume = 0;
 	GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");

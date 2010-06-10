@@ -199,7 +199,8 @@ gchar *do_set(void)
 				err =
 				    set_numeric_parameter(cur_value,
 							  &msg_settings.rate,
-							  -100, 100);
+							  OTTS_VOICE_RATE_MIN,
+				                          OTTS_VOICE_RATE_MAX);
 			} else if (!strcmp(cur_item, "pitch")) {
 				err =
 				    set_numeric_parameter(cur_value,
@@ -1154,7 +1155,7 @@ int module_audio_init_spd(char **status_info)
 
 void clean_old_settings_table(void)
 {
-	msg_settings_old.rate = -101;
+	msg_settings_old.rate = OTTS_VOICE_RATE_MIN - 1;
 	msg_settings_old.pitch = -101;
 	msg_settings_old.volume = -101;
 	msg_settings_old.punctuation_mode = -1;
@@ -1168,7 +1169,7 @@ void clean_old_settings_table(void)
 void init_settings_tables(void)
 {
 	module_dc_options = NULL;
-	msg_settings.rate = 0;
+	msg_settings.rate = OTTS_VOICE_RATE_DEFAULT;
 	msg_settings.pitch = 0;
 	msg_settings.volume = 0;
 	msg_settings.punctuation_mode = SPD_PUNCT_NONE;
