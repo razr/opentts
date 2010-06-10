@@ -50,6 +50,8 @@
 #include <glib.h>
 #include <ltdl.h>
 
+#include <opentts/opentts_types.h>
+
 typedef audio_plugin_t *(*plugin_entry_func) (void);
 static int audio_log_level;
 static lt_dlhandle lt_h;
@@ -273,7 +275,7 @@ Comments:
 */
 int opentts_audio_set_volume(AudioID * id, int volume)
 {
-	if ((volume > 100) || (volume < -100)) {
+	if (volume > OTTS_VOICE_VOLUME_MAX || volume < OTTS_VOICE_VOLUME_MIN) {
 		fprintf(stderr, "Requested volume out of range");
 		return -1;
 	}

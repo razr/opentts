@@ -1080,20 +1080,23 @@ static void ibmtts_set_rate(signed int rate)
 
 static void ibmtts_set_volume(signed int volume)
 {
+	int vol;
+
 	/* Setting volume to midpoint makes speech too soft.  An eci value
 	   of 90 to 100 is "normal".
 	   See chart on pg 38 of the ECI manual.
 	   TODO: Rather than setting volume in the synth, maybe control volume on playback? */
-	assert(volume >= -100 && volume <= +100);
-	int vol;
+	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
 	/* Possible ECI range is 0 to 100. */
-	if (volume < 0)
+	if (volume < OTTS_VOICE_VOLUME_DEFAULT)
 		/* Map -100 to 0 onto 0 to 90 */
-		vol = (((float)volume + 100) * 90) / (float)100;
+		vol = (volume - OTTS_VOICE_VOLUME_MIN) * 90
+			/ (OTTS_VOICE_VOLUME_DEFAULT - OTTS_VOICE_VOLUME_MIN);
 	else
 		/* Map 0 to 100 onto 90 to 100 */
-		vol = ((float)(volume * 10) / (float)100) + 90;
-	assert(vol >= 0 && vol <= 100);
+		vol = 90 + ((volume - OTTS_VOICE_VOLUME_DEFAULT) * 10
+			/ (OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_DEFAULT));
+
 	int ret = eciSetVoiceParam(eciHandle, 0, eciVolume, vol);
 	if (-1 == ret) {
 		dbg("Ibmtts: Error setting volume %i.", vol);

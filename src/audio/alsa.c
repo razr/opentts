@@ -40,6 +40,7 @@
 
 #define AUDIO_PLUGIN_ENTRY alsa_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
+#include <opentts/opentts_types.h>
 
 typedef struct {
 	AudioID id;
@@ -630,7 +631,8 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	MSG(4, "Making copy of track and adjusting volume");
 	track_volume = track;
 	track_volume.samples = (short *)g_malloc(volume_size);
-	real_volume = ((float)alsa_id->id.volume + 100) / (float)200;
+	real_volume = (float)(alsa_id->id.volume - OTTS_VOICE_VOLUME_MIN)
+		/ (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
 	for (i = 0; i <= track.num_samples - 1; i++)
 		track_volume.samples[i] = track.samples[i] * real_volume;
 

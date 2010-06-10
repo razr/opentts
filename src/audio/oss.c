@@ -43,6 +43,7 @@
 
 #define AUDIO_PLUGIN_ENTRY oss_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
+#include <opentts/opentts_types.h>
 
 typedef struct {
 	AudioID id;
@@ -205,7 +206,8 @@ static int oss_play(AudioID * id, AudioTrack track)
 	track_volume = track;
 	track_volume.samples =
 	    (short *)g_malloc(sizeof(short) * track.num_samples);
-	real_volume = ((float)id->volume + 100) / (float)200;
+	real_volume = (float)(id->volume - OTTS_VOICE_VOLUME_MIN)
+		/ (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
 	for (i = 0; i <= track.num_samples - 1; i++)
 		track_volume.samples[i] = track.samples[i] * real_volume;
 

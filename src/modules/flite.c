@@ -420,7 +420,7 @@ static void flite_set_rate(signed int rate)
 
 static void flite_set_volume(signed int volume)
 {
-	assert(volume >= -100 && volume <= +100);
+	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
 	flite_volume = volume;
 }
 

@@ -211,7 +211,8 @@ gchar *do_set(void)
 				err =
 				    set_numeric_parameter(cur_value,
 							  &msg_settings.volume,
-							  -100, 100);
+							  OTTS_VOICE_VOLUME_MIN,
+				                          OTTS_VOICE_VOLUME_MAX);
 			} else if (!strcmp(cur_item, "punctuation_mode")) {
 				ret = str2punct(cur_value);
 				if (ret != SPD_PUNCT_ERR)
@@ -1158,7 +1159,7 @@ void clean_old_settings_table(void)
 {
 	msg_settings_old.rate = OTTS_VOICE_RATE_MIN - 1;
 	msg_settings_old.pitch = OTTS_VOICE_PITCH_MIN - 1;
-	msg_settings_old.volume = -101;
+	msg_settings_old.volume = OTTS_VOICE_VOLUME_MIN - 1;
 	msg_settings_old.punctuation_mode = -1;
 	msg_settings_old.spelling_mode = -1;
 	msg_settings_old.cap_let_recogn = -1;
@@ -1172,7 +1173,7 @@ void init_settings_tables(void)
 	module_dc_options = NULL;
 	msg_settings.rate = OTTS_VOICE_RATE_DEFAULT;
 	msg_settings.pitch = OTTS_VOICE_PITCH_DEFAULT;
-	msg_settings.volume = 0;
+	msg_settings.volume = OTTS_VOICE_VOLUME_DEFAULT;
 	msg_settings.punctuation_mode = SPD_PUNCT_NONE;
 	msg_settings.spelling_mode = SPD_SPELL_OFF;
 	msg_settings.cap_let_recogn = SPD_CAP_NONE;

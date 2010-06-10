@@ -444,7 +444,7 @@ void *_ivona_speak(void *nothing)
 
 static void ivona_set_volume(signed int volume)
 {
-	assert(volume >= -100 && volume <= +100);
+	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
 	ivona_volume = volume;
 }
 

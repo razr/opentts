@@ -51,13 +51,11 @@ static SPDMessageType cicero_message_type;
 
 static int cicero_position = 0;
 static int cicero_pause_requested = 0;
-signed int cicero_volume = 0;
 static unsigned int CiceroMaxChunkLength = 500;
 
 /* Internal functions prototypes */
 static void cicero_set_rate(signed int rate);
 static void cicero_set_pitch(signed int pitch);
-static void cicero_set_volume(signed int pitch);
 static void cicero_set_voice(SPDVoiceType voice);
 
 static void *_cicero_speak(void *);
@@ -69,7 +67,7 @@ int cicero_stop = 0;
 */
 //MOD_OPTION_1_STR(CiceroWrapper);
 MOD_OPTION_1_STR(CiceroExecutable)
-    MOD_OPTION_1_STR(CiceroExecutableLog)
+MOD_OPTION_1_STR(CiceroExecutableLog)
 
 /*
 ** Pipes to cicero

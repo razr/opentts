@@ -647,9 +647,18 @@ static void espeak_set_rate(signed int rate)
 
 static void espeak_set_volume(signed int volume)
 {
-	assert(volume >= -100 && volume <= +100);
 	int vol;
-	vol = (volume + 100) / 2;
+
+	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
+
+	/* Possible range 0 to 100. */
+	if (volume < OTTS_VOICE_VOLUME_DEFAULT)
+		vol = (volume - OTTS_VOICE_VOLUME_MIN) * 100 /
+			(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
+	else
+		vol = 50 + ((volume - OTTS_VOICE_VOLUME_DEFAULT) * 100 /
+			(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN));
+
 	espeak_ERROR ret = espeak_SetParameter(espeakVOLUME, vol, 0);
 	if (ret != EE_OK) {
 		dbg("Espeak: Error setting volume %i.", vol);

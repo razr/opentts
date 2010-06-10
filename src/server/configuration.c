@@ -180,8 +180,9 @@ GLOBAL_FDSET_OPTION_CB_INT(DefaultRate, msg_settings.rate,
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPitch, msg_settings.pitch,
                            (val >= OTTS_VOICE_PITCH_MIN)
 			   && (val <= OTTS_VOICE_PITCH_MAX), "Pitch out of range.")
-GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, msg_settings.volume, (val >= -100)
-			   && (val <= +100), "Volume out of range.")
+GLOBAL_FDSET_OPTION_CB_INT(DefaultVolume, msg_settings.volume,
+                           (val >= OTTS_VOICE_VOLUME_MIN)
+			   && (val <= OTTS_VOICE_VOLUME_MAX), "Volume out of range.")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultSpelling, msg_settings.spelling_mode, 1,
 			   "Invalid spelling mode")
 GLOBAL_FDSET_OPTION_CB_INT(DefaultPauseContext, pause_context, 1, "")
@@ -429,7 +430,7 @@ DOTCONF_CB(cb_BeginClient)
 	/*  Warning: If you modify this, you must also modify update_cl_settings() in set.c ! */
 	SET_PAR(msg_settings.rate, (OTTS_VOICE_RATE_MIN - 1))
 	SET_PAR(msg_settings.pitch, (OTTS_VOICE_PITCH_MIN - 1))
-	SET_PAR(msg_settings.volume, -101)
+	SET_PAR(msg_settings.volume, (OTTS_VOICE_VOLUME_MIN - 1))
 	SET_PAR(msg_settings.punctuation_mode, -1)
 	SET_PAR(msg_settings.spelling_mode, -1)
 	SET_PAR(msg_settings.voice_type, -1)
@@ -527,7 +528,7 @@ void load_default_global_set_options()
 	GlobalFDSet.msg_settings.spelling_mode = SPD_SPELL_OFF;
 	GlobalFDSet.msg_settings.rate = OTTS_VOICE_RATE_DEFAULT;
 	GlobalFDSet.msg_settings.pitch = OTTS_VOICE_PITCH_DEFAULT;
-	GlobalFDSet.msg_settings.volume = 0;
+	GlobalFDSet.msg_settings.volume = OTTS_VOICE_VOLUME_DEFAULT;
 	GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");
 	GlobalFDSet.msg_settings.voice.language = g_strdup("en");
 	GlobalFDSet.output_module = NULL;

@@ -35,6 +35,7 @@
 
 #define AUDIO_PLUGIN_ENTRY nas_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
+#include <opentts/opentts_types.h>
 
 typedef struct {
 	AudioID id;
@@ -151,8 +152,9 @@ static int nas_play(AudioID * id, AudioTrack track)
 					    s,
 					    buf,
 					    AuNone,
-					    ((nas_id->id.volume +
-					      100) / 2) * 1500, NULL, NULL,
+					    ((nas_id->id.volume -
+					    OTTS_VOICE_VOLUME_MIN) / 2) * 1500,
+	                                    NULL, NULL,
 					    &nas_id->flow, NULL, NULL, NULL);
 
 	if (event_handler == NULL) {

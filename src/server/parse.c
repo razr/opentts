@@ -515,9 +515,9 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 		signed int volume;
 		GET_PARAM_INT(volume, 3);
 
-		if (volume < -100)
+		if (volume < OTTS_VOICE_VOLUME_MIN)
 			return g_strdup(ERR_VOLUME_TOO_LOW);
-		if (volume > +100)
+		if (volume > OTTS_VOICE_VOLUME_MAX)
 			return g_strdup(ERR_VOLUME_TOO_HIGH);
 
 		SSIP_SET_COMMAND(volume);
