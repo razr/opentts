@@ -690,6 +690,21 @@ class SSIPClient(object):
         """
         self._conn.send_command('SET', scope, 'OUTPUT_MODULE', name)
 
+    def set_SSML(self, value, scope=Scope.SELF):
+        """Set the SSML mode for further speech commands.
+
+        Arguments:
+          value - boolean if true then SSML is enabled.
+          scope -- see the documentation of this class.
+
+        """
+        assert isinstance(value, bool)
+        if value:
+            value = "on"
+        else:
+            value = "off"
+        self._conn.send_command('SET', scope, 'SSML_MODE', value)
+
     def set_pitch(self, value, scope=Scope.SELF):
         """Set the pitch for further speech commands.
 
