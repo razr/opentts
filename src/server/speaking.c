@@ -46,6 +46,9 @@ static SPDPriority current_priority = SPD_TEXT;
 static int SPEAKING = 0;
 int poll_count;
 
+/* Helper functions. */
+static void speaking_module_cleanup(void);
+
 /*
   Speak() is responsible for getting right text from right
   queue in right time and saying it loud through the corresponding
@@ -92,7 +95,14 @@ void *speak(void *data)
 		}
 		if (poll_count > 1) {
 			if ((revents = poll_fds[1].revents)) {
-				if ((revents & POLLIN) || (revents & POLLPRI)) {
+				if (revents & POLLHUP) {
+					/* The speaking module terminated */
+					/* abnormally.  Clean up. */
+					MSG(1,
+					    "The current output module failed.");
+					speaking_module_cleanup();
+				} else if ((revents & POLLIN)
+					   || (revents & POLLPRI)) {
 					MSG(5,
 					    "wait_for_poll: activity on output_module");
 					/* Check if sb is speaking or they are all silent. 
@@ -1077,4 +1087,36 @@ gint sortbyuid(gconstpointer a, gconstpointer b)
 		return 0;
 
 	return msg1->id - msg2->id;
+}
+
+/* Clean up after abnormal termination of the current output module. */
+static void speaking_module_cleanup(void)
+{
+
+	/*
+	 * First, Discard the current message, and tell the client that we are
+	 * done speaking it.  Should we try to put it back onto the
+	 * appropriate queue, instead?
+	 */
+
+	if (current_message != NULL) {
+		if (SPEAKING
+		    && (current_message->settings.notification & SPD_END))
+			report_end(current_message);
+		if (!current_message->settings.paused_while_speaking)
+			mem_free_message(current_message);
+		current_message = NULL;
+	}
+
+	/*
+	 * Indicate that we are done speaking.  Indicate that the current
+	 * output module is no longer working.  Finally, set poll_count
+	 * to 1, so we won't try to poll this module's file descriptor
+	 * again.
+	 */
+	SPEAKING = 0;
+	if (speaking_module != NULL)
+		speaking_module->working = 0;
+	speaking_module = NULL;
+	poll_count = 1;
 }
