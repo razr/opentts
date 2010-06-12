@@ -458,8 +458,8 @@ static void cicero_set_rate(signed int rate)
 	 * -100 maps to 20, 0 maps to 10, and 100 maps to 0.
 	 * Then use table lookup to find the appropriate value.
 	 */
-	rate -= OTTS_RATE_MAX;
-	pos = abs(rate) * (size - 1) / (OTTS_RATE_MAX - OTTS_RATE_MIN);
+	rate -= OTTS_VOICE_RATE_MAX;
+	pos = abs(rate) * (size - 1) / (OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_MIN);
 	expand = spkRateTable[pos];
 
 	unsigned char *p = (unsigned char *)&expand;
