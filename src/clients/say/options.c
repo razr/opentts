@@ -86,11 +86,11 @@ void options_print_help(char *argv[])
 	printf
 	    ("otts-say -- a simple client for speech synthesis (GNU GPL)\n\n");
 	printf("-r, --rate             -     Set the rate of the speech\n"
-	       "                               (between -100 and +100, default: 0)\n"
+	       "                               (between %d and %d, default: %d)\n"
 	       "-p, --pitch            -     Set the pitch of the speech\n"
-	       "                               (between -100 and +100, default: 0)\n"
+	       "                               (between %d and %d, default: %d)\n"
 	       "-i, --volume           -     Set the volume (intensity) of the speech\n"
-	       "                               (between -100 and +100, default: 0) \n"
+	       "                               (between %d and %d, default: %d) \n"
 	       "-o, --output-module    -     Set the output module\n"
 	       "-l, --language         -     Set the language (iso code)\n"
 	       "-t, --voice-type       -     Set the prefered voice type\n"
@@ -122,7 +122,12 @@ void options_print_help(char *argv[])
 	       "under the terms of the GNU General Public License as published by\n"
 	       "the Free Software Foundation; either version 2, or (at your option)\n"
 	       "any later version. Please see COPYING for more details.\n\n"
-	       "Please report bugs on the Issues page at <http://opentts.org/>.\n\n");
+	       "Please report bugs on the Issues page at <http://opentts.org/>.\n\n",
+	       OTTS_VOICE_RATE_MIN, OTTS_VOICE_RATE_MAX,
+	       OTTS_VOICE_RATE_DEFAULT, OTTS_VOICE_PITCH_MIN,
+	       OTTS_VOICE_PITCH_MAX, OTTS_VOICE_PITCH_DEFAULT,
+	       OTTS_VOICE_VOLUME_MIN, OTTS_VOICE_VOLUME_MAX,
+	       OTTS_VOICE_VOLUME_DEFAULT);
 
 }
 

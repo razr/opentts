@@ -405,15 +405,18 @@ void *_flite_speak(void *nothing)
 
 static void flite_set_rate(signed int rate)
 {
-	const float negative_stretch_divisor = 50.0;
-	const float positive_stretch_divisor = 175.0;
-	float stretch = 1.0;
+	const float stretch_default = 1., stretch_min = 3., stretch_max = (1 - 100./175.);
+	float stretch;
 
 	assert(rate >= OTTS_VOICE_RATE_MIN && rate <= OTTS_VOICE_RATE_MAX);
 	if (rate < OTTS_VOICE_RATE_DEFAULT)
-		stretch -= rate / negative_stretch_divisor;
+		stretch = stretch_min + ((float)(rate - OTTS_VOICE_RATE_MIN))
+		* (stretch_default - stretch_min)
+		/ ((float)(OTTS_VOICE_RATE_DEFAULT - OTTS_VOICE_RATE_MIN));
 	else
-		stretch -= rate / positive_stretch_divisor;
+		stretch = stretch_default + (((float)(rate - OTTS_VOICE_RATE_DEFAULT))
+		* (stretch_max - stretch_default)
+		/ ((float)(OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_DEFAULT)));
 
 	feat_set_float(flite_voice->features, "duration_stretch", stretch);
 }
