@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opentts 0.1\n"
 "Report-Msgid-Bugs-To: opentts-dev@lists.opentts.org\n"
-"POT-Creation-Date: 2010-06-13 20:01-0500\n"
+"POT-Creation-Date: 2010-06-15 12:53-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -169,4 +169,73 @@ msgstr ""
 #: ../src/clients/say/say.c:202
 #, c-format
 msgid "Invalid priority.\n"
+msgstr ""
+
+#: ../src/server/options.c:62
+#, c-format
+msgid "Run as a daemon\n"
+msgstr ""
+
+#: ../src/server/options.c:64
+#, c-format
+msgid "Run as single application\n"
+msgstr ""
+
+#: ../src/server/options.c:66
+#, c-format
+msgid "Set log level (1..5)\n"
+msgstr ""
+
+#: ../src/server/options.c:68
+#, c-format
+msgid "Communication method to use (unix_socket or inet_socket)\n"
+msgstr ""
+
+#: ../src/server/options.c:70
+#, c-format
+msgid "Socket name to use for 'unix_socket' method (path or 'default')\n"
+msgstr ""
+
+#: ../src/server/options.c:72
+#, c-format
+msgid "Specify a port number for 'inet_socket' method\n"
+msgstr ""
+
+#: ../src/server/options.c:74
+#, c-format
+msgid "Set path to pid file\n"
+msgstr ""
+
+#: ../src/server/options.c:76
+#, c-format
+msgid "Set path to configuration\n"
+msgstr ""
+
+#: ../src/server/options.c:78
+#, c-format
+msgid "Report version of this program\n"
+msgstr ""
+
+#: ../src/server/options.c:80
+#, c-format
+msgid "Output debugging information into /tmp/openttsd-debug\n"
+msgstr ""
+
+#: ../src/server/options.c:82
+#, c-format
+msgid ""
+"Print this information\n"
+"\n"
+msgstr ""
+
+#: ../src/server/options.c:89
+#, c-format
+msgid "Please report bugs on the issues page at <http://opentts.org>,\n"
+msgstr ""
+
+#: ../src/server/options.c:90
+#, c-format
+msgid ""
+"or on our mailing list at <%s>\n"
+"\n"
 msgstr ""

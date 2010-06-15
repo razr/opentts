@@ -28,6 +28,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 
+#include <i18n.h>
 #include "openttsd.h"
 
 #include "options.h"
@@ -54,31 +55,39 @@ void options_print_help(char *argv[])
 	assert(argv);
 	assert(argv[0]);
 
-	printf
-	    ("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n",
+	printf("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n",
 	     argv[0]);
-	printf
-	    ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n");
-	printf("-d, --run-daemon     -      Run as a daemon\n"
-	       "-s, --run-single     -      Run as single application\n"
-	       "-l, --log-level      -      Set log level (1..5)\n"
-	       "-c, --communication-method  Communication method to use (unix_socket or inet_socket)\n"
-	       "-S, --socket-name    -      Socket name to use for 'unix_socket' method (filesystem path or 'default')\n"
-	       "-p, --port           -      Specify a port number for 'inet_socket' method\n"
-	       "-P, --pid-file       -      Set path to pid file\n"
-	       "-C, --config-dir     -      Set path to configuration\n"
-	       "-v, --version        -      Report version of this program\n"
-	       "-D, --debug          -      Output debugging information into /tmp/openttsd-debug\n"
-	       "-h, --help           -      Print this info\n\n"
-	       "Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
-	       "Copyright (C) 2010 OpenTTS Developers\n"
-	       "This is free software; you can redistribute it and/or modify it\n"
-	       "under the terms of the GNU General Public License as published by\n"
-	       "the Free Software Foundation; either version 2, or (at your option)\n"
-	       "any later version. Please see COPYING for more details.\n\n"
-	       "Please report bugs on the issues page at http://opentts.org/,\n"
-	       "or on our mailing list at <%s>\n\n", PACKAGE_BUGREPORT);
-
+	printf("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n");
+	printf("-d, --run-daemon\t");
+	printf(_("Run as a daemon\n"));
+	printf("-s, --run-single\t");
+	printf(_("Run as single application\n"));
+	printf("-l, --log-level\t");
+	printf(_("Set log level (1..5)\n"));
+	printf("-c, --communication-method\t");
+	printf(_("Communication method to use (unix_socket or inet_socket)\n"));
+	printf("-S, --socket-name\t");
+	printf(_("Socket name to use for 'unix_socket' method (path or 'default')\n"));
+	printf("-p, --port\t");
+	printf(_("Specify a port number for 'inet_socket' method\n"));
+	printf("-P, --pid-file\t");
+	printf(_("Set path to pid file\n"));
+	printf("-C, --config-dir\t");
+	printf(_("Set path to configuration\n"));
+	printf("-v, --version\t");
+	printf(_("Report version of this program\n"));
+	printf("-D, --debug\t");
+	printf(_("Output debugging information into /tmp/openttsd-debug\n"));
+	printf("-h, --help\t");
+	printf(_("Print this information\n\n"));
+	printf("Copyright (C) 2003,2006 Brailcom, o.p.s.\n");
+	printf("Copyright (C) 2010 OpenTTS Developers\n");
+	printf("This is free software; you can redistribute it and/or modify it\n");
+	printf("under the terms of the GNU General Public License as published by\n");
+	printf("the Free Software Foundation; either version 2, or (at your option)\n");
+	printf("any later version. Please see COPYING for more details.\n\n");
+	printf(_("Please report bugs on the issues page at <http://opentts.org>,\n"));
+ printf(_("or on our mailing list at <%s>\n\n"), PACKAGE_BUGREPORT);
 }
 
 void options_print_version(void)

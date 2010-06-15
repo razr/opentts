@@ -31,6 +31,7 @@
 #include <sys/un.h>
 #include <glib/gstdio.h>
 
+#include <i18n.h>
 #include <timestamp.h>
 #include "openttsd.h"
 
@@ -851,6 +852,8 @@ int main(int argc, char *argv[])
 	sig.sa_flags = SA_RESTART;
 	sigemptyset(&sig.sa_mask);
 
+	/* initialize i18n support */
+	init_i18n();
 	/* Initialize threading and thread safety in Glib */
 	g_thread_init(NULL);
 
