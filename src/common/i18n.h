@@ -20,8 +20,9 @@
  *
  */
 
-#ifndef OTTS_I18N
-#define OTTS_I18N 1
+#ifndef I18N_H
+#define I18N_H
+
 #include <glib/gi18n.h>
 
 /*
@@ -30,6 +31,6 @@
 * that should be translated to the user.
 */
 
-void otts_i18n_init(void);
+void init_i18n(void);
 
-#endif // OTTS_I18N
+#endif

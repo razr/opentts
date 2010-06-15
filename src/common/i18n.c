@@ -26,7 +26,7 @@
 
 #include "i18n.h"
 
-void otts_init_i18n(void)
+void init_i18n(void)
 {
 	setlocale(LC_ALL, "");
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
