@@ -24,6 +24,7 @@
 #include <config.h>
 #endif
 
+#include <locale.h>		/* For setlocale. */
 #include "i18n.h"
 
 void init_i18n(void)

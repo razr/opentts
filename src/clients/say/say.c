@@ -34,6 +34,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <opentts/libopentts.h>
+#include <locale.h>
 #include <glib/gi18n.h>
 #include "options.h"
 
