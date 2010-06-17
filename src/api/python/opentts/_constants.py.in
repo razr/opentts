@@ -1,0 +1,2 @@
+SPAWN_CMD="@bindir@/openttsd"
+VERSION = "@PACKAGE_VERSION@"

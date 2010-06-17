@@ -28,7 +28,7 @@ A more convenient interface is provided by the 'Speaker' class.
 
 import socket, sys, os, subprocess, time, tempfile
 
-import opentts.spawn as spawn_mod
+from opentts._constants import *
 
 try:
     import threading
@@ -330,15 +330,15 @@ class _SSIP_Connection:
 
     def speechd_server_spawn(self):
         """Attempts to spawn the openttsd server."""
-        if os.path.exists(spawn_mod.SPD_SPAWN_CMD):
-            speechd_server = subprocess.Popen([spawn_mod.SPD_SPAWN_CMD],
+        if os.path.exists(SPAWN_CMD):
+            speechd_server = subprocess.Popen([SPAWN_CMD],
                         stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             # Todo: log output from stdout.
             time.sleep(0.5)
             speechd_server.wait()
             return speechd_server.pid
         else:
-            raise "Can't find openttsd spawn command %s" % (spawn_mod.SPD_SPAWN_CMD,)
+            raise "Can't find openttsd spawn command %s" % (SPAWN_CMD,)
 
 class Scope(object):
     """An enumeration of valid SSIP command scopes.

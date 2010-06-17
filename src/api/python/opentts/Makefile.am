@@ -3,19 +3,20 @@
 opentts_pythondir = $(pyexecdir)/opentts
 opentts_python_PYTHON = __init__.py _test.py client.py
 
-nodist_opentts_python_PYTHON = spawn.py
+nodist_opentts_python_PYTHON = _constants.py
 
 edit = sed  \
-	-e 's:@bindir[@]:$(bindir):g'
+	-e 's:@bindir[@]:$(bindir):g' \
+	-e 's:@PACKAGE_VERSION[@]:$(PACKAGE_VERSION):g'
 
-spawn.py: Makefile
+_constants.py: Makefile
 	rm -f $@
 	srcdir=; \
 	test -f ./$@.in || srcdir=$(srcdir)/; \
 	$(edit) $${srcdir}$@.in > $@
 
-spawn.py: $(srcdir)/spawn.py.in
+_constants.py: $(srcdir)/_constants.py.in
 
-CLEANFILES = spawn.py
+CLEANFILES = _constants.py
 
-EXTRA_DIST = spawn.py.in
+EXTRA_DIST = _constants.py.in
