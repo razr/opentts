@@ -26,14 +26,19 @@ A more convenient interface is provided by the 'Speaker' class.
 
 #TODO: Blocking variants for speak, char, key, sound_icon.
 
-import socket, sys, os, subprocess, time, tempfile
-
-from opentts._constants import *
+import os
+import socket
+import sys
+import subprocess
+import tempfile
+import time
 
 try:
     import threading
 except:
     import dummy_threading as threading
+
+from opentts._constants import *
 
     
 class CallbackType(object):
