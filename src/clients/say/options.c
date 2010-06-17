@@ -87,20 +87,21 @@ void options_print_help(char *argv[])
 	printf(_("otts-say -- a simple client for speech synthesis (GNU GPL)\n\n"));
 	printf("-r, --rate\t");
 	printf(_("Set the rate of the speech (between %d and %d, default: %d)\n"),
-	OTTS_VOICE_RATE_MIN, OTTS_VOICE_RATE_MAX, OTTS_VOICE_RATE_DEFAULT);
+	       OTTS_VOICE_RATE_MIN, OTTS_VOICE_RATE_MAX, OTTS_VOICE_RATE_DEFAULT);
 	printf("-p, --pitch\t");
 	printf(_("Set the pitch of the speech (between %d and %d, default: %d)\n"),
-	OTTS_VOICE_PITCH_MIN, OTTS_VOICE_PITCH_MAX, OTTS_VOICE_PITCH_DEFAULT);
+	       OTTS_VOICE_PITCH_MIN, OTTS_VOICE_PITCH_MAX, OTTS_VOICE_PITCH_DEFAULT);
 	printf("-i, --volume\t");
 	printf(_("Set the volume (intensity) of the speech (between %d and %d, default: %d) \n"),
-	OTTS_VOICE_VOLUME_MIN, OTTS_VOICE_VOLUME_MAX, OTTS_VOICE_VOLUME_DEFAULT);
+	       OTTS_VOICE_VOLUME_MIN, OTTS_VOICE_VOLUME_MAX,
+		   OTTS_VOICE_VOLUME_DEFAULT);
 	printf("-o, --output-module\t");
 	printf(_("Set the output module\n"));
 	printf("-l, --language\t");
 	printf(_("Set the language (iso code)\n"));
 	printf("-t, --voice-type \t");
 	printf(_("Set the preferred voice type, (%s)\n"),
-	"male1, male2, male3, female1, female2, female3, child_male, child_female");
+		"male1, male2, male3, female1, female2, female3, child_male, child_female");
 	printf("-m, --punctuation-mode\t");
 	printf(_("Set the punctuation mode (%s)\n"), "none, some, all");
 	printf("-s, --spelling\t");
@@ -111,13 +112,13 @@ void options_print_help(char *argv[])
 	printf("-e, --pipe-mode\t");
 	printf(_("Pipe from stdin to stdout plus openttsd\n"));
 	printf("-P, --priority\t");
-	printf(_("Set priority of the message (%s)\n"),
-	"important, message, text, notification, progress; default: text");
+	printf(_("Set priority of the message (%s; default: %s)\n"),
+	       "important, message, text, notification, progress", "text");
 	printf("-N, --application-name\t");
 	printf(_("Set the application name for the connection (default: %s)\n"),
-	"otts-say");
+	       "otts-say");
 	printf("-n, --connection-name\t");
-	printf(_("Set the connection name (default: main)\n"));
+	printf(_("Set the connection name (default: %s)\n"), "main");
 	printf("\n");
 	printf("-w, --wait \t");
 	printf(_("Wait until the message is spoken or discarded\n"));
@@ -130,25 +131,26 @@ void options_print_help(char *argv[])
 	printf(_("Print version and copyright information\n"));
 	printf("-h, --help\t");
 	printf(_("Print this information\n"));
-	printf("\n"
-	       "Copyright (C) 2003 Brailcom, o.p.s.\n"
-	       "Copyright (C) 2010 OpenTTS Developers.\n"
-	       "This is free software; you can redistribute it and/or modify it\n"
-	       "under the terms of the GNU General Public License as published by\n"
-	       "the Free Software Foundation; either version 2, or (at your option)\n"
-	       "any later version. Please see COPYING for more details.\n\n");
-	printf(_("Please report bugs on the Issues page at <http://opentts.org/>.\n\n"));
+	printf(_("\n"
+		 "Copyright (C) 2003 Brailcom, o.p.s.\n"
+		 "Copyright (C) 2010 OpenTTS Developers.\n"
+		 "This is free software; you can redistribute it and/or modify it\n"
+		 "under the terms of the GNU General Public License as published by\n"
+		 "the Free Software Foundation; either version 2, or (at your option)\n"
+		 "any later version. Please see COPYING for more details.\n\n"));
+	printf(_
+	("Please report bugs on the Issues page at <http://opentts.org/>.\n\n"));
 }
 
-void options_print_version()
+void options_print_version(void)
 {
 	printf("otts-say: " PACKAGE " " VERSION "\n");
-	printf("Copyright (C) 2002-2006 Brailcom, o.p.s.\n"
+	printf(_("Copyright (C) 2002-2006 Brailcom, o.p.s.\n"
 		 "Copyright (C) 2010 OpenTTS Developers.\n"
 		 "otts-say comes with ABSOLUTELY NO WARRANTY.\n"
 		 "You may redistribute copies of otts-say\n"
 		 "under the terms of the GNU General Public License.\n"
-		 "For more information about these matters, see the file named COPYING.\n");
+		 "For more information see the file named COPYING.\n"));
 }
 
 #define OPT_SET_INT(param) \
@@ -237,7 +239,7 @@ int options_parse(int argc, char *argv[])
 			cancel_previous = 1;
 			break;
 		case 'v':
-			options_print_version(argv);
+			options_print_version();
 			exit(0);
 			break;
 		case 'h':

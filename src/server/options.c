@@ -55,9 +55,11 @@ void options_print_help(char *argv[])
 	assert(argv);
 	assert(argv[0]);
 
-	printf("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n",
-	     argv[0]);
-	printf("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n");
+	printf(_
+	       ("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n"),
+	       argv[0]);
+	printf(_
+	       ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n"));
 	printf("-d, --run-daemon\t");
 	printf(_("Run as a daemon\n"));
 	printf("-s, --run-single\t");
@@ -67,7 +69,8 @@ void options_print_help(char *argv[])
 	printf("-c, --communication-method\t");
 	printf(_("Communication method to use (unix_socket or inet_socket)\n"));
 	printf("-S, --socket-name\t");
-	printf(_("Socket name to use for 'unix_socket' method (path or 'default')\n"));
+	printf(_
+	       ("Socket name to use for 'unix_socket' method (path or 'default')\n"));
 	printf("-p, --port\t");
 	printf(_("Specify a port number for 'inet_socket' method\n"));
 	printf("-P, --pid-file\t");
@@ -80,25 +83,26 @@ void options_print_help(char *argv[])
 	printf(_("Output debugging information into /tmp/openttsd-debug\n"));
 	printf("-h, --help\t");
 	printf(_("Print this information\n\n"));
-	printf("Copyright (C) 2003,2006 Brailcom, o.p.s.\n");
-	printf("Copyright (C) 2010 OpenTTS Developers\n");
-	printf("This is free software; you can redistribute it and/or modify it\n");
-	printf("under the terms of the GNU General Public License as published by\n");
-	printf("the Free Software Foundation; either version 2, or (at your option)\n");
-	printf("any later version. Please see COPYING for more details.\n\n");
-	printf(_("Please report bugs on the issues page at <http://opentts.org>,\n"));
- printf(_("or on our mailing list at <%s>\n\n"), PACKAGE_BUGREPORT);
+	printf(_("Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
+		 "Copyright (C) 2010 OpenTTS Developers\n"
+		 "This is free software; you can redistribute it and/or modify it\n"
+		 "under the terms of the GNU General Public License as published by\n"
+		 "the Free Software Foundation; either version 2, or (at your option)\n"
+		 "any later version. Please see COPYING for more details.\n\n"));
+	printf(_
+	       ("Please report bugs on the issues page at <http://opentts.org>,\n"));
+	printf(_("or on our mailing list at <%s>\n\n"), PACKAGE_BUGREPORT);
 }
 
 void options_print_version(void)
 {
 	printf("%s %s\n", PACKAGE, VERSION);
-	printf("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
-	       "Copyright (C) 2010 OpenTTS Developers\n"
-	       "OpenTTS comes with ABSOLUTELY NO WARRANTY.\n"
-	       "You may redistribute copies of OpenTTS\n"
-	       "under the terms of the GNU General Public License.\n"
-	       "For more information about these matters, see the file named COPYING.\n");
+	printf(_("Copyright (C) 2002, 2003, 2006 Brailcom, o.p.s.\n"
+		 "Copyright (C) 2010 OpenTTS Developers\n"
+		 "OpenTTS comes with ABSOLUTELY NO WARRANTY.\n"
+		 "You may redistribute copies of OpenTTS\n"
+		 "under the terms of the GNU General Public License.\n"
+		 "For more information about these matters, see the file named COPYING.\n"));
 }
 
 #define OPTION_SET_INT(param) \
