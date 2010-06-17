@@ -385,6 +385,16 @@ class PunctuationMode(object):
 
     """
 
+class DataMode(object):
+    """Constants for specifying the type of data contained within messages
+    to be spoken.
+
+    """
+    TEXT = 'off'
+    """Data is plain text."""
+    SSML = 'on'
+    """Data is SSML (Speech Synthesis Markup Language)."""
+
 class SSIPClient(object):
     """Basic OpenTTS client interface.
 
@@ -690,19 +700,15 @@ class SSIPClient(object):
         """
         self._conn.send_command('SET', scope, 'OUTPUT_MODULE', name)
 
-    def set_SSML(self, value, scope=Scope.SELF):
-        """Set the SSML mode for further speech commands.
+    def set_data_mode(self, value, scope=Scope.SELF):
+        """Set the data mode for further speech commands.
 
         Arguments:
-          value - boolean if true then SSML is enabled.
+          value - one of the constants from the DataMode class.
           scope -- see the documentation of this class.
 
         """
-        assert isinstance(value, bool)
-        if value:
-            value = "on"
-        else:
-            value = "off"
+        assert value in (DataMode.TEXT, DataMode.SSML)
         self._conn.send_command('SET', scope, 'SSML_MODE', value)
 
     def set_pitch(self, value, scope=Scope.SELF):
