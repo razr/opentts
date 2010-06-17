@@ -48,13 +48,23 @@ Thanks to Steve Holmes <steve at holmesgrown point com> for his work on the
 generic output module.
 Steve also helped with documentation and reorganization.
 
+Thanks to Bohdan R. Rau <ethanak at polip point com> for contributing
+the Ivona output module.
+
 Thanks to Gilles Casse <gcasse at oralux point org> for contributing
-the PulseAudio output module.
+the original PulseAudio output module.
+
+Thanks to Marco Skambraks <marco at openblinux point de> for contributing
+the libao audio backend.
+
+Thanks to Bill Cox <waywardgeek at gmail point com> for rewriting the
+PulseAudio backend.
 
 Thanks to Andrei Kholodnyi <andrei.kholodnyi at gmail point com>
 for his cleanup of the audio subsystem, output modules, and server.
 
-Thanks to Rui Batista for updating the INSTALL document.
+Thanks to Rui Batista for updating the INSTALL document
+and for work on the PulseAudio backend.
 
 Thanks to Trevor Saunders <trev.saunders at gmail point com> for renaming,
 code cleanup, and testing on Solaris.
