@@ -336,11 +336,13 @@ class _SSIP_Connection:
     def speechd_server_spawn(self):
         """Attempts to spawn the openttsd server."""
         if os.path.exists(SPAWN_CMD):
+            devnull = os.open('/dev/null', os.O_WRONLY)
             speechd_server = subprocess.Popen([SPAWN_CMD],
-                        stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                        stdin=None, stdout=devnull, stderr=subprocess.STDOUT)
             # Todo: log output from stdout.
             time.sleep(0.5)
             speechd_server.wait()
+            os.close(devnull)
             return speechd_server.pid
         else:
             raise "Can't find openttsd spawn command %s" % (SPAWN_CMD,)
