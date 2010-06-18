@@ -320,6 +320,8 @@ AC_SUBST(spddesktopconforigdir)
 
 snddatadir='${datadir}/sounds/opentts'
 AC_SUBST(snddatadir)
+pvtlibdir='${libdir}/opentts/libs'
+AC_SUBST(pvtlibdir)
 modulebindir='${libdir}/opentts/modules'
 AC_SUBST(modulebindir)
 audiodir='${libdir}/opentts/audio'
