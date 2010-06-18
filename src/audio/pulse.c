@@ -175,7 +175,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		buffAttr.maxlength = (uint32_t) - 1;
 		//buffAttr.tlength = (uint32_t)-1; - this is the default, which causes key echo to not work properly.
 		buffAttr.tlength = pulse_id->pa_min_audio_length;
-		buffAttr.prebuf = (uint32_t) - 1;
+		buffAttr.prebuf = 1;
 		buffAttr.minreq = (uint32_t) - 1;
 		buffAttr.fragsize = (uint32_t) - 1;
 
