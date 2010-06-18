@@ -130,7 +130,7 @@ class _SSIP_Connection:
         """
 
         if autospawn:
-            self.speechd_server_spawn()
+            self.server_spawn()
 
         if method == 'unix_socket':
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -333,17 +333,17 @@ class _SSIP_Connection:
         """
         self._callback = callback
 
-    def speechd_server_spawn(self):
+    def server_spawn(self):
         """Attempts to spawn the openttsd server."""
         if os.path.exists(SPAWN_CMD):
             devnull = os.open('/dev/null', os.O_WRONLY)
-            speechd_server = subprocess.Popen([SPAWN_CMD],
+            server_process = subprocess.Popen([SPAWN_CMD],
                         stdin=None, stdout=devnull, stderr=subprocess.STDOUT)
             # Todo: log output from stdout.
             time.sleep(0.5)
-            speechd_server.wait()
+            server_process.wait()
             os.close(devnull)
-            return speechd_server.pid
+            return server_process.pid
         else:
             raise "Can't find openttsd spawn command %s" % (SPAWN_CMD,)
 
@@ -438,10 +438,10 @@ class SSIPClient(object):
             acces is expected, this can be used to identify their connections.
           method -- communication method to use: 'unix_socket' for unix style sockets
           or 'inet_socket' for TCP ports
-          socket_name -- for 'unix_socket' method, socket name in filesystem. If none
-          is specified, the default name speechd-sock-UID is used located in the current
-          TEMP dir (determined via tempfile.gettempdir() according to the contents of
-          the TMPDIR like environment variables)
+          socket_name -- for 'unix_socket' method, socket name in filesystem.
+          If None is specified, then we will first use the value of the
+          OPENTTSD_SOCK environment variable, defaulting to
+          $HOME/.opentts/openttsd.sock, if the environment variable is not set.
           host -- for 'inet_socket' method, server hostname or IP address as a string.
           If None, the default value is taken from OPENTTSD_HOST environment variable (if it
           exists) or from the DEFAULT_OPENTTSD_HOST attribute of this class.
