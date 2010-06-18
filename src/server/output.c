@@ -386,24 +386,25 @@ int output_send_settings(openttsd_message * msg, OutputModule * output)
 	MSG(4, "Module set parameters.");
 	set_str = g_string_new("");
 	g_string_append_printf(set_str, "pitch=%d\n",
-	                       msg->settings.msg_settings.pitch);
+			       msg->settings.msg_settings.pitch);
 	g_string_append_printf(set_str, "rate=%d\n",
-	                       msg->settings.msg_settings.rate);
+			       msg->settings.msg_settings.rate);
 	g_string_append_printf(set_str, "volume=%d\n",
-	                       msg->settings.msg_settings.volume);
+			       msg->settings.msg_settings.volume);
 	ADD_SET_STR_C(punctuation_mode, punctuation_mode, punct2str);
 	ADD_SET_STR_C(spelling_mode, spelling_mode, spell2str);
 	ADD_SET_STR_C(cap_let_recogn, cap_let_recogn, recogn2str);
 	ADD_SET_STR_C(voice, voice_type, voice2str);
-	if (GlobalFDSet.msg_settings.voice.language != NULL) {
+	if (msg->settings.msg_settings.voice.language != NULL) {
 		g_string_append_printf(set_str, "language=%s\n",
-		                       GlobalFDSet.msg_settings.voice.language);
+				       msg->settings.msg_settings.
+				       voice.language);
 	} else {
 		g_string_append_printf(set_str, "language=NULL\n");
 	}
-	if (GlobalFDSet.msg_settings.voice.name != NULL) {
+	if (msg->settings.msg_settings.voice.name != NULL) {
 		g_string_append_printf(set_str, "synthesis_voice=%s\n",
-		                       GlobalFDSet.msg_settings.voice.language);
+				       msg->settings.msg_settings.voice.name);
 	} else {
 		g_string_append_printf(set_str, "synthesis_voice=NULL\n");
 	}
