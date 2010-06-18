@@ -1,10 +1,13 @@
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/src/common -I$(top_srcdir)/src/audio
+
 common_sources = module_main.c module_utils.c module_utils.h  audio.c audio.h
 common_libs = $(AUDIO_DLOPEN_MODULES) -L$(top_builddir)/src/common -lcommon
 
 AM_CFLAGS = $(ERROR_CFLAGS)
-AM_CPPFLAGS = -DDATADIR=\"$(snddatadir)\" $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) $(ibmtts_include) $(SNDFILE_CFLAGS) \
--DPLUGIN_DIR="\"$(audiodir)\"" -D_GNU_SOURCE -DOPENTTS_INTERNAL
+AM_CPPFLAGS = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common" \
+	$(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GTHREAD_CFLAGS) \
+	$(ibmtts_include) $(SNDFILE_CFLAGS) \
+	-DDATADIR=\"$(snddatadir)\" -DPLUGIN_DIR="\"$(audiodir)\"" \
+	-D_GNU_SOURCE -DOPENTTS_INTERNAL
 
 modulebin_PROGRAMS = cicero dummy festival generic
 

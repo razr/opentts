@@ -1,9 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 
-inc_local = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common"
 local_libs = -L$(top_builddir)/src/common -lcommon
 common_libs = $(local_libs) $(GLIB_LIBS)
-AM_CPPFLAGS = $(GLIB_CFLAGS) $(inc_local)
+AM_CPPFLAGS = $(GLIB_CFLAGS) "-I$(top_srcdir)/include" \
+"-I$(top_srcdir)/src/common"
 
 audio_LTLIBRARIES = 
 
