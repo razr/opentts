@@ -47,6 +47,9 @@ int resume_requested;
  * This runs in a separate thread. */
 void *speak(void *data);
 
+/* This function runs in the signal-handling thread. */
+void stop_speak_thread(void);
+
 /* Put this message into queue again, stripping index marks etc. */
 int reload_message(openttsd_message * msg);
 

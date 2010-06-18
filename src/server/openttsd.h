@@ -132,12 +132,16 @@ struct {
 	int num_fds;		/* Number of available allocated sockets */
 } status;
 
-/* speak() thread defined in speaking.c */
-pthread_t speak_thread;
+/* We create two additional threads: signal-handler and speaking. */
+extern pthread_t speak_thread;
+extern pthread_t sighandler_thread;
+extern gboolean speak_thread_started;
+
 pthread_mutex_t logging_mutex;
 pthread_mutex_t element_free_mutex;
 pthread_mutex_t output_layer_mutex;
 pthread_mutex_t socket_com_mutex;
+extern pthread_mutex_t thread_controller;
 
 /* Activity requests for the speaking thread are
  handled with SYSV/IPC semaphore */
@@ -176,7 +180,7 @@ TFDSetElement GlobalFDSet;
 fd_set readfds;
 
 /* Inter thread comm pipe */
-int speaking_pipe[2];
+extern int speaking_pipe[2];
 
 /* Arrays needed for receiving data over socket */
 typedef struct {
@@ -187,6 +191,7 @@ typedef struct {
 } sock_t;
 
 sock_t *openttsd_sockets;
+extern int server_socket;
 
 /* Debugging */
 void MSG(int level, char *format, ...);
@@ -214,6 +219,12 @@ int isanum(const char *str);
  absolute (starting with slash) or relative. */
 char *get_path(char *filename, char *startdir);
 
+/* Functions for starting threads. */
+gboolean start_speak_thread(void);
+
+/* Tell the main thread to stop. */
+void stop_main_thread(void);
+
 /* Functions used in openttsd.c only */
 int connection_new(int server_socket);
 int connection_destroy(int fd);
@@ -225,6 +236,8 @@ void modules_nodebug(void);
 
 int create_pid_file(void);
 void destroy_pid_file(void);
+
+void load_configuration(void);
 
 void logging_init(void);
 

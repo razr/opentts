@@ -42,6 +42,8 @@
 
 static openttsd_message *current_message = NULL;
 static SPDPriority current_priority = SPD_TEXT;
+static gboolean thread_must_stop = FALSE;
+static pthread_mutex_t speak_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int SPEAKING = 0;
 int poll_count;
@@ -163,6 +165,14 @@ void *speak(void *data)
 			resume_requested = 0;
 		}
 
+		pthread_mutex_lock(&speak_stop_mutex);
+		if (thread_must_stop == TRUE) {
+			thread_must_stop = FALSE;
+			pthread_mutex_unlock(&speak_stop_mutex);
+			break;
+		} else
+			pthread_mutex_unlock(&speak_stop_mutex);
+
 		MSG(5, "Locking element_free_mutex in speak()");
 		pthread_mutex_lock(&element_free_mutex);
 		/* Handle postponed priority progress message */
@@ -269,6 +279,32 @@ void *speak(void *data)
 
 		pthread_mutex_unlock(&element_free_mutex);
 	}
+
+	g_free(poll_fds);
+	poll_count = 0;
+	speaking_module = NULL;
+	SPEAKING = 0;
+
+	return NULL;
+}
+
+/*
+	 * This function is called from the signal-handling thread.
+	 * It stops the speaking thread and joins it.
+	 */
+
+void stop_speak_thread(void)
+{
+	int ret;
+
+	pthread_mutex_lock(&speak_stop_mutex);
+	thread_must_stop = TRUE;
+	speaking_semaphore_post();
+	pthread_mutex_unlock(&speak_stop_mutex);
+	ret = pthread_join(speak_thread, NULL);
+
+	if (ret != 0)
+		FATAL("Unable to join speaking thread.");
 }
 
 int reload_message(openttsd_message * msg)

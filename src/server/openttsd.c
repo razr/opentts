@@ -42,6 +42,7 @@
  * structures */
 #include "alloc.h"
 #include "sem_functions.h"
+#include "sighandler.h"
 #include "speaking.h"
 #include "set.h"
 #include "options.h"
@@ -49,6 +50,7 @@
 
 /* Private constants. */
 static const int OTTS_MAX_QUEUE_LEN = 50;
+static const int PIPE_MSG_LEN = 1;
 
 /* Manipulating pid files */
 int create_pid_file();
@@ -57,7 +59,28 @@ void destroy_pid_file();
 /* Server socket file descriptor */
 int server_socket;
 
-static void load_configuration(int sig);
+/* Pipes for inter-thread communication. */
+int speaking_pipe[2];
+static int server_pipe[2];
+
+/* For additional synchronization amongst our three threads. */
+pthread_mutex_t thread_controller;
+
+/* Thread identifiers for our two threads. */
+pthread_t speak_thread;
+pthread_t sighandler_thread;
+
+/* This is set when the speaking thread is started. */
+gboolean speak_thread_started = FALSE;
+
+/* A helper function. */
+static int max(int a, int b)
+{
+	if (a > b)
+		return a;
+	else
+		return b;
+}
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - daemon is a gcc-ism
@@ -428,15 +451,6 @@ void module_nodebug(gpointer key, gpointer value, gpointer user)
 	return;
 }
 
-static void reload_dead_modules(int sig)
-{
-	/* Reload dead modules */
-	g_hash_table_foreach(output_modules, modules_reload, NULL);
-
-	/* Make sure there aren't any more child processes left */
-	while (waitpid(-1, NULL, WNOHANG) > 0) ;
-}
-
 void modules_debug(void)
 {
 	/* Redirect output to debug for all modules */
@@ -480,9 +494,14 @@ static void init()
 	status.max_uid = 0;
 	status.max_gid = 0;
 
-	/* Initialize inter-thread comm pipe */
+	/* Initialize inter-thread comm pipes */
 	if (pipe(speaking_pipe)) {
 		MSG(1, "Speaking pipe creation failed (%s)", strerror(errno));
+		FATAL("Can't create pipe");
+	}
+
+	if (pipe(server_pipe)) {
+		MSG(1, "Server pipe creation failed (%s)", strerror(errno));
 		FATAL("Can't create pipe");
 	}
 
@@ -562,7 +581,7 @@ static void init()
 	/* Load configuration from the config file */
 	MSG(4, "Reading openttsd's configuration from %s",
 	    options.conf_file);
-	load_configuration(0);
+	load_configuration();
 
 	logging_init();
 
@@ -578,7 +597,7 @@ static void init()
 	last_p5_block = NULL;
 }
 
-static void load_configuration(int sig)
+void load_configuration(void)
 {
 	configfile_t *configfile = NULL;
 
@@ -619,7 +638,7 @@ static void load_configuration(int sig)
 	free_config_options(configoptions, &num_options);
 }
 
-static void quit(int sig)
+static void quit(void)
 {
 	int ret;
 
@@ -627,23 +646,28 @@ static void quit(int sig)
 
 	MSG(2, "Closing open connections...");
 	/* We will browse through all the connections and close them. */
-	g_hash_table_foreach_remove(fd_settings, client_terminate,
-				    NULL);
+	g_hash_table_foreach_remove(fd_settings, client_terminate, NULL);
 	g_hash_table_destroy(fd_settings);
 
-	MSG(4, "Closing speak() thread...");
-	ret = pthread_cancel(speak_thread);
-	if (ret != 0)
-		FATAL("Speak thread failed to cancel!\n");
+	if (speak_thread_started) {
+		MSG(4, "Closing speak() thread...");
+		ret = pthread_cancel(speak_thread);
+		if (ret != 0)
+			FATAL("Speak thread failed to cancel!\n");
 
-	ret = pthread_join(speak_thread, NULL);
+		ret = pthread_join(speak_thread, NULL);
+		if (ret != 0)
+			FATAL("Speak thread failed to join!\n");
+	}
+
+	ret = pthread_join(sighandler_thread, NULL);
+	/* No reason to cancel it, since it is already gone. */
 	if (ret != 0)
-		FATAL("Speak thread failed to join!\n");
+		FATAL("Signal handler thread failed to join!\n");
 
 	MSG(2, "Closing open output modules...");
 	/*  Call the close() function of each registered output module. */
-	g_hash_table_foreach_remove(output_modules, modules_terminate,
-				    NULL);
+	g_hash_table_foreach_remove(output_modules, modules_terminate, NULL);
 	g_hash_table_destroy(output_modules);
 
 	MSG(2, "Closing server connection...");
@@ -841,10 +865,46 @@ int make_inet_socket(const int port)
 	return server_socket;
 }
 
+/* Thread creation. */
+gboolean start_speak_thread(void)
+{
+	int ret;
+
+	MSG(4, "Creating new thread for speak()");
+	ret = pthread_create(&speak_thread, NULL, speak, NULL);
+	if (ret != 0) {
+		speak_thread_started = FALSE;
+		MSG(0, "Speak thread failed!\n");
+	} else
+		speak_thread_started = TRUE;
+
+	return speak_thread_started;
+}
+
+/*
+	 * Tell the main thread to stop.  This is called from the
+	 * signal-handler thread.
+	 */
+void stop_main_thread(void)
+{
+	int ret;
+	char buf[PIPE_MSG_LEN];
+
+	/* We don't really care about the contents of the message. */
+	buf[0] = 's';
+
+	do {
+		ret = write(server_pipe[1], buf, PIPE_MSG_LEN);
+		if ((ret == -1) && (errno != EINTR))
+			FATAL("Unable to stop main thread.");
+	} while (ret != PIPE_MSG_LEN);
+}
+
 /* --- MAIN --- */
 
 int main(int argc, char *argv[])
 {
+	char buf[PIPE_MSG_LEN];
 	fd_set testfds;
 	int fd;
 	int ret;
@@ -948,15 +1008,16 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	ret = pthread_mutex_init(&thread_controller, NULL);
+	if (ret != 0) {
+		fprintf(stderr, "Mutex initialization failed");
+		exit(1);
+	}
+
 	/* Register signals */
-	sig.sa_handler = quit;
-	sigaction(SIGINT, &sig, NULL);
-	sig.sa_handler = load_configuration;
-	sigaction(SIGHUP, &sig, NULL);
 	sig.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &sig, NULL);
-	sig.sa_handler = reload_dead_modules;
-	sigaction(SIGUSR1, &sig, NULL);
+	init_blocked_sig_set();
 
 	init();
 
@@ -1011,14 +1072,31 @@ int main(int argc, char *argv[])
 			return -1;
 	}
 
-	MSG(4, "Creating new thread for speak()");
-	ret = pthread_create(&speak_thread, NULL, speak, NULL);
-	if (ret != 0)
-		FATAL("Speak thread failed!\n");
+	pthread_mutex_lock(&thread_controller);
+
+	MSG(4, "Creating new thread for signal handling.");
+	ret = pthread_create(&sighandler_thread, NULL, catch_signals, NULL);
+	if (ret != 0) {
+		pthread_mutex_unlock(&thread_controller);
+		FATAL("Signal handler thread failed!\n");
+	}
+
+	if (start_speak_thread() != TRUE) {
+		pthread_mutex_unlock(&thread_controller);
+		if (pthread_cancel(sighandler_thread) != 0)
+			FATAL("Unable to cancel signal handling thread.");
+		if (pthread_join(sighandler_thread, NULL) != 0)
+			FATAL("Unable to join signal handling thread.");
+
+		FATAL("Unable to start the speaking thread.");
+	}
+
+	pthread_mutex_unlock(&thread_controller);
 
 	FD_ZERO(&readfds);
 	FD_SET(server_socket, &readfds);
-	status.max_fd = server_socket;
+	FD_SET(server_pipe[0], &readfds);
+	status.max_fd = max(server_socket, server_pipe[0]);
 
 	/* Now wait for clients and requests. */
 	MSG(1, "openttsd started, and it is waiting for clients ...");
@@ -1028,12 +1106,23 @@ int main(int argc, char *argv[])
 		if (select
 		    (FD_SETSIZE, &testfds, (fd_set *) 0, (fd_set *) 0,
 		     NULL) >= 1) {
-			/* Once we know we've got activity,
-			 * we find which descriptor it's on by checking each in turn using FD_ISSET. */
+
+			/*
+			 * First, handle any stop requests from the
+			 * signal handler thread.  If we received a
+			 * stop request, then break out of this loop.
+			 * Otherwise, we know we have activity on a socket.
+			 * Check each socket in turn, and handle its
+			 * data.
+			 */
+
+			if (FD_ISSET(server_pipe[0], &testfds)) {
+				read(server_pipe[0], buf, PIPE_MSG_LEN);
+				break;
+			}
 
 			for (fd = 0;
-			     fd <= status.max_fd && fd < FD_SETSIZE;
-			     fd++) {
+			     fd <= status.max_fd && fd < FD_SETSIZE; fd++) {
 				if (FD_ISSET(fd, &testfds)) {
 					MSG(4, "Activity on fd %d ...", fd);
 
@@ -1056,8 +1145,7 @@ int main(int argc, char *argv[])
 
 						if (nread == 0) {
 							/* client has gone */
-							connection_destroy
-							    (fd);
+							connection_destroy(fd);
 							if (ret != 0)
 								MSG(2,
 								    "Error: Failed to close the client!");
@@ -1073,6 +1161,10 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+
+	quit();
+
+	return 0;
 }
 
 void check_locked(pthread_mutex_t * lock)
