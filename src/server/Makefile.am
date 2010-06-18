@@ -6,7 +6,7 @@ openttsd_LDADD = -L$(top_builddir)/src/common -lcommon $(DOTCONF_LIBS) $(GLIB_LI
 openttsd_LDFLAGS = $(RDYNAMIC)
 
 openttsd_CFLAGS = $(ERROR_CFLAGS)
-openttsd_CPPFLAGS = "-I$(top_srcdir)/include" "-I$(top_srcdir)/src/common" \
+openttsd_CPPFLAGS = "-I$(top_srcdir)/include" \
 $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) \
 $(GTHREAD_CFLAGS) -DSYS_CONF=\"$(spdconfdir)\" -DSND_DATA=\"$(snddatadir)\" \
 -DMODULEBINDIR=\"$(modulebindir)\" -DOPENTTS_INTERNAL

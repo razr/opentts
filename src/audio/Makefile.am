@@ -2,8 +2,7 @@
 
 local_libs = -L$(top_builddir)/src/common -lcommon
 common_libs = $(local_libs) $(GLIB_LIBS)
-AM_CPPFLAGS = $(GLIB_CFLAGS) "-I$(top_srcdir)/include" \
-"-I$(top_srcdir)/src/common"
+AM_CPPFLAGS = $(GLIB_CFLAGS) "-I$(top_srcdir)/include"
 
 audio_LTLIBRARIES = 
 
