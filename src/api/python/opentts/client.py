@@ -337,8 +337,8 @@ class _SSIP_Connection:
         """Attempts to spawn the openttsd server."""
         if os.path.exists(SPAWN_CMD):
             devnull = os.open('/dev/null', os.O_WRONLY)
-            server_process = subprocess.Popen([SPAWN_CMD],
-                        stdin=None, stdout=devnull, stderr=subprocess.STDOUT)
+            server_process = subprocess.Popen([SPAWN_CMD], stdin=None,
+                             stdout=devnull, stderr=subprocess.STDOUT)
             # Todo: log output from stdout.
             time.sleep(0.5)
             server_process.wait()
@@ -427,7 +427,8 @@ class SSIPClient(object):
     """Default name of the communication unix socket"""
     
     def __init__(self, name, component='default', user='unknown', host=None,
-                 port=None, method='unix_socket', socket_name=None, autospawn=True):
+                 port=None, method='unix_socket',
+                 socket_name=None, autospawn=True):
         """Initialize the instance and connect to the server.
 
         Arguments:
@@ -459,7 +460,8 @@ class SSIPClient(object):
         self._conn = conn = None
 
         if socket_name is None:
-            socket_name = os.environ.get('OPENTTSD_SOCKET', os.path.expanduser(self.DEFAULT_SOCKET_PATH))
+            socket_name = os.environ.get('OPENTTSD_SOCKET',
+                        os.path.expanduser(self.DEFAULT_SOCKET_PATH))
         if host is None:
             host = os.environ.get('OPENTTSD_HOST', self.DEFAULT_OPENTTSD_HOST)
         if port is None:
@@ -473,15 +475,17 @@ class SSIPClient(object):
             # If that fails, conn will be None, and we'll try again,
             # and the server will be spawned.
             try:
-                self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
-                                                     host=host, port=port, autospawn=False)
+                self._conn = conn = _SSIP_Connection(method=method,
+                                           socket_name=socket_name, host=host,
+                                        port=port, autospawn=False)
             except:
                 pass
 
         # If we don't already have a connection, then connect to the server.
         if conn is None:
-            self._conn = conn = _SSIP_Connection(method=method, socket_name=socket_name,
-                                                 host=host, port=port, autospawn=autospawn)
+            self._conn = conn = _SSIP_Connection(method=method,
+                                       socket_name=socket_name, host=host,
+                                           port=port, autospawn=autospawn)
 
         full_name = '%s:%s:%s' % (user, name, component)
         conn.send_command('SET', Scope.SELF, 'CLIENT_NAME', full_name)
@@ -678,7 +682,8 @@ class SSIPClient(object):
 
         """
         try:
-            code, msg, data = self._conn.send_command('LIST', 'SYNTHESIS_VOICES')
+            code, msg, data = \
+                self._conn.send_command('LIST', 'SYNTHESIS_VOICES')
         except SSIPCommandError:
             return ()
         def split(item):

@@ -1,2 +1,4 @@
-SPAWN_CMD="@bindir@/openttsd"
+""" OpenTTS build-time constants """
+
+SPAWN_CMD = "@bindir@/openttsd"
 VERSION = "@PACKAGE_VERSION@"
