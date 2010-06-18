@@ -898,7 +898,7 @@ class SSIPClient(object):
 
     def close(self):
         """Close the connection to openttsd."""
-        if hasattr(self, '_conn'):
+        if hasattr(self, '_conn') and hasattr(self._conn, 'close'):
             self._conn.close()
 
 
