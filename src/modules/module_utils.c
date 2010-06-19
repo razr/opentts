@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <fdsetconv.h>
 #include <getline.h>
+#include<logging.h>
 #include "module_utils.h"
 
 static char *module_audio_pars[10];
@@ -122,7 +123,7 @@ void do_pause(void)
 
 	ret = module_pause();
 	if (ret) {
-		dbg("WARNING: Can't pause");
+		log_msg(OTTS_LOG_WARN, "WARNING: Can't pause");
 		return;
 	}
 
@@ -200,19 +201,19 @@ gchar *do_set(void)
 				    set_numeric_parameter(cur_value,
 							  &msg_settings.rate,
 							  OTTS_VOICE_RATE_MIN,
-				                          OTTS_VOICE_RATE_MAX);
+							  OTTS_VOICE_RATE_MAX);
 			} else if (!strcmp(cur_item, "pitch")) {
 				err =
 				    set_numeric_parameter(cur_value,
 							  &msg_settings.pitch,
 							  OTTS_VOICE_PITCH_MIN,
-				                          OTTS_VOICE_PITCH_MAX);
+							  OTTS_VOICE_PITCH_MAX);
 			} else if (!strcmp(cur_item, "volume")) {
 				err =
 				    set_numeric_parameter(cur_value,
 							  &msg_settings.volume,
 							  OTTS_VOICE_VOLUME_MIN,
-				                          OTTS_VOICE_VOLUME_MAX);
+							  OTTS_VOICE_VOLUME_MAX);
 			} else if (!strcmp(cur_item, "punctuation_mode")) {
 				ret = str2punct(cur_value);
 				if (ret != SPD_PUNCT_ERR)
@@ -399,8 +400,7 @@ gchar *do_loglevel(void)
 					xfree(line);
 					continue;
 				}
-				opentts_audio_set_loglevel(module_audio_id,
-							   number);
+				open_log("stderr", number);
 			} else
 				err = 2;	/* Unknown parameter */
 		}
@@ -419,8 +419,6 @@ gchar *do_loglevel(void)
 
 gchar *do_debug(char *cmd_buf)
 {
-	/* TODO: Develop the full on/off logic etc. */
-
 	char **cmd;
 	char *filename;
 
@@ -438,29 +436,15 @@ gchar *do_debug(char *cmd_buf)
 		}
 
 		filename = cmd[2];
-		dbg("Additional logging into specific path %s requested",
-		    filename);
-		CustomDebugFile = fopen(filename, "w+");
-		if (CustomDebugFile == NULL) {
-			dbg("ERROR: Can't open custom debug file for logging: %d (%s)", errno, strerror(errno));
-			return g_strdup("303 CANT OPEN CUSTOM DEBUG FILE");
-		}
-		if (Debug == 1)
-			Debug = 3;
-		else
-			Debug = 2;
-
-		dbg("Additional logging initialized");
+		log_msg(OTTS_LOG_NOTICE,
+			"Additional logging into specific path %s requested",
+			filename);
+		open_debug_log(filename, DEBUG_ON);
+		log_msg(OTTS_LOG_INFO, "Additional logging initialized");
 	} else if (!strcmp(cmd[1], "OFF")) {
-		if (Debug == 3)
-			Debug = 1;
-		else
-			Debug = 0;
-
-		if (CustomDebugFile != NULL)
-			fclose(CustomDebugFile);
-		CustomDebugFile = NULL;
-		dbg("Additional logging into specific path terminated");
+		close_debug_log();
+		log_msg(OTTS_LOG_NOTICE,
+			"Additional logging into specific path terminated");
 	} else {
 		return g_strdup("302 ERROR BAD SYNTAX");
 	}
@@ -499,7 +483,7 @@ gchar *do_list_voices(void)
 	}
 	g_string_append(voice_list, "200 OK VOICE LIST SENT");
 
-	dbg("Voice list prepared to  send to openttsd");
+	log_msg(OTTS_LOG_INFO, "Voice list prepared to  send to openttsd");
 
 	return voice_list->str;
 }
@@ -543,7 +527,9 @@ module_get_message_part(const char *message, char *part, unsigned int *pos,
 		if (part[i] == 0) {
 			return i;
 		}
-		// dbg("pos: %d", *pos);
+
+/* ??? what's up here? */
+		// log_msg(OTTS_LOG_DEBUG, "pos: %d", *pos);
 
 		if ((len - 1 - i) > 2) {
 			if ((message[*pos + 1] == ' ')
@@ -595,8 +581,9 @@ void module_strip_punctuation_some(char *message, char *punct_chars)
 	len = strlen(message);
 	for (i = 0; i <= len - 1; i++) {
 		if (strchr(punct_chars, *p)) {
-			dbg("Substitution %d: char -%c- for whitespace\n", i,
-			    *p);
+			log_msg(OTTS_LOG_DEBUG,
+				"Substitution %d: char -%c- for whitespace\n",
+				i, *p);
 			*p = ' ';
 		}
 		p++;
@@ -638,7 +625,7 @@ char *module_strip_ssml(char *message)
 		} else if (!omit || i == len)
 			out[n++] = message[i];
 	}
-	dbg("In stripping ssml: |%s|", out);
+	log_msg(OTTS_LOG_NOTICE, "In stripping ssml: |%s|", out);
 
 	return out;
 }
@@ -666,32 +653,33 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 
 	while (1) {
 		sem_wait(semaphore);
-		dbg("Semaphore on\n");
+		log_msg(OTTS_LOG_DEBUG, "Semaphore on\n");
 
 		ret = pipe(module_pipe.pc);
 		if (ret != 0) {
-			dbg("Can't create pipe pc\n");
+			log_msg(OTTS_LOG_WARN, "Can't create pipe pc\n");
 			*speaking_flag = 0;
 			continue;
 		}
 
 		ret = pipe(module_pipe.cp);
 		if (ret != 0) {
-			dbg("Can't create pipe cp\n");
+			log_msg(OTTS_LOG_WARN, "Can't create pipe cp\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			*speaking_flag = 0;
 			continue;
 		}
 
-		dbg("Pipes initialized");
+		log_msg(OTTS_LOG_INFO, "Pipes initialized");
 
 		/* Create a new process so that we could send it signals */
 		*process_pid = fork();
 
 		switch (*process_pid) {
 		case -1:
-			dbg("Can't say the message. fork() failed!\n");
+			log_msg(OTTS_LOG_ERR,
+				"Can't say the message. fork() failed!\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			close(module_pipe.cp[0]);
@@ -702,7 +690,7 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 		case 0:
 			/* This is the child. Make it speak, but exit on SIGINT. */
 
-			dbg("Starting child...\n");
+			log_msg(OTTS_LOG_NOTICE, "Starting child...\n");
 			(*child_function) (module_pipe, maxlen);
 			exit(0);
 
@@ -714,14 +702,17 @@ module_speak_thread_wfork(sem_t * semaphore, pid_t * process_pid,
 						maxlen, dividers,
 						pause_requested);
 
-			dbg("Waiting for child...");
+			log_msg(OTTS_LOG_NOTICE, "Waiting for child...");
 			waitpid(*process_pid, &status, 0);
 
 			*speaking_flag = 0;
 
 			module_report_event_end();
 
-			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			log_msg(OTTS_LOG_NOTICE,
+				"child terminated -: status:%d signal?:%d signal number:%d.\n",
+				WIFEXITED(status), WIFSIGNALED(status),
+				WTERMSIG(status));
 		}
 	}
 }
@@ -737,7 +728,7 @@ module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
 	int bytes;
 	size_t read_bytes = 0;
 
-	dbg("Entering parent process, closing pipes");
+	log_msg(OTTS_LOG_INFO, "Entering parent process, closing pipes");
 
 	buf = (char *)g_malloc((maxlen + 1) * sizeof(char));
 
@@ -745,42 +736,48 @@ module_parent_wfork(TModuleDoublePipe dpipe, const char *message,
 
 	pos = 0;
 	while (1) {
-		dbg("  Looping...\n");
+		log_msg(OTTS_LOG_INFO, "  Looping...\n");
 
 		bytes =
 		    module_get_message_part(message, buf, &pos, maxlen,
 					    dividers);
 
-		dbg("Returned %d bytes from get_part\n", bytes);
+		log_msg(OTTS_LOG_DEBUG, "Returned %d bytes from get_part\n",
+			bytes);
 
 		if (*pause_requested) {
-			dbg("Pause requested in parent");
+			log_msg(OTTS_LOG_INFO, "Pause requested in parent");
 			module_parent_dp_close(dpipe);
 			*pause_requested = 0;
 			return 0;
 		}
 
 		if (bytes > 0) {
-			dbg("Sending buf to child:|%s| %d\n", buf, bytes);
+			log_msg(OTTS_LOG_INFO, "Sending buf to child:|%s| %d\n",
+				buf, bytes);
 			module_parent_dp_write(dpipe, buf, bytes);
 
-			dbg("Waiting for response from child...\n");
+			log_msg(OTTS_LOG_INFO,
+				"Waiting for response from child...\n");
 			while (1) {
 				read_bytes =
 				    module_parent_dp_read(dpipe, msg, 8);
 				if (read_bytes == 0) {
-					dbg("parent: Read bytes 0, child stopped\n");
+					log_msg(OTTS_LOG_NOTICE,
+						"parent: Read bytes 0, child stopped\n");
 					break;
 				}
 				if (msg[0] == 'C') {
-					dbg("Ok, received report to continue...\n");
+					log_msg(OTTS_LOG_DEBUG,
+						"Ok, received report to continue...\n");
 					break;
 				}
 			}
 		}
 
 		if ((bytes == -1) || (read_bytes == 0)) {
-			dbg("End of data in parent, closing pipes");
+			log_msg(OTTS_LOG_INFO,
+				"End of data in parent, closing pipes");
 			module_parent_dp_close(dpipe);
 			break;
 		}
@@ -794,15 +791,17 @@ int module_parent_wait_continue(TModuleDoublePipe dpipe)
 	char msg[16];
 	int bytes;
 
-	dbg("parent: Waiting for response from child...\n");
+	log_msg(OTTS_LOG_INFO, "parent: Waiting for response from child...\n");
 	while (1) {
 		bytes = module_parent_dp_read(dpipe, msg, 8);
 		if (bytes == 0) {
-			dbg("parent: Read bytes 0, child stopped\n");
+			log_msg(OTTS_LOG_INFO,
+				"parent: Read bytes 0, child stopped\n");
 			return 1;
 		}
 		if (msg[0] == 'C') {
-			dbg("parent: Ok, received report to continue...\n");
+			log_msg(OTTS_LOG_INFO,
+				"parent: Ok, received report to continue...\n");
 			return 0;
 		}
 	}
@@ -843,7 +842,7 @@ module_child_dp_write(TModuleDoublePipe dpipe, const char *msg, size_t bytes)
 			if (errno == EINTR)
 				continue;	/* Try again. */
 			else
-				FATAL("Unable to write data.");
+				fatal("Unable to write data.");
 		} else if (ret == bytes)
 			break;
 		else {
@@ -859,9 +858,9 @@ module_parent_dp_write(TModuleDoublePipe dpipe, const char *msg, size_t bytes)
 {
 	int ret;
 	assert(msg != NULL);
-	dbg("going to write %ld bytes", bytes);
+	log_msg(OTTS_LOG_INFO, "going to write %ld bytes", bytes);
 	ret = write(dpipe.pc[1], msg, bytes);
-	dbg("written %d bytes", ret);
+	log_msg(OTTS_LOG_DEBUG, "written %d bytes", ret);
 	return ret;
 }
 
@@ -870,7 +869,7 @@ int module_child_dp_read(TModuleDoublePipe dpipe, char *msg, size_t maxlen)
 	int bytes;
 	while ((bytes = read(dpipe.pc[0], msg, maxlen)) < 0) {
 		if (errno != EINTR) {
-			FATAL("Unable to read data");
+			fatal("Unable to read data");
 		}
 	}
 	return bytes;
@@ -881,7 +880,7 @@ int module_parent_dp_read(TModuleDoublePipe dpipe, char *msg, size_t maxlen)
 	int bytes;
 	while ((bytes = read(dpipe.cp[0], msg, maxlen)) < 0) {
 		if (errno != EINTR) {
-			FATAL("Unable to read data");
+			fatal("Unable to read data");
 		}
 	}
 	return bytes;
@@ -892,37 +891,40 @@ void module_sigblockall(void)
 	int ret;
 	sigset_t all_signals;
 
-	dbg("Blocking all signals");
+	log_msg(OTTS_LOG_NOTICE, "Blocking all signals");
 
 	sigfillset(&all_signals);
 
 	ret = sigprocmask(SIG_BLOCK, &all_signals, NULL);
 	if (ret != 0)
-		dbg("Can't block signals, expect problems with terminating!\n");
+		log_msg(OTTS_LOG_WARN,
+			"Can't block signals, expect problems with terminating!\n");
 }
 
 void module_sigunblockusr(sigset_t * some_signals)
 {
 	int ret;
 
-	dbg("UnBlocking user signal");
+	log_msg(OTTS_LOG_INFO, "UnBlocking user signal");
 
 	sigdelset(some_signals, SIGUSR1);
 	ret = sigprocmask(SIG_SETMASK, some_signals, NULL);
 	if (ret != 0)
-		dbg("Can't block signal set, expect problems with terminating!\n");
+		log_msg(OTTS_LOG_WARN,
+			"Can't block signal set, expect problems with terminating!\n");
 }
 
 void module_sigblockusr(sigset_t * some_signals)
 {
 	int ret;
 
-	dbg("Blocking user signal");
+	log_msg(OTTS_LOG_DEBUG, "Blocking user signal");
 
 	sigaddset(some_signals, SIGUSR1);
 	ret = sigprocmask(SIG_SETMASK, some_signals, NULL);
 	if (ret != 0)
-		dbg("Can't block signal set, expect problems when terminating!\n");
+		log_msg(OTTS_LOG_WARN,
+			"Can't block signal set, expect problems when terminating!\n");
 
 }
 
@@ -935,9 +937,11 @@ void set_speaking_thread_parameters(void)
 	if (ret == 0) {
 		ret = pthread_sigmask(SIG_BLOCK, &all_signals, NULL);
 		if (ret != 0)
-			dbg("Can't set signal set, expect problems when terminating!\n");
+			log_msg(OTTS_LOG_WARN,
+				"Can't set signal set, expect problems when terminating!\n");
 	} else {
-		dbg("Can't fill signal set, expect problems when terminating!\n");
+		log_msg(OTTS_LOG_WARN,
+			"Can't fill signal set, expect problems when terminating!\n");
 	}
 
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -948,12 +952,12 @@ int module_write_data_ok(char *data)
 {
 	/* Tests */
 	if (data == NULL) {
-		dbg("requested data NULL\n");
+		log_msg(OTTS_LOG_ERR, "requested data NULL\n");
 		return -1;
 	}
 
 	if (data[0] == 0) {
-		dbg("requested data empty\n");
+		log_msg(OTTS_LOG_WARN, "requested data empty\n");
 		return -1;
 	}
 
@@ -966,12 +970,12 @@ int module_terminate_thread(pthread_t thread)
 
 	ret = pthread_cancel(thread);
 	if (ret != 0) {
-		dbg("Cancelation of speak thread failed");
+		log_msg(OTTS_LOG_CRIT, "Cancelation of speak thread failed");
 		return 1;
 	}
 	ret = pthread_join(thread, NULL);
 	if (ret != 0) {
-		dbg("join failed!\n");
+		log_msg(OTTS_LOG_ERR, "join failed!\n");
 		return 1;
 	}
 
@@ -986,7 +990,7 @@ sem_t *module_semaphore_init()
 	semaphore = (sem_t *) g_malloc(sizeof(sem_t));
 	ret = sem_init(semaphore, 0, 0);
 	if (ret != 0) {
-		dbg("Semaphore initialization failed");
+		log_msg(OTTS_LOG_ERR, "Semaphore initialization failed");
 		g_free(semaphore);
 		semaphore = NULL;
 	}
@@ -1013,7 +1017,8 @@ char *module_recode_to_iso(char *data, int bytes, char *language,
 						    NULL, NULL);
 
 	if (recoded == NULL)
-		dbg("festival: Conversion to ISO coding failed\n");
+		log_msg(OTTS_LOG_WARN,
+			"festival: Conversion to ISO coding failed\n");
 
 	return recoded;
 }
@@ -1031,17 +1036,17 @@ int semaphore_post(int sem_id)
 void module_send_asynchronous(char *text)
 {
 	pthread_mutex_lock(&module_stdout_mutex);
-	dbg("Printing reply: %s", text);
+	log_msg(OTTS_LOG_DEBUG, "Printing reply: %s", text);
 	fprintf(stdout, "%s", text);
 	fflush(stdout);
-	dbg("Printed");
+	log_msg(OTTS_LOG_DEBUG, "Printed");
 	pthread_mutex_unlock(&module_stdout_mutex);
 }
 
 void module_report_index_mark(char *mark)
 {
 	char *reply;
-	dbg("Event: Index mark %s", mark);
+	log_msg(OTTS_LOG_INFO, "Event: Index mark %s", mark);
 	if (mark != NULL)
 		reply = g_strdup_printf("700-%s\n700 INDEX MARK\n", mark);
 	else
@@ -1105,7 +1110,8 @@ void *module_get_ht_option(GHashTable * hash_table, const char *key)
 
 	option = g_hash_table_lookup(hash_table, key);
 	if (option == NULL)
-		dbg("Requested option by key %s not found.\n", key);
+		log_msg(OTTS_LOG_DEBUG,
+			"Requested option by key %s not found.\n", key);
 
 	return option;
 }
@@ -1124,7 +1130,7 @@ int module_audio_init_spd(char **status_info)
 	gchar **outputs;
 	int i = 0;
 
-	dbg("Openning audio output system");
+	log_msg(OTTS_LOG_NOTICE, "Openning audio output system");
 	if (NULL == module_audio_pars[0]) {
 		*status_info =
 		    g_strdup
@@ -1139,7 +1145,8 @@ int module_audio_init_spd(char **status_info)
 		    opentts_audio_open(outputs[i],
 				       (void **)&module_audio_pars[1], &error);
 		if (module_audio_id) {
-			dbg("Using %s audio output method", outputs[i]);
+			log_msg(OTTS_LOG_INFO, "Using %s audio output method",
+				outputs[i]);
 			g_strfreev(outputs);
 			return 0;
 		}
@@ -1183,27 +1190,8 @@ void init_settings_tables(void)
 	clean_old_settings_table();
 }
 
-void dbg(char *fmt, ...)
+void inline fatal(char *msg)
 {
-	char *tstr;
-	va_list remaining_args;
-
-	if (Debug) {
-		tstr = get_timestamp();
-		fputs(tstr, stderr);
-		va_start(remaining_args, fmt);
-		vfprintf(stderr, fmt, remaining_args);
-		va_end(remaining_args);
-		fputc('\n', stderr);
-		fflush(stderr);
-		if ((Debug == 2) || (Debug == 3)) {
-			fputs(tstr, CustomDebugFile);
-			va_start(remaining_args, fmt);
-			vfprintf(CustomDebugFile, fmt, remaining_args);
-			va_end(remaining_args);
-			fputc('\n', CustomDebugFile);
-			fflush(CustomDebugFile);
-		}
-		g_free(tstr);
-	}
+	log_msg(OTTS_LOG_CRIT, msg);
+	exit(1);
 }

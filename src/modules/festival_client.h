@@ -88,11 +88,11 @@ void delete_FT_Info(FT_Info * info);
         if (fd != NULL){ \
           str = g_strdup_printf(format"\n"); \
           fprintf(fd, str); \
-          dbg("-> Festival: |%s|", str); \
+          log_msg(OTTS_LOG_DEBUG, "-> Festival: |%s|", str); \
           g_free(str); \
           fclose(fd); \
         }else{ \
-          dbg("Can't open connection"); \
+          log_msg(OTTS_LOG_ERR, "Can't open connection"); \
         } \
     }
 
@@ -104,11 +104,11 @@ void delete_FT_Info(FT_Info * info);
         if (fd != NULL){ \
           str = g_strdup_printf(format"\n", args); \
           fprintf(fd, str); \
-          dbg("-> Festival: |%s|", str); \
+          log_msg(OTTS_LOG_DEBUG, "-> Festival: |%s|", str); \
           g_free(str); \
           fclose(fd); \
         }else{ \
-          dbg("Can't open connection"); \
+          log_msg(OTTS_LOG_ERR, "Can't open connection"); \
         } \
     }
 

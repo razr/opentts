@@ -29,6 +29,7 @@
 #include <glib.h>
 
 #include "opentts/opentts_types.h"
+#include<logging.h>
 #include "module_utils.h"
 
 #define MODULE_NAME     "generic"
@@ -138,9 +139,11 @@ int module_init(char **status_info)
 
 	*status_info = NULL;
 
-	dbg("GenericMaxChunkLength = %d\n", GenericMaxChunkLength);
-	dbg("GenericDelimiters = %s\n", GenericDelimiters);
-	dbg("GenericExecuteSynth = %s\n", GenericExecuteSynth);
+	log_msg(OTTS_LOG_DEBUG, "GenericMaxChunkLength = %d\n",
+		GenericMaxChunkLength);
+	log_msg(OTTS_LOG_DEBUG, "GenericDelimiters = %s\n", GenericDelimiters);
+	log_msg(OTTS_LOG_DEBUG, "GenericExecuteSynth = %s\n",
+		GenericExecuteSynth);
 
 	generic_msg_language =
 	    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
@@ -151,11 +154,12 @@ int module_init(char **status_info)
 	generic_message = g_malloc(sizeof(char *));
 	generic_semaphore = module_semaphore_init();
 
-	dbg("Generic: creating new thread for generic_speak\n");
+	log_msg(OTTS_LOG_INFO,
+		"Generic: creating new thread for generic_speak\n");
 	generic_speaking = 0;
 	ret = pthread_create(&generic_speak_thread, NULL, _generic_speak, NULL);
 	if (ret != 0) {
-		dbg("Generic: thread failed\n");
+		log_msg(OTTS_LOG_ERR, "Generic: thread failed\n");
 		*status_info = g_strdup("The module couldn't initialize threads"
 					"This can be either an internal problem or an"
 					"architecture problem. If you are sure your architecture"
@@ -170,7 +174,7 @@ int module_init(char **status_info)
 int module_audio_init(char **status_info)
 {
 	status_info = NULL;
-	dbg("Opening audio");
+	log_msg(OTTS_LOG_INFO, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
@@ -183,10 +187,10 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	char *tmp;
 
-	dbg("speak()\n");
+	log_msg(OTTS_LOG_INFO, "speak()\n");
 
 	if (generic_speaking) {
-		dbg("Speaking when requested to write");
+		log_msg(OTTS_LOG_WARN, "Speaking when requested to write");
 		return 0;
 	}
 
@@ -203,16 +207,17 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	/* Set the appropriate charset */
 	assert(generic_msg_language != NULL);
 	if (generic_msg_language->charset != NULL) {
-		dbg("Recoding from UTF-8 to %s...",
-		    generic_msg_language->charset);
+		log_msg(OTTS_LOG_DEBUG, "Recoding from UTF-8 to %s...",
+			generic_msg_language->charset);
 		tmp =
 		    (char *)g_convert_with_fallback(data, bytes,
-						    generic_msg_language->
-						    charset, "UTF-8",
+						    generic_msg_language->charset,
+						    "UTF-8",
 						    GenericRecodeFallback, NULL,
 						    NULL, NULL);
 	} else {
-		dbg("Warning: Prefered charset not specified, recoding to iso-8859-1");
+		log_msg(OTTS_LOG_DEBUG,
+			"Warning: Prefered charset not specified, recoding to iso-8859-1");
 		tmp =
 		    (char *)g_convert_with_fallback(data, bytes, "iso-8859-2",
 						    "UTF-8",
@@ -233,22 +238,24 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 
 	generic_message_type = SPD_MSGTYPE_TEXT;
 
-	dbg("Requested data: |%s|\n", data);
+	log_msg(OTTS_LOG_DEBUG, "Requested data: |%s|\n", data);
 
 	/* Send semaphore signal to the speaking thread */
 	generic_speaking = 1;
 	sem_post(generic_semaphore);
 
-	dbg("Generic: leaving write() normaly\n\r");
+	log_msg(OTTS_LOG_INFO, "Generic: leaving write() normaly\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	dbg("generic: stop()\n");
+	log_msg(OTTS_LOG_INFO, "generic: stop()\n");
 
 	if (generic_speaking && generic_pid != 0) {
-		dbg("generic: stopping process group pid %d\n", generic_pid);
+		log_msg(OTTS_LOG_INFO,
+			"generic: stopping process group pid %d\n",
+			generic_pid);
 		kill(-generic_pid, SIGKILL);
 	}
 	return 0;
@@ -256,12 +263,12 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	dbg("pause requested\n");
+	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (generic_speaking) {
-		dbg("Sending request to pause to child\n");
+		log_msg(OTTS_LOG_DEBUG, "Sending request to pause to child\n");
 		generic_pause_requested = 1;
 
-		dbg("paused at byte: %d", generic_position);
+		log_msg(OTTS_LOG_DEBUG, "paused at byte: %d", generic_position);
 		return 0;
 	} else {
 		return -1;
@@ -275,7 +282,7 @@ char *module_is_speaking(void)
 
 void module_close(int status)
 {
-	dbg("generic: close()\n");
+	log_msg(OTTS_LOG_DEBUG, "generic: close()\n");
 
 	if (generic_speaking) {
 		module_stop();
@@ -328,24 +335,24 @@ void *_generic_speak(void *nothing)
 	int ret;
 	int status;
 
-	dbg("generic: speaking thread starting.......\n");
+	log_msg(OTTS_LOG_INFO, "generic: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(generic_semaphore);
-		dbg("Semaphore on\n");
+		log_msg(OTTS_LOG_INFO, "Semaphore on\n");
 
 		ret = pipe(module_pipe.pc);
 		if (ret != 0) {
-			dbg("Can't create pipe pc\n");
+			log_msg(OTTS_LOG_WARN, "Can't create pipe pc\n");
 			generic_speaking = 0;
 			continue;
 		}
 
 		ret = pipe(module_pipe.cp);
 		if (ret != 0) {
-			dbg("Can't create pipe cp\n");
+			log_msg(OTTS_LOG_ERR, "Can't create pipe cp\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			generic_speaking = 0;
@@ -359,7 +366,8 @@ void *_generic_speak(void *nothing)
 
 		switch (generic_pid) {
 		case -1:
-			dbg("Can't say the message. fork() failed!\n");
+			log_msg(OTTS_LOG_ERR,
+				"Can't say the message. fork() failed!\n");
 			close(module_pipe.pc[0]);
 			close(module_pipe.pc[1]);
 			close(module_pipe.cp[0]);
@@ -391,14 +399,16 @@ void *_generic_speak(void *nothing)
 				play_command =
 				    opentts_audio_get_playcmd(module_audio_id);
 				if (play_command == NULL) {
-					dbg("This audio backend has no default play command; using \"play\"\n");
+					log_msg(OTTS_LOG_ERR,
+						"This audio backend has no default play command; using \"play\"\n");
 					play_command = "play";
 				}
 
 				/* Set this process as a process group leader (so that SIGKILL
 				   is also delivered to the child processes created by system()) */
 				if (setpgid(0, 0) == -1)
-					dbg("Can't set myself as project group leader!");
+					log_msg(OTTS_LOG_WARN,
+						"Can't set myself as project group leader!");
 
 				e_string = g_strdup(GenericExecuteSynth);
 
@@ -448,7 +458,7 @@ void *_generic_speak(void *nothing)
 				g_free(e_string);
 
 				/* execute_synth_str1 se sem musi nejak dostat */
-				dbg("Starting child...\n");
+				log_msg(OTTS_LOG_NOTICE, "Starting child...\n");
 				_generic_child(module_pipe,
 					       GenericMaxChunkLength);
 			}
@@ -464,7 +474,7 @@ void *_generic_speak(void *nothing)
 						GenericDelimiters,
 						&generic_pause_requested);
 
-			dbg("Waiting for child...");
+			log_msg(OTTS_LOG_NOTICE, "Waiting for child...");
 			waitpid(generic_pid, &status, 0);
 			generic_speaking = 0;
 
@@ -475,13 +485,16 @@ void *_generic_speak(void *nothing)
 			else
 				module_report_event_end();
 
-			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			log_msg(OTTS_LOG_NOTICE,
+				"child terminated -: status:%d signal?:%d signal number:%d.\n",
+				WIFEXITED(status), WIFSIGNALED(status),
+				WTERMSIG(status));
 		}
 	}
 
 	generic_speaking = 0;
 
-	dbg("generic: speaking thread ended.......\n");
+	log_msg(OTTS_LOG_INFO, "generic: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -501,19 +514,19 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 
 	module_child_dp_init(dpipe);
 
-	dbg("Entering child loop\n");
+	log_msg(OTTS_LOG_INFO, "Entering child loop\n");
 	while (1) {
 		/* Read the waiting data */
 		text = g_malloc((maxlen + 1) * sizeof(char));
 		bytes = module_child_dp_read(dpipe, text, maxlen);
-		dbg("read %d bytes in child", bytes);
+		log_msg(OTTS_LOG_DEBUG, "read %d bytes in child", bytes);
 		if (bytes == 0) {
 			g_free(text);
 			generic_child_close(dpipe);
 		}
 
 		text[bytes] = 0;
-		dbg("text read is: |%s|\n", text);
+		log_msg(OTTS_LOG_DEBUG, "text read is: |%s|\n", text);
 
 		/* Escape any quotes */
 		message = g_string_new("");
@@ -529,21 +542,24 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 			}
 		}
 
-		dbg("child: escaped text is |%s|", message->str);
+		log_msg(OTTS_LOG_DEBUG, "child: escaped text is |%s|",
+			message->str);
 
 		if (strlen(message->str) != 0) {
 			command =
 			    g_strdup_printf("%s%s%s", execute_synth_str1,
 					    message->str, execute_synth_str2);
 
-			dbg("child: synth command = |%s|", command);
+			log_msg(OTTS_LOG_DEBUG, "child: synth command = |%s|",
+				command);
 
-			dbg("Speaking in child...");
+			log_msg(OTTS_LOG_DEBUG, "Speaking in child...");
 			module_sigblockusr(&some_signals);
 			{
 				ret = system(command);
-				dbg("Executed shell command returned with %d",
-				    ret);
+				log_msg(OTTS_LOG_INFO,
+					"Executed shell command returned with %d",
+					ret);
 			}
 		}
 		module_sigunblockusr(&some_signals);
@@ -552,16 +568,17 @@ void _generic_child(TModuleDoublePipe dpipe, const size_t maxlen)
 		g_free(text);
 		g_string_free(message, 1);
 
-		dbg("child->parent: ok, send more data");
+		log_msg(OTTS_LOG_INFO, "child->parent: ok, send more data");
 		module_child_dp_write(dpipe, "C", 1);
 	}
 }
 
 static void generic_child_close(TModuleDoublePipe dpipe)
 {
-	dbg("child: Pipe closed, exiting, closing pipes..\n");
+	log_msg(OTTS_LOG_DEBUG,
+		"child: Pipe closed, exiting, closing pipes..\n");
 	module_child_dp_close(dpipe);
-	dbg("Child ended...\n");
+	log_msg(OTTS_LOG_DEBUG, "Child ended...\n");
 	exit(0);
 }
 
@@ -593,10 +610,10 @@ void generic_set_volume(int volume)
 {
 	float hvolume;
 
-	dbg("Volume: %d", volume);
+	log_msg(OTTS_LOG_DEBUG, "Volume: %d", volume);
 
 	hvolume = ((float)volume) * GenericVolumeMultiply + GenericVolumeAdd;
-	dbg("HVolume: %f", hvolume);
+	log_msg(OTTS_LOG_DEBUG, "HVolume: %f", hvolume);
 	if (!GenericVolumeForceInteger) {
 		snprintf(generic_msg_volume_str, 15, "%.2f", hvolume);
 	} else {
@@ -610,7 +627,9 @@ void generic_set_language(char *lang)
 	generic_msg_language =
 	    (TGenericLanguage *) module_get_ht_option(GenericLanguage, lang);
 	if (generic_msg_language == NULL) {
-		dbg("Language %s not found in the configuration file, using defaults.", lang);
+		log_msg(OTTS_LOG_DEBUG,
+			"Language %s not found in the configuration file, using defaults.",
+			lang);
 		generic_msg_language =
 		    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
 		generic_msg_language->code = g_strdup(lang);
@@ -619,8 +638,9 @@ void generic_set_language(char *lang)
 	}
 
 	if (generic_msg_language->name == NULL) {
-		dbg("Language name for %s not found in the configuration file.",
-		    lang);
+		log_msg(OTTS_LOG_INFO,
+			"Language name for %s not found in the configuration file.",
+			lang);
 		generic_msg_language =
 		    (TGenericLanguage *) g_malloc(sizeof(TGenericLanguage));
 		generic_msg_language->code = g_strdup("en");
@@ -637,23 +657,25 @@ void generic_set_voice(SPDVoiceType voice)
 	generic_msg_voice_str =
 	    module_getvoice(generic_msg_language->code, voice);
 	if (generic_msg_voice_str == NULL) {
-		dbg("Invalid voice type specified or no voice available!");
+		log_msg(OTTS_LOG_WARN,
+			"Invalid voice type specified or no voice available!");
 	}
 }
 
 void generic_set_punct(SPDPunctuation punct)
 {
 	switch (punct) {
-		case SPD_PUNCT_NONE:
-			generic_msg_punct_str = g_strdup((char *)GenericPunctNone);
-			return;
-		case SPD_PUNCT_SOME:
-			generic_msg_punct_str = g_strdup((char *)GenericPunctSome);
-			return;
-		case SPD_PUNCT_ALL:
-			generic_msg_punct_str = g_strdup((char *)GenericPunctAll);
-			return;
-		default:
-		dbg("ERROR: Unknown punctuation setting, ignored");
+	case SPD_PUNCT_NONE:
+		generic_msg_punct_str = g_strdup((char *)GenericPunctNone);
+		return;
+	case SPD_PUNCT_SOME:
+		generic_msg_punct_str = g_strdup((char *)GenericPunctSome);
+		return;
+	case SPD_PUNCT_ALL:
+		generic_msg_punct_str = g_strdup((char *)GenericPunctAll);
+		return;
+	default:
+		log_msg(OTTS_LOG_WARN,
+			"ERROR: Unknown punctuation setting, ignored");
 	}
 }

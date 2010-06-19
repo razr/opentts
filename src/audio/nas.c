@@ -36,6 +36,7 @@
 #define AUDIO_PLUGIN_ENTRY otts_nas_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 #include <opentts/opentts_types.h>
+#include<logging.h>
 
 typedef struct {
 	AudioID id;
@@ -47,7 +48,7 @@ typedef struct {
 	pthread_mutex_t pt_mutex;
 } nas_id_t;
 
-static int nas_log_level;
+static logging_func audio_log;
 
 /* Internal event handler */
 static void *_nas_handle_events(void *par)
@@ -65,28 +66,28 @@ static void *_nas_handle_events(void *par)
    since this handler gets called in the event handler thread. */
 static AuBool _nas_handle_server_error(AuServer * server, AuErrorEvent * event)
 {
-	fprintf(stderr, "ERROR: Non-fatal server error in NAS\n");
+	audio_log(OTTS_LOG_WARN, "ERROR: Non-fatal server error in NAS\n");
 
 	if (event->type != 0) {
-		fprintf(stderr,
-			"Event of a different type received in NAS error handler.");
+		audio_log(OTTS_LOG_WARN,
+			  "Event of a different type received in NAS error handler.");
 		return -1;
 	}
 
 	/* It's a pain but we can't ask for string return code
 	   since it's not allowed to talk to the server inside error handlers
 	   because of possible deadlocks. */
-	fprintf(stderr, "NAS: Serial number of failed request: %d\n",
-		event->serial);
-	fprintf(stderr, "NAS: Error code: %d\n", event->error_code);
-	fprintf(stderr, "NAS: Resource id: %d\n", event->resourceid);
-	fprintf(stderr, "NAS: Request code: %d\n", event->request_code);
-	fprintf(stderr, "NAS: Minor code: %d\n\n", event->minor_code);
+	audio_log(OTTS_LOG_WARN, "NAS: Serial number of failed request: %d\n",
+		  event->serial);
+	audio_log(OTTS_LOG_WARN, "NAS: Error code: %d\n", event->error_code);
+	audio_log(OTTS_LOG_INFO, "NAS: Resource id: %d\n", event->resourceid);
+	audio_log(OTTS_LOG_INFO, "NAS: Request code: %d\n", event->request_code);
+	audio_log(OTTS_LOG_DEBUG, "NAS: Minor code: %d\n\n", event->minor_code);
 
 	return 0;
 }
 
-static AudioID *nas_open(void **pars)
+static AudioID *nas_open(void **pars, logging_func log)
 {
 	nas_id_t *nas_id;
 	int ret;
@@ -94,16 +95,19 @@ static AudioID *nas_open(void **pars)
 
 	nas_id = (nas_id_t *) g_malloc(sizeof(nas_id_t));
 
+	if (audio_log == NULL)
+		audio_log = log;
+
 	nas_id->aud = AuOpenServer(pars[2], 0, NULL, 0, NULL, NULL);
 	if (!nas_id->aud) {
-		fprintf(stderr, "Can't connect to NAS audio server\n");
+		audio_log(OTTS_LOG_CRIT, "Can't connect to NAS audio server\n");
 		return NULL;
 	}
 
 	AuSetErrorHandler(nas_id->aud, _nas_handle_server_error);
 	/* return value incompatible with documentation here */
 	/*    if (!r){
-	   fprintf(stderr, "Can't set default NAS event handler\n");
+	   audio_log(OTTS_LOG_WARN, "Can't set default NAS event handler\n");
 	   return -1;
 	   } */
 
@@ -117,8 +121,8 @@ static AudioID *nas_open(void **pars)
 	    pthread_create(&nas_id->nas_event_handler, NULL, _nas_handle_events,
 			   (void *)nas_id);
 	if (ret != 0) {
-		fprintf(stderr,
-			"ERROR: NAS Audio module: thread creation failed\n");
+		audio_log(OTTS_LOG_CRIT,
+			  "ERROR: NAS Audio module: thread creation failed\n");
 		return NULL;
 	}
 
@@ -153,18 +157,18 @@ static int nas_play(AudioID * id, AudioTrack track)
 					    buf,
 					    AuNone,
 					    ((nas_id->id.volume -
-					    OTTS_VOICE_VOLUME_MIN) / 2) * 1500,
-	                                    NULL, NULL,
-					    &nas_id->flow, NULL, NULL, NULL);
+					      OTTS_VOICE_VOLUME_MIN) / 2) *
+					    1500, NULL, NULL, &nas_id->flow,
+					    NULL, NULL, NULL);
 
 	if (event_handler == NULL) {
-		fprintf(stderr,
-			"AuSoundPlayFromData failed for unknown resons.\n");
+		audio_log(OTTS_LOG_WARN,
+			  "nas: AuSoundPlayFromData failed for unknown resons.\n");
 		return -1;
 	}
 
 	if (nas_id->flow == 0) {
-		fprintf(stderr, "Couldn't start data flow");
+		audio_log(OTTS_LOG_ERR, "nas: Couldn't start data flow");
 	}
 	pthread_mutex_unlock(&nas_id->flow_mutex);
 
@@ -232,13 +236,6 @@ static int nas_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-static void nas_set_loglevel(int level)
-{
-	if (level) {
-		nas_log_level = level;
-	}
-}
-
 static char const *nas_get_playcmd(void)
 {
 	return NULL;
@@ -252,7 +249,6 @@ static audio_plugin_t nas_functions = {
 	nas_stop,
 	nas_close,
 	nas_set_volume,
-	nas_set_loglevel,
 	nas_get_playcmd
 };
 

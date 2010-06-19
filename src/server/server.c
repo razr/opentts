@@ -29,6 +29,7 @@
 
 #include <glib.h>
 
+#include<logging.h>
 #include "openttsd.h"
 #include "server.h"
 #include "set.h"
@@ -98,8 +99,8 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 		return -1;
 	}
 
-	MSG(5, "In queue_message desired output module is %s",
-	    settings->output_module);
+	log_msg(OTTS_LOG_DEBUG, "In queue_message desired output module is %s",
+		settings->output_module);
 
 	if (fd > 0) {
 		/* Copy the settings to the new to-be-queued element */
@@ -123,8 +124,8 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 
 	new->settings.reparted = reparted;
 
-	MSG(5, "Queueing message |%s| with priority %d", new->buf,
-	    settings->priority);
+	log_msg(OTTS_LOG_DEBUG, "Queueing message |%s| with priority %d",
+		new->buf, settings->priority);
 
 	/* If desired, put the message also into history */
 	/* NOTE: This should be before we put it into queues() to
@@ -141,8 +142,8 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 			if (g_list_length(message_history) >=
 			    options.max_history_messages) {
 				GList *gl;
-				MSG(5,
-				    "Discarding older history message, limit reached");
+				log_msg(OTTS_LOG_DEBUG,
+					"Discarding older history message, limit reached");
 				gl = g_list_first(message_history);
 				if (gl != NULL) {
 					message_history =
@@ -213,7 +214,7 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 
 	speaking_semaphore_post();
 
-	MSG(5, "Message inserted into queue.");
+	log_msg(OTTS_LOG_DEBUG, "Message inserted into queue.");
 
 	return id;
 }
@@ -270,7 +271,7 @@ int serve(int fd)
 		}
 
 		/* Parse the data and read the reply */
-		MSG2(5, "protocol", "%d:DATA:|%s| (%d)", fd, buf, bytes);
+		log_msg2(5, "protocol", "%d:DATA:|%s| (%d)", fd, buf, bytes);
 		reply = parse(buf, bytes, fd);
 		g_free(buf);
 	}
@@ -285,12 +286,13 @@ int serve(int fd)
 	}
 	if (reply[0] != '9') {	/* Don't reply to data etc. */
 		pthread_mutex_lock(&socket_com_mutex);
-		MSG2(5, "protocol", "%d:REPLY:|%s|", fd, reply);
+		log_msg2(5, "protocol", "%d:REPLY:|%s|", fd, reply);
 		ret = write(fd, reply, strlen(reply));
 		g_free(reply);
 		pthread_mutex_unlock(&socket_com_mutex);
 		if (ret == -1) {
-			MSG(5, "write() error: %s", strerror(errno));
+			log_msg(OTTS_LOG_DEBUG, "write() error: %s",
+				strerror(errno));
 			return -1;
 		}
 	} else {

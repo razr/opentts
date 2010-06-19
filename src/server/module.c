@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <getline.h>
+#include<logging.h>
 #include "openttsd.h"
 #include "output.h"
 
@@ -80,7 +81,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 
 	if ((pipe(module->pipe_in) != 0)
 	    || (pipe(module->pipe_out) != 0)) {
-		MSG(3, "Can't open pipe! Module not loaded.");
+		log_msg(OTTS_LOG_NOTICE, "Can't open pipe! Module not loaded.");
 		return NULL;
 	}
 
@@ -95,24 +96,23 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 					       O_WRONLY | O_CREAT | O_TRUNC,
 					       S_IRUSR | S_IWUSR);
 		if (module->stderr_redirect == -1)
-			MSG(1,
-			    "ERROR: Openning debug file for %s failed: (error=%d) %s",
-			    module->name, module->stderr_redirect,
-			    strerror(errno));
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Openning debug file for %s failed: (error=%d) %s",
+				module->name, module->stderr_redirect,
+				strerror(errno));
 	} else {
 		module->stderr_redirect = -1;
 	}
 
-	MSG(2,
-	    "Initializing output module %s with binary %s and configuration %s",
-	    module->name, module->filename, module->configfilename);
-
+	log_msg(OTTS_LOG_WARN,
+		"Initializing output module %s with binary %s and configuration %s",
+		module->name, module->filename, module->configfilename);
 	if (module->stderr_redirect >= 0)
-		MSG(2, "Output module is logging to file %s",
-		    module->debugfilename);
+		log_msg(OTTS_LOG_WARN, "Output module is logging to file %s",
+			module->debugfilename);
 	else
-		MSG(2,
-		    "Output module is logging to standard error output (stderr)");
+		log_msg(OTTS_LOG_WARN,
+			"Output module is logging to standard error output (stderr)");
 
 	fr = fork();
 	if (fr == -1) {
@@ -157,15 +157,16 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				   with the execlp */
 	ret = waitpid(module->pid, NULL, WNOHANG);
 	if (ret != 0) {
-		MSG(2, "ERROR: Can't load output module %s with binary %s. "
-		    "Bad filename in configuration?", module->name,
-		    module->filename);
+		log_msg(OTTS_LOG_WARN,
+			"ERROR: Can't load output module %s with binary %s. "
+			"Bad filename in configuration?", module->name,
+			module->filename);
 		destroy_module(module);
 		return NULL;
 	}
 
 	module->working = 1;
-	MSG(2, "Module %s loaded.", module->name);
+	log_msg(OTTS_LOG_WARN, "Module %s loaded.", module->name);
 
 	/* Create a stream from the socket */
 	module->stream_out = fdopen(module->pipe_out[0], "r");
@@ -177,10 +178,11 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	if (ret)
 		FATAL("Can't set line buffering, setvbuf failed.");
 
-	MSG(4, "Trying to initialize %s.", module->name);
+	log_msg(OTTS_LOG_INFO, "Trying to initialize %s.", module->name);
 	if (output_send_data("INIT\n", module, 0) != 0) {
-		MSG(1, "ERROR: Something wrong with %s, can't initialize",
-		    module->name);
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Something wrong with %s, can't initialize",
+			module->name);
 		output_close(module);
 		return NULL;
 	}
@@ -190,18 +192,21 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	while (1) {
 		ret = otts_getline(&rep_line, &n, f);
 		if (ret <= 0) {
-			MSG(1, "ERROR: Bad syntax from output module %s 1",
-			    module->name);
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Bad syntax from output module %s 1",
+				module->name);
 			if (rep_line != NULL)
 				free(rep_line);
 			return NULL;
 		}
 
 		assert(rep_line != NULL);
-		MSG(5, "Reply from output module: %d %s", n, rep_line);
+		log_msg(OTTS_LOG_DEBUG, "Reply from output module: %d %s", n,
+			rep_line);
 		if (strlen(rep_line) <= 4) {
-			MSG(1, "ERROR: Bad syntax from output module %s 2",
-			    module->name);
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Bad syntax from output module %s 2",
+				module->name);
 			free(rep_line);
 			return NULL;
 		}
@@ -218,11 +223,13 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 
 	g_string_append_printf(reply, "---------------\n");
 	if (s == '2')
-		MSG(2, "Module %s started sucessfully with message: %s",
-		    module->name, reply->str);
+		log_msg(OTTS_LOG_WARN,
+			"Module %s started sucessfully with message: %s",
+			module->name, reply->str);
 	else if (s == '3') {
-		MSG(1, "ERROR: Module %s failed to initialize. Reason: %s",
-		    module->name, reply->str);
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Module %s failed to initialize. Reason: %s",
+			module->name, reply->str);
 		module->working = 0;
 		kill(module->pid, 9);
 		waitpid(module->pid, NULL, WNOHANG);
@@ -232,16 +239,17 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	g_string_free(reply, 1);
 
 	if (options.debug) {
-		MSG(4, "Switching debugging on for output module %s",
-		    module->name);
+		log_msg(OTTS_LOG_INFO,
+			"Switching debugging on for output module %s",
+			module->name);
 		output_module_debug(module);
 	}
 
 	/* Initialize audio settings */
 	ret = output_send_audio_settings(module);
 	if (ret != 0) {
-		MSG(1,
-		    "ERROR: Can't initialize audio in output module, see reason above.");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Can't initialize audio in output module, see reason above.");
 		module->working = 0;
 		kill(module->pid, 9);
 		waitpid(module->pid, NULL, WNOHANG);
@@ -252,8 +260,8 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	/* Send log level configuration setting */
 	ret = output_send_loglevel_setting(module);
 	if (ret != 0) {
-		MSG(1,
-		    "ERROR: Can't set the log level inin the output module.");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Can't set the log level inin the output module.");
 		module->working = 0;
 		kill(module->pid, 9);
 		waitpid(module->pid, NULL, WNOHANG);
@@ -272,7 +280,7 @@ int unload_output_module(OutputModule * module)
 {
 	assert(module != NULL);
 
-	MSG(3, "Unloading module name=%s", module->name);
+	log_msg(OTTS_LOG_NOTICE, "Unloading module name=%s", module->name);
 
 	output_close(module);
 
@@ -294,7 +302,8 @@ int reload_output_module(OutputModule * old_module)
 	if (old_module->working)
 		return 0;
 
-	MSG(3, "Reloading output module %s", old_module->name);
+	log_msg(OTTS_LOG_NOTICE, "Reloading output module %s",
+		old_module->name);
 
 	output_close(old_module);
 	close(old_module->pipe_in[1]);
@@ -304,8 +313,9 @@ int reload_output_module(OutputModule * old_module)
 					old_module->configfilename,
 					old_module->debugfilename);
 	if (new_module == NULL) {
-		MSG(3, "Can't load module %s while reloading modules.",
-		    old_module->name);
+		log_msg(OTTS_LOG_NOTICE,
+			"Can't load module %s while reloading modules.",
+			old_module->name);
 		return -1;
 	}
 
@@ -324,12 +334,11 @@ int output_module_debug(OutputModule * module)
 	if (!module->working)
 		return -1;
 
-	MSG(4, "Output module debug logging for %s into %s", module->name,
-	    options.debug_destination);
+	log_msg(OTTS_LOG_INFO, "Output module debug logging for %s into %s",
+		module->name, options.debug_destination);
 
 	new_log_path = g_strdup_printf("%s/%s.log",
-				       options.debug_destination,
-				       module->name);
+				       options.debug_destination, module->name);
 
 	output_send_debug(module, 1, new_log_path);
 
@@ -343,7 +352,8 @@ int output_module_nodebug(OutputModule * module)
 	if (!module->working)
 		return -1;
 
-	MSG(4, "Output module debug logging off for", module->name);
+	log_msg(OTTS_LOG_INFO, "Output module debug logging off for",
+		module->name);
 
 	output_send_debug(module, 0, NULL);
 

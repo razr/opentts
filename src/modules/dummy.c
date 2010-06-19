@@ -31,6 +31,7 @@
 
 #include <glib.h>
 
+#include<logging.h>
 #include "opentts/opentts_types.h"
 #include "module_utils.h"
 
@@ -69,11 +70,12 @@ int module_init(char **status_info)
 
 	dummy_semaphore = module_semaphore_init();
 
-	dbg("Dummy: creating new thread for dummy_speak\n");
+	log_msg(OTTS_LOG_NOTICE,
+		"Dummy: creating new thread for dummy_speak\n");
 	dummy_speaking = 0;
 	ret = pthread_create(&dummy_speak_thread, NULL, _dummy_speak, NULL);
 	if (ret != 0) {
-		dbg("Dummy: thread failed\n");
+		log_msg(OTTS_LOG_ERR, "Dummy: thread failed\n");
 		*status_info = g_strdup("The module couldn't initialize threads"
 					"This can be either an internal problem or an"
 					"architecture problem. If you are sure your architecture"
@@ -83,7 +85,7 @@ int module_init(char **status_info)
 
 	*status_info = g_strdup("Everything ok so far.");
 
-	dbg("Ok, now debugging");
+	log_msg(OTTS_LOG_INFO, "Ok, now debugging");
 
 	return 0;
 }
@@ -102,44 +104,46 @@ SPDVoice **module_list_voices(void)
 int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 
-	dbg("speak()\n");
+	log_msg(OTTS_LOG_INFO, "speak()\n");
 
 	if (dummy_speaking) {
-		dbg("Speaking when requested to write");
+		log_msg(OTTS_LOG_DEBUG, "Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	dbg("Requested data: |%s|\n", data);
+	log_msg(OTTS_LOG_DEBUG, "Requested data: |%s|\n", data);
 
 	/* Send semaphore signal to the speaking thread */
 	dummy_speaking = 1;
 	sem_post(dummy_semaphore);
 
-	dbg("Dummy: leaving write() normaly\n\r");
+	log_msg(OTTS_LOG_DEBUG, "Dummy: leaving write() normaly\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	dbg("dummy: stop(), dummy_speaking=%d, dummy_pid=%d\n", dummy_speaking,
-	    dummy_pid);
+	log_msg(OTTS_LOG_DEBUG,
+		"dummy: stop(), dummy_speaking=%d, dummy_pid=%d\n",
+		dummy_speaking, dummy_pid);
 
 	if (dummy_speaking && dummy_pid) {
-		dbg("dummy: stopping process group pid %d\n", dummy_pid);
+		log_msg(OTTS_LOG_DEBUG,
+			"dummy: stopping process group pid %d\n", dummy_pid);
 		kill(-dummy_pid, SIGKILL);
 	}
-	dbg("Already stopped, no action");
+	log_msg(OTTS_LOG_DEBUG, "Already stopped, no action");
 	return 0;
 }
 
 size_t module_pause(void)
 {
-	dbg("pause requested\n");
+	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (dummy_speaking) {
-		dbg("Dummy module can't pause\n");
+		log_msg(OTTS_LOG_WARN, "Dummy module can't pause\n");
 		return 0;
 	} else {
 		return -1;
@@ -153,7 +157,7 @@ char *module_is_speaking(void)
 
 void module_close(int status)
 {
-	dbg("dummy: close()\n");
+	log_msg(OTTS_LOG_NOTICE, "dummy: close()\n");
 
 	if (dummy_speaking) {
 		module_stop();
@@ -171,13 +175,13 @@ void *_dummy_speak(void *nothing)
 {
 	int status;
 
-	dbg("dummy: speaking thread starting.......\n");
+	log_msg(OTTS_LOG_NOTICE, "dummy: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(dummy_semaphore);
-		dbg("Semaphore on\n");
+		log_msg(OTTS_LOG_DEBUG, "Semaphore on\n");
 		module_report_event_begin();
 
 		/* Create a new process so that we could send it signals */
@@ -185,7 +189,8 @@ void *_dummy_speak(void *nothing)
 
 		switch (dummy_pid) {
 		case -1:
-			dbg("Can't say the message. fork() failed!\n");
+			log_msg(OTTS_LOG_ERR,
+				"Can't say the message. fork() failed!\n");
 			dummy_speaking = 0;
 			continue;
 
@@ -195,9 +200,10 @@ void *_dummy_speak(void *nothing)
 				/* Set this process as a process group leader (so that SIGKILL
 				   is also delivered to the child processes created by system()) */
 				if (setpgid(0, 0) == -1)
-					dbg("Can't set myself as project group leader!");
+					log_msg(OTTS_LOG_ERR,
+						"Can't set myself as project group leader!");
 
-				dbg("Starting child...\n");
+				log_msg(OTTS_LOG_NOTICE, "Starting child...\n");
 				_dummy_child();
 			}
 			break;
@@ -205,11 +211,11 @@ void *_dummy_speak(void *nothing)
 		default:
 			/* This is the parent. Send data to the child. */
 
-			dbg("Waiting for child...");
+			log_msg(OTTS_LOG_INFO, "Waiting for child...");
 			waitpid(dummy_pid, &status, 0);
 			dummy_speaking = 0;
 
-			dbg("Child exited");
+			log_msg(OTTS_LOG_NOTICE, "Child exited");
 
 			// Report CANCEL if the process was signal-terminated
 			// and END if it terminated normally
@@ -218,13 +224,16 @@ void *_dummy_speak(void *nothing)
 			else
 				module_report_event_end();
 
-			dbg("child terminated -: status:%d signal?:%d signal number:%d.\n", WIFEXITED(status), WIFSIGNALED(status), WTERMSIG(status));
+			log_msg(OTTS_LOG_INFO,
+				"child terminated -: status:%d signal?:%d signal number:%d.\n",
+				WIFEXITED(status), WIFSIGNALED(status),
+				WTERMSIG(status));
 		}
 	}
 
 	dummy_speaking = 0;
 
-	dbg("dummy: speaking thread ended.......\n");
+	log_msg(OTTS_LOG_NOTICE, "dummy: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
@@ -239,7 +248,7 @@ void _dummy_child()
 	sigfillset(&some_signals);
 	module_sigunblockusr(&some_signals);
 
-	dbg("Entering child loop\n");
+	log_msg(OTTS_LOG_INFO, "Entering child loop\n");
 	/* Read the waiting data */
 
 	try1 =
@@ -252,23 +261,30 @@ void _dummy_child()
 	    g_strdup("paplay " DATADIR
 		     "/dummy-message.wav > /dev/null 2> /dev/null");
 
-	dbg("child: synth commands = |%s|%s|%s|", try1, try2, try3);
-	dbg("Speaking in child...");
+	log_msg(OTTS_LOG_DEBUG, "child: synth commands = |%s|%s|%s|", try1,
+		try2, try3);
+	log_msg(OTTS_LOG_INFO, "Speaking in child...");
 	module_sigblockusr(&some_signals);
 
 	ret = system(try1);
-	dbg("Executed shell command '%s' returned with %d", try1, ret);
+	log_msg(OTTS_LOG_NOTICE, "Executed shell command '%s' returned with %d",
+		try1, ret);
 	if ((ret != 0)) {
-		dbg("Execution failed, trying seccond command");
+		log_msg(OTTS_LOG_WARN,
+			"Execution failed, trying seccond command");
 		ret = system(try2);
-		dbg("Executed shell command '%s' returned with %d", try1, ret);
+		log_msg(OTTS_LOG_INFO,
+			"Executed shell command '%s' returned with %d", try1,
+			ret);
 		if ((ret != 0)) {
-			dbg("Execution failed, trying third command");
+			log_msg(OTTS_LOG_WARN,
+				"Execution failed, trying third command");
 			ret = system(try3);
-			dbg("Executed shell command '%s' returned with %d",
-			    try1, ret);
+			log_msg(OTTS_LOG_NOTICE,
+				"Executed shell command '%s' returned with %d",
+				try1, ret);
 			if ((ret != 0) && (ret != 256)) {
-				dbg("Failed, giving up.");
+				log_msg(OTTS_LOG_ERR, "Failed, giving up.");
 			}
 		}
 	}
@@ -279,6 +295,6 @@ void _dummy_child()
 	g_free(try2);
 	g_free(try3);
 
-	dbg("Done, exiting from child.");
+	log_msg(OTTS_LOG_NOTICE, "Done, exiting from child.");
 	exit(0);
 }

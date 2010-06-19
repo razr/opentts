@@ -28,6 +28,7 @@
 #endif
 
 #include <fnmatch.h>
+#include<logging.h>
 
 #include "opentts/opentts_types.h"
 #include "set.h"
@@ -124,7 +125,8 @@ int set_volume_uid(int uid, int volume)
 {
 	TFDSetElement *settings;
 
-	if ((volume > OTTS_VOICE_VOLUME_MAX) || (volume < OTTS_VOICE_VOLUME_MIN))
+	if ((volume > OTTS_VOICE_VOLUME_MAX)
+	    || (volume < OTTS_VOICE_VOLUME_MIN))
 		return 1;
 
 	settings = get_client_settings_by_uid(uid);
@@ -227,7 +229,7 @@ int set_language_uid(int uid, char *language)
 		return 1;
 
 	settings->msg_settings.voice.language =
-		set_param_str(settings->msg_settings.voice.language, language);
+	    set_param_str(settings->msg_settings.voice.language, language);
 
 	/* Check if it is not desired to change output module */
 	output_module = g_hash_table_lookup(language_default_modules, language);
@@ -248,7 +250,7 @@ int set_synthesis_voice_uid(int uid, char *synthesis_voice)
 		return 1;
 
 	settings->msg_settings.voice.name =
-		set_param_str(settings->msg_settings.voice.name, synthesis_voice);
+	    set_param_str(settings->msg_settings.voice.name, synthesis_voice);
 
 	/* Delete ordinary voice settings so that we don't mix */
 	settings->msg_settings.voice_type = SPD_NO_VOICE;
@@ -258,12 +260,12 @@ int set_synthesis_voice_uid(int uid, char *synthesis_voice)
 
 #define CHECK_SET_PAR(name, ival) \
    if (cl_set->val.name != ival){ set->name = cl_set->val.name; \
-            MSG(4,"parameter " #name " set to %d", cl_set->val.name); }
+            log_msg(OTTS_LOG_INFO,"parameter " #name " set to %d", cl_set->val.name); }
 #define CHECK_SET_PAR_STR(name) \
    if (cl_set->val.name != NULL){ \
      g_free(set->name); \
      set->name = g_strdup(cl_set->val.name); \
-            MSG(4,"parameter " #name " set to %s", cl_set->val.name); \
+            log_msg(OTTS_LOG_INFO,"parameter " #name " set to %s", cl_set->val.name); \
    }
 
 void update_cl_settings(gpointer data, gpointer user_data)
@@ -271,16 +273,17 @@ void update_cl_settings(gpointer data, gpointer user_data)
 	TFDSetClientSpecific *cl_set = data;
 	TFDSetElement *set = user_data;
 
-	MSG(4, "Updating client specific settings %s against %s",
-	    set->client_name, cl_set->pattern);
+	log_msg(OTTS_LOG_INFO,
+		"Updating client specific settings %s against %s",
+		set->client_name, cl_set->pattern);
 
 	if (fnmatch(cl_set->pattern, set->client_name, 0))
 		return;
 
 	/*  Warning: If you modify this, you must also modify cb_BeginClient in config.c ! */
 	CHECK_SET_PAR(msg_settings.rate, (OTTS_VOICE_RATE_MIN - 1))
-	CHECK_SET_PAR(msg_settings.pitch, (OTTS_VOICE_PITCH_MIN -1))
-	CHECK_SET_PAR(msg_settings.volume, (OTTS_VOICE_VOLUME_MIN -1))
+	CHECK_SET_PAR(msg_settings.pitch, (OTTS_VOICE_PITCH_MIN - 1))
+	CHECK_SET_PAR(msg_settings.volume, (OTTS_VOICE_VOLUME_MIN - 1))
 	CHECK_SET_PAR(msg_settings.punctuation_mode, -1)
 	CHECK_SET_PAR(msg_settings.spelling_mode, -1)
 	CHECK_SET_PAR(msg_settings.voice_type, -1)
@@ -315,7 +318,8 @@ int set_client_name_self(int fd, char *client_name)
 	if (dividers != 2)
 		return 1;
 
-	settings->client_name = set_param_str(settings->client_name, client_name);
+	settings->client_name =
+	    set_param_str(settings->client_name, client_name);
 
 	/* Update fd_set for this cilent with client-specific options */
 	g_list_foreach(client_specific_settings, update_cl_settings, settings);
@@ -335,13 +339,14 @@ int set_output_module_uid(int uid, char *output_module)
 	if (output_module == NULL)
 		return 1;
 
-	MSG(5, "Setting output module to %s", output_module);
+	log_msg(OTTS_LOG_DEBUG, "Setting output module to %s", output_module);
 
-	MSG(5, "In set_output_module the desired output module is x%s",
-	    output_module);
+	log_msg(OTTS_LOG_DEBUG,
+		"In set_output_module the desired output module is x%s",
+		output_module);
 
 	settings->output_module = set_param_str(settings->output_module,
-	                                        output_module);
+						output_module);
 
 	/* Delete synth_voice since it is module specific */
 	if (settings->msg_settings.voice.name != NULL) {
@@ -397,24 +402,15 @@ int set_debug_uid(int uid, int debug)
 		debug_logfile_path =
 		    g_strdup_printf("%s/openttsd.log",
 				    options.debug_destination);
-
-		debug_logfile = fopen(debug_logfile_path, "w");
-		if (debug_logfile == NULL) {
-			MSG(3,
-			    "Error: can't open additional debug logging file %s!\n",
-			    debug_logfile_path);
-			return 1;
-		}
-		options.debug = debug;
-
+		open_debug_log(debug_logfile_path, DEBUG_ON);
 		g_free(debug_logfile_path);
-
+		options.debug = 1;
 		/* Redirecting debugging for all output modules */
 		modules_debug();
 	} else {
 		options.debug = 0;
+		close_debug_log();
 		modules_nodebug();
-		fclose(debug_logfile);
 	}
 	return 0;
 }
@@ -474,18 +470,21 @@ TFDSetElement *default_fd_set(void)
 
 	/* Fill with the global settings values */
 	new->priority = GlobalFDSet.priority;
-	new->msg_settings.punctuation_mode = GlobalFDSet.msg_settings.punctuation_mode;
+	new->msg_settings.punctuation_mode =
+	    GlobalFDSet.msg_settings.punctuation_mode;
 	new->msg_settings.rate = GlobalFDSet.msg_settings.rate;
 	new->msg_settings.pitch = GlobalFDSet.msg_settings.pitch;
 	new->msg_settings.volume = GlobalFDSet.msg_settings.volume;
 	new->msg_settings.voice.language =
-		g_strdup(GlobalFDSet.msg_settings.voice.language);
+	    g_strdup(GlobalFDSet.msg_settings.voice.language);
 	new->output_module = g_strdup(GlobalFDSet.output_module);
 	new->client_name = g_strdup(GlobalFDSet.client_name);
 	new->msg_settings.voice_type = GlobalFDSet.msg_settings.voice_type;
 	new->msg_settings.voice.name = NULL;
-	new->msg_settings.spelling_mode = GlobalFDSet.msg_settings.spelling_mode;
-	new->msg_settings.cap_let_recogn = GlobalFDSet.msg_settings.cap_let_recogn;
+	new->msg_settings.spelling_mode =
+	    GlobalFDSet.msg_settings.spelling_mode;
+	new->msg_settings.cap_let_recogn =
+	    GlobalFDSet.msg_settings.cap_let_recogn;
 
 	new->pause_context = GlobalFDSet.pause_context;
 	new->ssml_mode = GlobalFDSet.ssml_mode;

@@ -61,9 +61,9 @@ openttsd_message *copy_message(openttsd_message * old)
 	new->settings = old->settings;
 
 	new->settings.msg_settings.voice.language =
-		g_strdup(old->settings.msg_settings.voice.language);
+	    g_strdup(old->settings.msg_settings.voice.language);
 	new->settings.msg_settings.voice.name =
-		g_strdup(old->settings.msg_settings.voice.name);
+	    g_strdup(old->settings.msg_settings.voice.name);
 	new->settings.client_name = g_strdup(old->settings.client_name);
 	new->settings.output_module = g_strdup(old->settings.output_module);
 	new->settings.index_mark = g_strdup(old->settings.index_mark);

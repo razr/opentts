@@ -37,8 +37,6 @@ int opentts_audio_close(AudioID * id);
 
 int opentts_audio_set_volume(AudioID * id, int volume);
 
-void opentts_audio_set_loglevel(AudioID * id, int level);
-
 char const *opentts_audio_get_playcmd(AudioID * id);
 
 #endif /* ifndef #__SPD_AUDIO_H */

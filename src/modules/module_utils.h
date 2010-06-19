@@ -46,7 +46,6 @@
 
 #include <def.h>
 #include <opentts/opentts_types.h>
-#include <timestamp.h>
 #include "audio.h"
 
 extern AudioID *module_audio_id;
@@ -54,26 +53,14 @@ extern AudioID *module_audio_id;
 extern OTTS_MsgSettings msg_settings;
 extern OTTS_MsgSettings msg_settings_old;
 
-extern int Debug;
-extern FILE *CustomDebugFile;
-
 extern pthread_mutex_t module_stdout_mutex;
+extern int LogLevel;
 
 extern configoption_t *module_dc_options;
 extern int module_num_dc_options;
 
 void clean_old_settings_table(void);
 void init_settings_tables(void);
-void dbg(char *fmt, ...);
-
-#define FATAL(msg) { \
-     fprintf(stderr, "FATAL ERROR in output module [%s:%d]:\n   "msg, \
-             __FILE__, __LINE__); \
-     if (Debug > 1) \
-       fprintf(CustomDebugFile, "FATAL ERROR in output module [%s:%d]:\n   "msg,	\
-             __FILE__, __LINE__); \
-     exit(EXIT_FAILURE); \
-   }
 
 int module_load(void);
 int module_init(char **status_info);
@@ -326,14 +313,14 @@ configoption_t *module_add_config_option(configoption_t * options,
 /* --- DEBUGGING SUPPORT  ---*/
 
 #define DECLARE_DEBUG() \
-    DOTCONF_CB(Debug ## _cb) \
+    DOTCONF_CB(LogLevel ## _cb) \
     { \
-        Debug = cmd->data.value; \
+        open_log("stderr", cmd->data.value); \
         return NULL; \
     }
 
 #define REGISTER_DEBUG() \
-    MOD_OPTION_1_INT_REG(Debug, 0); \
+    MOD_OPTION_1_INT_REG(LogLevel, 0); \
 
 /* --- INDEX MARKING --- */
 
@@ -352,5 +339,8 @@ int module_audio_init(char **status_info);
 /* Prototypes from module_utils_addvoice.c */
 void module_register_settings_voices(void);
 char *module_getvoice(char *language, SPDVoiceType voice);
+
+/* exit on fatal error with a message */
+void fatal(char *msg);
 
 #endif /* #ifndef __MODULE_UTILS_H */

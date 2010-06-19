@@ -28,6 +28,7 @@
 
 #include <ctype.h>
 
+#include<logging.h>
 #include "openttsd.h"
 
 #include "set.h"
@@ -89,7 +90,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 		/* Read the command */
 		command = get_param(buf, 0, bytes, 1);
 
-		MSG(5, "Command caught: \"%s\"", command);
+		log_msg(OTTS_LOG_DEBUG, "Command caught: \"%s\"", command);
 
 		/* Here we will check which command we got and process
 		 * it with its parameters. */
@@ -115,7 +116,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 		CHECK_SSIP_COMMAND("block", parse_block, BLOCK_OK);
 
 		if (!strcmp(command, "bye") || !strcmp(command, "quit")) {
-			MSG(4, "Bye received.");
+			log_msg(OTTS_LOG_INFO, "Bye received.");
 			/* Send a reply to the socket */
 			write(fd, OK_BYE, strlen(OK_BYE));
 			connection_destroy(fd);
@@ -135,7 +136,7 @@ char *parse(const char *buf, const int bytes, const int fd)
 			openttsd_sockets[fd].o_bytes = 0;
 			openttsd_sockets[fd].o_buf = g_string_new("");
 
-			MSG(4, "Switching to data mode...");
+			log_msg(OTTS_LOG_INFO, "Switching to data mode...");
 			return g_strdup(OK_RECEIVE_DATA);
 		}
 		g_free(command);
@@ -146,17 +147,18 @@ char *parse(const char *buf, const int bytes, const int fd)
 	} else {
 enddata:
 		/* In the end of the data flow we got a "\r\n.\r\n" command. */
-		MSG(5, "Buffer: |%s| bytes:", buf, bytes);
+		log_msg(OTTS_LOG_DEBUG, "Buffer: |%s| bytes:", buf, bytes);
 
 		if (((bytes >= 5) && ((!strncmp(buf, "\r\n.\r\n", bytes))))
 		    || (end_data == 1)
 		    || ((bytes == 3) && (!strncmp(buf, ".\r\n", bytes)))) {
 
-			MSG(5, "Finishing data");
+			log_msg(OTTS_LOG_DEBUG, "Finishing data");
 			end_data = 0;
 
 			/* Set the flag to command mode */
-			MSG(5, "Switching back to command mode...");
+			log_msg(OTTS_LOG_DEBUG,
+				"Switching back to command mode...");
 			openttsd_sockets[fd].awaiting_data = 0;
 
 			/* Prepare element (text+settings commands) to be queued. */
@@ -167,7 +169,7 @@ enddata:
 
 			/* Check if message contains any data */
 			if (openttsd_sockets[fd].o_bytes == 0) {
-				server_data_off (fd);
+				server_data_off(fd);
 				return g_strdup(OK_MSG_CANCELED);
 			}
 
@@ -175,15 +177,15 @@ enddata:
 			if (!g_utf8_validate
 			    (openttsd_sockets[fd].o_buf->str,
 			     openttsd_sockets[fd].o_bytes, NULL)) {
-				MSG(3,
-				    "ERROR: Invalid character encoding on input (failed UTF-8 validation)");
-				MSG(3, "Rejecting this message.");
-				server_data_off (fd);
+				log_msg(OTTS_LOG_NOTICE,
+					"ERROR: Invalid character encoding on input (failed UTF-8 validation)");
+				log_msg(OTTS_LOG_NOTICE,
+					"Rejecting this message.");
+				server_data_off(fd);
 				return g_strdup(ERR_INVALID_ENCODING);
 			}
 
-			new =
-			    (openttsd_message *)
+			new = (openttsd_message *)
 			    g_malloc(sizeof(openttsd_message));
 			new->bytes = openttsd_sockets[fd].o_bytes;
 			assert(openttsd_sockets[fd].o_buf != NULL);
@@ -195,7 +197,8 @@ enddata:
 			/* Clear the counter of bytes in the output buffer. */
 			server_data_off(fd);
 
-			MSG(5, "New buf is now: |%s|", new->buf);
+			log_msg(OTTS_LOG_DEBUG, "New buf is now: |%s|",
+				new->buf);
 			if ((msg_uid =
 			     queue_message(new, fd, 1, SPD_MSGTYPE_TEXT,
 					   reparted)) == 0) {
@@ -221,7 +224,8 @@ enddata:
 				if ((pos = strstr(buf, "\r\n.\r\n"))) {
 					real_bytes = pos - buf;
 					end_data = 1;
-					MSG(5, "Command in data caught");
+					log_msg(OTTS_LOG_DEBUG,
+						"Command in data caught");
 				} else {
 					real_bytes = bytes;
 				}
@@ -249,7 +253,7 @@ enddata:
 
 #define CHECK_PARAM(param) \
     if (param == NULL){ \
-       MSG(3, "Missing parameter from client"); \
+       log_msg(OTTS_LOG_NOTICE, "Missing parameter from client"); \
        return g_strdup(ERR_MISSING_PARAMETER); \
     }
 
@@ -609,8 +613,7 @@ char *parse_set(const char *buf, const int bytes, const int fd)
 	} else if (TEST_CMD(set_sub, "debug")) {
 		SSIP_ON_OFF_PARAM(debug,
 				  g_strdup_printf("262-%s\r\n" OK_DEBUGGING,
-						  options.
-						  debug_destination),
+						  options.debug_destination),
 				  ERR_COULDNT_SET_DEBUGGING,
 				  ALLOWED_INSIDE_BLOCK());
 	} else if (TEST_CMD(set_sub, "notification")) {
@@ -653,7 +656,7 @@ char *parse_stop(const char *buf, const int bytes, const int fd)
 	int uid = 0;
 	char *who_s;
 
-	MSG(5, "Stop received from fd %d.", fd);
+	log_msg(OTTS_LOG_DEBUG, "Stop received from fd %d.", fd);
 
 	GET_PARAM_STR(who_s, 1, CONV_DOWN);
 
@@ -690,7 +693,7 @@ char *parse_cancel(const char *buf, const int bytes, const int fd)
 	int uid = 0;
 	char *who_s;
 
-	MSG(4, "Cancel received from fd %d.", fd);
+	log_msg(OTTS_LOG_INFO, "Cancel received from fd %d.", fd);
 
 	GET_PARAM_STR(who_s, 1, CONV_DOWN);
 
@@ -721,7 +724,7 @@ char *parse_pause(const char *buf, const int bytes, const int fd)
 	int uid = 0;
 	char *who_s;
 
-	MSG(4, "Pause received from fd %d.", fd);
+	log_msg(OTTS_LOG_INFO, "Pause received from fd %d.", fd);
 
 	GET_PARAM_STR(who_s, 1, CONV_DOWN);
 
@@ -762,7 +765,7 @@ char *parse_resume(const char *buf, const int bytes, const int fd)
 	int uid = 0;
 	char *who_s;
 
-	MSG(4, "Resume received from fd %d.", fd);
+	log_msg(OTTS_LOG_INFO, "Resume received from fd %d.", fd);
 
 	GET_PARAM_STR(who_s, 1, CONV_DOWN);
 
@@ -806,9 +809,10 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 	/* Check for proper UTF-8 */
 	/* Check buffer for proper UTF-8 encoding */
 	if (!g_utf8_validate(buf, bytes, NULL)) {
-		MSG(3,
-		    "ERROR: Invalid character encoding on event input (failed UTF-8 validation)");
-		MSG(3, "Rejecting this event (char/key/sound_icon).");
+		log_msg(OTTS_LOG_NOTICE,
+			"ERROR: Invalid character encoding on event input (failed UTF-8 validation)");
+		log_msg(OTTS_LOG_NOTICE,
+			"Rejecting this event (char/key/sound_icon).");
 		return g_strdup(ERR_INVALID_ENCODING);
 	}
 
@@ -816,11 +820,11 @@ char *parse_general_event(const char *buf, const int bytes, const int fd,
 	msg->bytes = strlen(param);
 	msg->buf = g_strdup(param);
 
-	if (queue_message(msg, fd, 1, type, openttsd_sockets[fd].inside_block) ==
-	    0) {
+	if (queue_message(msg, fd, 1, type, openttsd_sockets[fd].inside_block)
+	    == 0) {
 		if (OPENTTSD_DEBUG)
 			FATAL("Couldn't queue message\n");
-		MSG(2, "Error: Couldn't queue message!\n");
+		log_msg(OTTS_LOG_WARN, "Error: Couldn't queue message!\n");
 	}
 
 	g_free(param);
@@ -869,7 +873,7 @@ char *parse_list(const char *buf, const int bytes, const int fd)
 		int len;
 		result = g_string_new("");
 		len = g_list_length(output_modules_list);
-		MSG(1, "G LIST LENGHT IS %d", len);
+		log_msg(OTTS_LOG_ERR, "G LIST LENGHT IS %d", len);
 		for (i = 0; i <= len - 1; i++) {
 			gl = g_list_nth(output_modules_list, i);
 			assert(gl != NULL);
@@ -1019,8 +1023,7 @@ char *parse_block(const char *buf, const int bytes, const int fd)
 	if (TEST_CMD(cmd_main, "begin")) {
 		assert(openttsd_sockets[fd].inside_block >= 0);
 		if (openttsd_sockets[fd].inside_block == 0) {
-			openttsd_sockets[fd].inside_block =
-			    ++status.max_gid;
+			openttsd_sockets[fd].inside_block = ++status.max_gid;
 			return g_strdup(OK_INSIDE_BLOCK);
 		} else {
 			return g_strdup(ERR_ALREADY_INSIDE_BLOCK);

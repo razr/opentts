@@ -30,46 +30,27 @@
 #include <string.h>
 #include <ao/ao.h>
 #include <glib.h>
-#include <timestamp.h>
 
 #define AUDIO_PLUGIN_ENTRY otts_libao_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
+#include<logging.h>
 
 /* send a packet of XXX bytes to the sound device */
 #define AO_SEND_BYTES 256
-/* Put a message into the logfile (stderr) */
-#define MSG(level, arg...) \
- if(level <= libao_log_level){ \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," libao:: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
 
-#define ERR(arg...) \
- { \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," libao ERROR: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
-
+static logging_func audio_log;
 static volatile int ao_stop_playback = 0;
 
 static int default_driver;
-static int libao_log_level;
 
 ao_device *device = NULL;
 
-static AudioID *libao_open(void **pars)
+static AudioID *libao_open(void **pars, logging_func log)
 {
 	AudioID *id;
+
+	if (audio_log == NULL)
+		audio_log = log;
 
 	id = (AudioID *) g_malloc(sizeof(AudioID));
 
@@ -115,22 +96,22 @@ static int libao_play(AudioID * id, AudioTrack track)
 	} else if (track.bits == 8)
 		bytes_per_sample = 1;
 	else {
-		ERR("Audio: Unrecognized sound data format.\n");
+		audio_log(OTTS_LOG_WARN, "libao: Unrecognized sound data format.\n");
 		return -10;
 	}
 	format.channels = track.num_channels;
 	format.rate = track.sample_rate;
-	MSG(3, "Starting playback");
+	audio_log(OTTS_LOG_NOTICE, "libao: Starting playback");
 	output_samples = track.samples;
 	num_bytes = track.num_samples * bytes_per_sample;
 	if (device == NULL)
 		device = ao_open_live(default_driver, &format, NULL);
 	if (device == NULL) {
-		ERR("error opening libao dev");
+		audio_log(OTTS_LOG_ERR, "libao: error opening libao dev");
 		return -2;
 	}
-	MSG(3, "bytes to play: %d, (%f secs)", num_bytes,
-	    (((float)(num_bytes) / 2) / (float)track.sample_rate));
+	audio_log(OTTS_LOG_NOTICE, "libao: bytes to play: %d, (%f secs)", num_bytes,
+		  (((float)(num_bytes) / 2) / (float)track.sample_rate));
 
 	ao_stop_playback = 0;
 	outcnt = 0;
@@ -145,7 +126,8 @@ static int libao_play(AudioID * id, AudioTrack track)
 		if (!ao_play(device, (char *)output_samples + outcnt, i)) {
 			ao_close(device);
 			device = NULL;
-			ERR("Audio: ao_play() - closing device - re-open it in next run\n");
+			audio_log(OTTS_LOG_NOTICE,
+				  "libao: ao_play() - closing device - re-open it in next run\n");
 			return -1;
 		}
 		outcnt += i;
@@ -183,13 +165,6 @@ static int libao_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-static void libao_set_loglevel(int level)
-{
-	if (level) {
-		libao_log_level = level;
-	}
-}
-
 static char const *libao_get_playcmd(void)
 {
 	return NULL;
@@ -203,7 +178,6 @@ static audio_plugin_t libao_functions = {
 	libao_stop,
 	libao_close,
 	libao_set_volume,
-	libao_set_loglevel,
 	libao_get_playcmd
 };
 
@@ -214,5 +188,3 @@ audio_plugin_t *libao_plugin_get(void)
 
 audio_plugin_t *AUDIO_PLUGIN_ENTRY(void)
     __attribute__ ((weak, alias("libao_plugin_get")));
-#undef MSG
-#undef ERR

@@ -38,7 +38,7 @@
 #include <pthread.h>
 
 #include <sys/soundcard.h>
-#include <timestamp.h>
+#include <logging.h>
 #include <glib.h>
 
 #define AUDIO_PLUGIN_ENTRY otts_oss_LTX_audio_plugin_get
@@ -58,36 +58,13 @@ static int _oss_open(oss_id_t * id);
 static int _oss_close(oss_id_t * id);
 static int _oss_sync(oss_id_t * id);
 
-/* Put a message into the logfile (stderr) */
-#define MSG(level, arg...) \
- if(level <= oss_log_level){ \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," OSS: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
-
-#define ERR(arg...) \
- { \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," OSS ERROR: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
-
-static int oss_log_level;
 static char const *oss_play_cmd = "play";
+static logging_func audio_log;
 
 static int _oss_open(oss_id_t * id)
 {
-	MSG(1, "_oss_open()")
-	    pthread_mutex_lock(&id->fd_mutex);
+	audio_log(OTTS_LOG_ERR, "_oss_open()");
+	pthread_mutex_lock(&id->fd_mutex);
 
 	id->fd = open(id->device_name, O_WRONLY, 0);
 	if (id->fd == -1) {
@@ -104,8 +81,8 @@ static int _oss_open(oss_id_t * id)
 
 static int _oss_close(oss_id_t * id)
 {
-	MSG(1, "_oss_close()")
-	    if (id == NULL)
+	audio_log(OTTS_LOG_ERR, "_oss_close()");
+	if (id == NULL)
 		return 0;
 	if (id->fd == 0)
 		return 0;
@@ -123,13 +100,16 @@ static int _oss_close(oss_id_t * id)
       (char*) pars[0] -- the name of the device (e.g. "/dev/dsp")
       (void*) pars[1] = NULL 
 */
-static AudioID *oss_open(void **pars)
+static AudioID *oss_open(void **pars, logging_func log)
 {
 	oss_id_t *oss_id;
 	int ret;
 
 	if (pars[0] == NULL)
 		return NULL;
+
+	if (audio_log == NULL)
+		audio_log = log;
 
 	oss_id = (oss_id_t *) g_malloc(sizeof(oss_id_t));
 
@@ -207,7 +187,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 	track_volume.samples =
 	    (short *)g_malloc(sizeof(short) * track.num_samples);
 	real_volume = (float)(id->volume - OTTS_VOICE_VOLUME_MIN)
-		/ (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
+	    / (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
 	for (i = 0; i <= track.num_samples - 1; i++)
 		track_volume.samples[i] = track.samples[i] * real_volume;
 
@@ -219,7 +199,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 		bytes_per_sample = 1;
 		format = AFMT_S8;
 	} else {
-		ERR("Audio: Unrecognized sound data format.\n");
+		audio_log(OTTS_LOG_ERR, "oss: Unrecognized sound data format.\n");
 		_oss_close(oss_id);
 		return -10;
 	}
@@ -232,7 +212,8 @@ static int oss_play(AudioID * id, AudioTrack track)
 		return -1;
 	}
 	if (format != oformat) {
-		ERR("Device doesn't support 16-bit sound format.\n");
+		audio_log(OTTS_LOG_CRIT,
+			  "oss: Device doesn't support 16-bit sound format.\n");
 		_oss_close(oss_id);
 		return -2;
 	}
@@ -246,7 +227,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 		return -3;
 	}
 	if (channels != track.num_channels) {
-		MSG(1, "Device doesn't support stereo sound.\n");
+		audio_log(OTTS_LOG_ERR, "oss: Device doesn't support stereo sound.\n");
 		_oss_close(oss_id);
 		return -4;
 	}
@@ -255,14 +236,16 @@ static int oss_play(AudioID * id, AudioTrack track)
 	speed = track.sample_rate;
 	ret = ioctl(oss_id->fd, SNDCTL_DSP_SPEED, &speed);
 	if (ret == -1) {
-		ERR("OSS ERROR: Can't set sample rate %d nor any similar.",
-		    track.sample_rate);
+		audio_log(OTTS_LOG_CRIT,
+			  "OSS ERROR: Can't set sample rate %d nor any similar.",
+			  track.sample_rate);
 		_oss_close(oss_id);
 		return -5;
 	}
 	if (speed != track.sample_rate) {
-		ERR("Device doesn't support bitrate %d, using %d instead.\n",
-		    track.sample_rate, speed);
+		audio_log(OTTS_LOG_CRIT,
+			  "oss: Device doesn't support bitrate %d, using %d instead.\n",
+			  track.sample_rate, speed);
 	}
 
 	/* Is it not an empty track? */
@@ -274,11 +257,11 @@ static int oss_play(AudioID * id, AudioTrack track)
 	/* Loop until all samples are played on the device.
 	   In the meantime, wait in pthread_cond_timedwait for more data
 	   or for interruption. */
-	MSG(4, "Starting playback");
+	audio_log(OTTS_LOG_INFO, "oss: Starting playback");
 	output_samples = track_volume.samples;
 	num_bytes = track.num_samples * bytes_per_sample;
-	MSG(4, "bytes to play: %d, (%f secs)", num_bytes,
-	    (((float)(num_bytes) / 2) / (float)track.sample_rate));
+	audio_log(OTTS_LOG_INFO, "oss: bytes to play: %d, (%f secs)", num_bytes,
+		  (((float)(num_bytes) / 2) / (float)track.sample_rate));
 	while (num_bytes > 0) {
 
 		/* OSS doesn't support non-blocking write, so lets check how much data
@@ -293,15 +276,15 @@ static int oss_play(AudioID * id, AudioTrack track)
 		/* If there is not enough space for a single fragment, try later.
 		   (This shouldn't happen, it has very bad effect on synchronization!) */
 		if (info.fragments == 0) {
-			MSG(4,
-			    "WARNING: There is not enough space for a single fragment, looping");
+			audio_log(OTTS_LOG_INFO,
+				  "oss: WARNING: There is not enough space for a single fragment, looping");
 			usleep(100);
 			continue;
 		}
 
-		MSG(4,
-		    "There is space for %d more fragments, fragment size is %d bytes",
-		    info.fragments, info.fragsize);
+		audio_log(OTTS_LOG_INFO,
+			  "oss: There is space for %d more fragments, fragment size is %d bytes",
+			  info.fragments, info.fragsize);
 
 		bytes = info.fragments * info.fragsize;
 		ret =
@@ -318,7 +301,8 @@ static int oss_play(AudioID * id, AudioTrack track)
 		num_bytes -= ret;
 		output_samples += ret / 2;
 
-		MSG(4, "%d bytes written to OSS, %d remaining", ret, num_bytes);
+		audio_log(OTTS_LOG_INFO, "oss: %d bytes written to OSS, %d remaining", ret,
+			  num_bytes);
 
 		/* If there is some more data that is less than a
 		   full fragment, we need to write it immediatelly so
@@ -327,9 +311,9 @@ static int oss_play(AudioID * id, AudioTrack track)
 		    && (num_bytes < info.fragsize)
 		    && (bytes + num_bytes < info.bytes)) {
 
-			MSG(4,
-			    "Writing the rest of the data (%d bytes) to OSS, not a full fragment",
-			    num_bytes);
+			audio_log(OTTS_LOG_INFO,
+				  "oss: Writing the rest of the data (%d bytes) to OSS, not a full fragment",
+				  num_bytes);
 
 			ret2 = write(oss_id->fd, output_samples, num_bytes);
 			num_bytes -= ret2;
@@ -352,35 +336,35 @@ static int oss_play(AudioID * id, AudioTrack track)
 		   in the first pass through the while() loop. Then our timer
 		   will be DELAY nsecs backwards.
 		 */
-		MSG(4, "Now we will try to wait");
+		audio_log(OTTS_LOG_INFO, "oss: Now we will try to wait");
 		pthread_mutex_lock(&oss_id->pt_mutex);
 		lenght = (((float)(ret) / 2) / (float)track.sample_rate);
 		if (!delay) {
 			delay = lenght > DELAY ? DELAY : lenght;
 			lenght -= delay;
 		}
-		MSG(4, "Wait for %f secs (begin: %f, delay: %f)", lenght,
-		    lenght + delay, delay)
-		    gettimeofday(&now, NULL);
+		audio_log(OTTS_LOG_INFO, "oss: Wait for %f secs (begin: %f, delay: %f)",
+			  lenght, lenght + delay, delay);
+		gettimeofday(&now, NULL);
 		timeout.tv_sec = now.tv_sec + (int)lenght;
 		timeout.tv_nsec =
 		    now.tv_usec * 1000 + (lenght - (int)lenght) * 1000000000;
-		//MSG("5, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
+		//audio_log(OTTS_LOG_DEBUG, "oss: waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
 		//    now.tv_sec, now.tv_usec*1000, timeout.tv_sec - now.tv_sec, timeout.tv_nsec-now.tv_usec*1000);
 
 		timeout.tv_sec += timeout.tv_nsec / 1000000000;
 		timeout.tv_nsec = timeout.tv_nsec % 1000000000;
-		//      MSG("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
+		//      audio_log("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
 		//  now.tv_sec, now.tv_usec*1000, timeout.tv_sec - now.tv_sec, timeout.tv_nsec-now.tv_usec*1000);
 		r = pthread_cond_timedwait(&oss_id->pt_cond, &oss_id->pt_mutex,
 					   &timeout);
 		pthread_mutex_unlock(&oss_id->pt_mutex);
-		MSG(4, "End of wait");
+		audio_log(OTTS_LOG_INFO, "oss: End of wait");
 
 		/* The pthread_cond_timedwait was interrupted by change in the
 		   condition variable? if so, terminate. */
 		if (r != ETIMEDOUT) {
-			MSG(4, "Playback stopped, %d", r);
+			audio_log(OTTS_LOG_INFO, "oss: Playback stopped, %d", r);
 			break;
 		}
 	}
@@ -391,23 +375,23 @@ static int oss_play(AudioID * id, AudioTrack track)
 	/* Ugly hack: correct for the time we spend outside timing segments */
 	delay -= 0.05;
 
-	MSG(4, "Wait for the resting delay = %f secs", delay)
-	    if ((delay > 0) && (r == ETIMEDOUT)) {
+	audio_log(OTTS_LOG_INFO, "oss: Wait for the resting delay = %f secs", delay);
+	if ((delay > 0) && (r == ETIMEDOUT)) {
 		pthread_mutex_lock(&oss_id->pt_mutex);
 		gettimeofday(&now, NULL);
 		timeout.tv_sec = now.tv_sec;
 		timeout.tv_nsec = now.tv_usec * 1000 + delay * 1000000000;
-		// MSG("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
+		// audio_log("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
 		//          now.tv_sec, now.tv_usec*1000, timeout.tv_sec - now.tv_sec, timeout.tv_nsec-now.tv_usec*1000);
 		timeout.tv_sec += timeout.tv_nsec / 1000000000;
 		timeout.tv_nsec = timeout.tv_nsec % 1000000000;
-		// MSG("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
+		// audio_log("6, waiting till %d:%d (%d:%d | %d:%d)", timeout.tv_sec, timeout.tv_nsec,
 		//          now.tv_sec, now.tv_usec*1000, timeout.tv_sec - now.tv_sec, timeout.tv_nsec-now.tv_usec*1000);
 		r = pthread_cond_timedwait(&oss_id->pt_cond, &oss_id->pt_mutex,
 					   &timeout);
 		pthread_mutex_unlock(&oss_id->pt_mutex);
 	}
-	MSG(4, "End of wait");
+	audio_log(OTTS_LOG_INFO, "oss: End of wait");
 
 	if (track_volume.samples != NULL)
 		g_free(track_volume.samples);
@@ -419,7 +403,7 @@ static int oss_play(AudioID * id, AudioTrack track)
 	   access the device. */
 	_oss_close(oss_id);
 
-	MSG(4, "Device closed");
+	audio_log(OTTS_LOG_INFO, "oss: Device closed");
 
 	return 0;
 }
@@ -433,7 +417,7 @@ static int oss_stop(AudioID * id)
 	if (oss_id == NULL)
 		return 0;
 
-	MSG(4, "stop() called");
+	audio_log(OTTS_LOG_INFO, "oss: stop() called");
 
 	/* Stop the playback on /dev/dsp */
 	pthread_mutex_lock(&oss_id->fd_mutex);
@@ -478,13 +462,6 @@ static int oss_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-static void oss_set_loglevel(int level)
-{
-	if (level) {
-		oss_log_level = level;
-	}
-}
-
 static char const *oss_get_playcmd(void)
 {
 	return oss_play_cmd;
@@ -498,7 +475,6 @@ static audio_plugin_t oss_functions = {
 	oss_stop,
 	oss_close,
 	oss_set_volume,
-	oss_set_loglevel,
 	oss_get_playcmd
 };
 

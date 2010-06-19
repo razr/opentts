@@ -32,7 +32,7 @@
 #include <glib/gstdio.h>
 
 #include <i18n.h>
-#include <timestamp.h>
+#include<logging.h>
 #include "openttsd.h"
 
 /* Declare dotconf functions and data structures*/
@@ -146,126 +146,6 @@ void fatal_error(void)
 	i++;
 }
 
-/* Logging messages, level of verbosity is defined between 1 and 5, 
- * see documentation */
-void MSG2(int level, char *kind, char *format, ...)
-{
-	int std_log = level <= options.log_level;
-	int custom_log = (kind != NULL && custom_log_kind != NULL &&
-			  !strcmp(kind, custom_log_kind) &&
-			  custom_logfile != NULL);
-
-	if (std_log || custom_log) {
-		va_list args;
-		va_list args2;
-		int i;
-
-		pthread_mutex_lock(&logging_mutex);
-
-		if (std_log)
-			va_start(args, format);
-		if (custom_log)
-			va_start(args2, format);
-
-		{
-			{
-				/* Print timestamp */
-				char *tstr = get_timestamp();
-				if (std_log) {
-					fprintf(logfile, "%s openttsd: ", tstr);
-				}
-				if (custom_log) {
-					fprintf(custom_logfile,
-						"%s openttsd: ", tstr);
-				}
-				if (options.debug) {
-					fprintf(debug_logfile,
-						"%s openttsd: ", tstr);
-				}
-				g_free(tstr);
-			}
-			for (i = 1; i < level; i++) {
-				if (std_log) {
-					fprintf(logfile, " ");
-				}
-				if (custom_log) {
-					fprintf(custom_logfile, " ");
-				}
-			}
-			if (std_log) {
-				vfprintf(logfile, format, args);
-				fprintf(logfile, "\n");
-				fflush(logfile);
-			}
-			if (custom_log) {
-				vfprintf(custom_logfile, format, args2);
-				fprintf(custom_logfile, "\n");
-				fflush(custom_logfile);
-			}
-			if (options.debug) {
-				va_start(args, format);
-				vfprintf(debug_logfile, format, args);
-				va_end(args);
-				fprintf(debug_logfile, "\n");
-				fflush(debug_logfile);
-			}
-		}
-		if (std_log) {
-			va_end(args);
-		}
-		if (custom_log) {
-			va_end(args2);
-		}
-		pthread_mutex_unlock(&logging_mutex);
-	}
-}
-
-/* The main logging function for the OpenTTS daemon,
-   level is between 1 and 5. 1 means the most important.*/
-/* TODO: Define this in terms of MSG somehow. I don't
-   know how to pass '...' arguments to another C function */
-void MSG(int level, char *format, ...)
-{
-
-	if ((level <= options.log_level)
-	    || (options.debug)) {
-		va_list args;
-		int i;
-		pthread_mutex_lock(&logging_mutex);
-		{
-			{
-				/* Print timestamp */
-				char *tstr = get_timestamp();
-				if (level <= options.log_level)
-					fprintf(logfile, "%s openttsd: ", tstr);
-				if (options.debug)
-					fprintf(debug_logfile,
-						"%s openttsd: ", tstr);
-				g_free(tstr);
-			}
-
-			for (i = 1; i < level; i++) {
-				fprintf(logfile, " ");
-			}
-			if (level <= options.log_level) {
-				va_start(args, format);
-				vfprintf(logfile, format, args);
-				va_end(args);
-				fprintf(logfile, "\n");
-				fflush(logfile);
-			}
-			if (options.debug) {
-				va_start(args, format);
-				vfprintf(debug_logfile, format, args);
-				va_end(args);
-				fprintf(debug_logfile, "\n");
-				fflush(debug_logfile);
-			}
-		}
-		pthread_mutex_unlock(&logging_mutex);
-	}
-}
-
 /* --- CLIENTS / CONNECTIONS MANAGING --- */
 
 /* activity is on server_socket (request for a new connection) */
@@ -282,8 +162,8 @@ int connection_new(int server_socket)
 		   &client_len);
 
 	if (client_socket == -1) {
-		MSG(2,
-		    "Error: Can't handle connection request of a new client");
+		log_msg(OTTS_LOG_WARN,
+			"Error: Can't handle connection request of a new client");
 		return -1;
 	}
 
@@ -291,15 +171,13 @@ int connection_new(int server_socket)
 	FD_SET(client_socket, &readfds);
 	if (client_socket > status.max_fd)
 		status.max_fd = client_socket;
-	MSG(4, "Adding client on fd %d", client_socket);
+	log_msg(OTTS_LOG_INFO, "Adding client on fd %d", client_socket);
 
 	/* Check if there is space for server status data; allocate it */
 	if (client_socket >= status.num_fds - 1) {
 		openttsd_sockets = (sock_t *) g_realloc(openttsd_sockets,
-							   status.num_fds
-							   * 2 *
-							   sizeof
-							   (sock_t));
+							status.num_fds
+							* 2 * sizeof(sock_t));
 		status.num_fds *= 2;
 	}
 
@@ -311,8 +189,8 @@ int connection_new(int server_socket)
 	/* Create a record in fd_settings */
 	new_fd_set = (TFDSetElement *) default_fd_set();
 	if (new_fd_set == NULL) {
-		MSG(2,
-		    "Error: Failed to create a record in fd_settings for the new client");
+		log_msg(OTTS_LOG_WARN,
+			"Error: Failed to create a record in fd_settings for the new client");
 		if (status.max_fd == client_socket)
 			status.max_fd--;
 		FD_CLR(client_socket, &readfds);
@@ -332,7 +210,8 @@ int connection_new(int server_socket)
 
 	g_hash_table_insert(fd_uid, p_client_socket, p_client_uid);
 
-	MSG(4, "Data structures for client on fd %d created", client_socket);
+	log_msg(OTTS_LOG_INFO, "Data structures for client on fd %d created",
+		client_socket);
 	return 0;
 }
 
@@ -341,9 +220,9 @@ int connection_destroy(int fd)
 	TFDSetElement *fdset_element;
 
 	/* Client has gone away and we remove it from the descriptor set. */
-	MSG(4, "Removing client on fd %d", fd);
+	log_msg(OTTS_LOG_INFO, "Removing client on fd %d", fd);
 
-	MSG(4, "Tagging client as inactive in settings");
+	log_msg(OTTS_LOG_INFO, "Tagging client as inactive in settings");
 	fdset_element = get_client_settings_by_fd(fd);
 	if (fdset_element != NULL) {
 		fdset_element->fd = -1;
@@ -352,10 +231,10 @@ int connection_destroy(int fd)
 		DIE("Can't find settings for this client\n");
 	}
 
-	MSG(4, "Removing client from the fd->uid table.");
+	log_msg(OTTS_LOG_INFO, "Removing client from the fd->uid table.");
 	g_hash_table_remove(fd_uid, &fd);
 
-	MSG(4, "Closing clients file descriptor %d", fd);
+	log_msg(OTTS_LOG_INFO, "Closing clients file descriptor %d", fd);
 
 	if (close(fd) != 0)
 		if (OPENTTSD_DEBUG)
@@ -365,7 +244,7 @@ int connection_destroy(int fd)
 	if (fd == status.max_fd)
 		status.max_fd--;
 
-	MSG(3, "Connection closed");
+	log_msg(OTTS_LOG_NOTICE, "Connection closed");
 
 	return 0;
 }
@@ -376,14 +255,16 @@ gboolean client_terminate(gpointer key, gpointer value, gpointer user)
 
 	set = (TFDSetElement *) value;
 	if (set == NULL) {
-		MSG(2, "Error: Empty connection, internal error");
+		log_msg(OTTS_LOG_WARN,
+			"Error: Empty connection, internal error");
 		if (OPENTTSD_DEBUG)
 			FATAL("Internal error");
 		return TRUE;
 	}
 
 	if (set->fd > 0) {
-		MSG(4, "Closing connection on fd %d\n", set->fd);
+		log_msg(OTTS_LOG_INFO, "Closing connection on fd %d\n",
+			set->fd);
 		connection_destroy(set->fd);
 	}
 	mem_free_fdset(set);
@@ -398,7 +279,7 @@ gboolean modules_terminate(gpointer key, gpointer value, gpointer user)
 
 	module = (OutputModule *) value;
 	if (module == NULL) {
-		MSG(2, "Error: Empty module, internal error");
+		log_msg(OTTS_LOG_WARN, "Error: Empty module, internal error");
 		return TRUE;
 	}
 	unload_output_module(module);
@@ -412,7 +293,7 @@ void modules_reload(gpointer key, gpointer value, gpointer user)
 
 	module = (OutputModule *) value;
 	if (module == NULL) {
-		MSG(2, "Empty module, internal error");
+		log_msg(OTTS_LOG_WARN, "Empty module, internal error");
 		return;
 	}
 
@@ -427,7 +308,7 @@ void module_debug(gpointer key, gpointer value, gpointer user)
 
 	module = (OutputModule *) value;
 	if (module == NULL) {
-		MSG(2, "Empty module, internal error");
+		log_msg(OTTS_LOG_WARN, "Empty module, internal error");
 		return;
 	}
 
@@ -442,7 +323,7 @@ void module_nodebug(gpointer key, gpointer value, gpointer user)
 
 	module = (OutputModule *) value;
 	if (module == NULL) {
-		MSG(2, "Empty module, internal error");
+		log_msg(OTTS_LOG_WARN, "Empty module, internal error");
 		return;
 	}
 
@@ -481,7 +362,6 @@ static void options_init(void)
 	options.log_dir = NULL;
 	options.debug = 0;
 	options.debug_destination = NULL;
-	debug_logfile = NULL;
 	mode = DAEMON;
 }
 
@@ -496,12 +376,14 @@ static void init()
 
 	/* Initialize inter-thread comm pipes */
 	if (pipe(speaking_pipe)) {
-		MSG(1, "Speaking pipe creation failed (%s)", strerror(errno));
+		log_msg(OTTS_LOG_ERR, "Speaking pipe creation failed (%s)",
+			strerror(errno));
 		FATAL("Can't create pipe");
 	}
 
 	if (pipe(server_pipe)) {
-		MSG(1, "Server pipe creation failed (%s)", strerror(errno));
+		log_msg(OTTS_LOG_ERR, "Server pipe creation failed (%s)",
+			strerror(errno));
 		FATAL("Can't create pipe");
 	}
 
@@ -516,7 +398,8 @@ static void init()
 	output_modules_list = NULL;
 
 	/* Initialize hash tables */
-	fd_settings = g_hash_table_new_full(g_int_hash, g_int_equal, g_free, NULL);
+	fd_settings =
+	    g_hash_table_new_full(g_int_hash, g_int_equal, g_free, NULL);
 	assert(fd_settings != NULL);
 
 	fd_uid = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
@@ -528,8 +411,7 @@ static void init()
 	output_modules = g_hash_table_new(g_str_hash, g_str_equal);
 	assert(output_modules != NULL);
 
-	openttsd_sockets =
-	    (sock_t *) g_malloc(START_NUM_FD * sizeof(sock_t));
+	openttsd_sockets = (sock_t *) g_malloc(START_NUM_FD * sizeof(sock_t));
 	status.num_fds = START_NUM_FD;
 	for (i = 0; i <= START_NUM_FD - 1; i++) {
 		openttsd_sockets[i].awaiting_data = 0;
@@ -570,41 +452,46 @@ static void init()
 		options.log_dir =
 		    g_strdup_printf("%s/log/", options.opentts_dir);
 		mkdir(options.log_dir, S_IRWXU);
-		if (!options.debug_destination) {
-			options.debug_destination =
-			    g_strdup_printf("%slog/debug",
-					    options.opentts_dir);
-			mkdir(options.debug_destination, S_IRWXU);
-		}
+	}
+
+	if (!options.debug_destination) {
+		options.debug_destination =
+		    g_strdup_printf("%s/log/debug", options.opentts_dir);
+		mkdir(options.debug_destination, S_IRWXU);
 	}
 
 	/* Load configuration from the config file */
-	MSG(4, "Reading openttsd's configuration from %s",
-	    options.conf_file);
-	load_configuration();
-
-	logging_init();
+	log_msg(OTTS_LOG_INFO, "Reading openttsd's configuration from %s",
+		options.conf_file);
+	configure();
 
 	/* Check for output modules */
 	if (g_hash_table_size(output_modules) == 0) {
 		DIE("No speech output modules were loaded - aborting...");
 	} else {
-		MSG(3, "openttsd started with %d output module%s",
-		    g_hash_table_size(output_modules),
-		    g_hash_table_size(output_modules) > 1 ? "s" : "");
+		log_msg(OTTS_LOG_NOTICE,
+			"openttsd started with %d output module%s",
+			g_hash_table_size(output_modules),
+			g_hash_table_size(output_modules) > 1 ? "s" : "");
 	}
 
 	last_p5_block = NULL;
 }
 
-void load_configuration(void)
+/*
+ * Read the configuration file, and open our log files.
+ * This can be called in two places: at startup, or in response to a
+ * signal handler.
+ */
+
+void configure(void)
 {
+	char *log_file;
 	configfile_t *configfile = NULL;
 
 	/* Clean previous configuration */
 	assert(output_modules != NULL);
-	g_hash_table_foreach_remove(output_modules, modules_terminate,
-				    NULL);
+	g_hash_table_foreach_remove(output_modules, modules_terminate, NULL);
 
 	/* Make sure there aren't any more child processes left */
 	while (waitpid(-1, NULL, WNOHANG) > 0) ;
@@ -617,22 +504,32 @@ void load_configuration(void)
 
 	/* Add the LAST option */
 	configoptions = add_config_option(configoptions, &num_options, "", 0,
-					NULL, NULL, 0);
+					  NULL, NULL, 0);
 
 	configfile =
 	    dotconf_create(options.conf_file, configoptions, 0,
 			   CASE_INSENSITIVE);
 	if (configfile) {
 		configfile->includepath = strdup(options.conf_dir);
-		MSG(5, "Config file include path is: %s",
-		    configfile->includepath);
+		log_msg(OTTS_LOG_DEBUG, "Config file include path is: %s",
+			configfile->includepath);
 		if (dotconf_command_loop(configfile) == 0)
 			DIE("Error reading config file\n");
 		dotconf_cleanup(configfile);
-		MSG(2, "Configuration has been read from \"%s\"",
-		    options.conf_file);
+		log_msg(OTTS_LOG_WARN,
+			"Configuration has been read from \"%s\"",
+			options.conf_file);
 	} else {
-		MSG(1, "Can't open %s", options.conf_file);
+		log_msg(OTTS_LOG_ERR, "Can't open %s", options.conf_file);
+	}
+
+	log_file = g_strdup_printf("%s/openttsd.log", options.log_dir);
+	open_log(log_file, options.log_level);
+	g_free(log_file);
+
+	if (options.custom_log_filename && options.custom_log_kind) {
+		open_custom_log(options.custom_log_filename,
+				options.custom_log_kind);
 	}
 
 	free_config_options(configoptions, &num_options);
@@ -642,15 +539,15 @@ static void quit(void)
 {
 	int ret;
 
-	MSG(1, "Terminating...");
+	log_msg(OTTS_LOG_ERR, "Terminating...");
 
-	MSG(2, "Closing open connections...");
+	log_msg(OTTS_LOG_WARN, "Closing open connections...");
 	/* We will browse through all the connections and close them. */
 	g_hash_table_foreach_remove(fd_settings, client_terminate, NULL);
 	g_hash_table_destroy(fd_settings);
 
 	if (speak_thread_started) {
-		MSG(4, "Closing speak() thread...");
+		log_msg(OTTS_LOG_INFO, "Closing speak() thread...");
 		ret = pthread_cancel(speak_thread);
 		if (ret != 0)
 			FATAL("Speak thread failed to cancel!\n");
@@ -665,22 +562,22 @@ static void quit(void)
 	if (ret != 0)
 		FATAL("Signal handler thread failed to join!\n");
 
-	MSG(2, "Closing open output modules...");
+	log_msg(OTTS_LOG_WARN, "Closing open output modules...");
 	/*  Call the close() function of each registered output module. */
 	g_hash_table_foreach_remove(output_modules, modules_terminate, NULL);
 	g_hash_table_destroy(output_modules);
 
-	MSG(2, "Closing server connection...");
+	log_msg(OTTS_LOG_WARN, "Closing server connection...");
 	if (close(server_socket) == -1)
-		MSG(2, "close() failed: %s", strerror(errno));
+		log_msg(OTTS_LOG_WARN, "close() failed: %s", strerror(errno));
 	FD_CLR(server_socket, &readfds);
 
-	MSG(3, "Removing pid file");
+	log_msg(OTTS_LOG_NOTICE, "Removing pid file");
 	destroy_pid_file();
 
 	fflush(NULL);
 
-	MSG(2, "openttsd terminated correctly");
+	log_msg(OTTS_LOG_WARN, "openttsd terminated correctly");
 
 	exit(0);
 }
@@ -707,14 +604,14 @@ int create_pid_file()
 		/* If there is a lock, exit, otherwise remove the old file */
 		ret = fcntl(pid_fd, F_GETLK, &lock);
 		if (ret == -1) {
-			MSG(1,
-			    "Can't check lock status of an existing pid file.\n");
+			log_msg(OTTS_LOG_ERR,
+				"Can't check lock status of an existing pid file.\n");
 			return -1;
 		}
 
 		fclose(pid_file);
 		if (lock.l_type != F_UNLCK) {
-			MSG(1, "openttsd is already running.\n");
+			log_msg(OTTS_LOG_ERR, "openttsd is already running.\n");
 			return -1;
 		}
 
@@ -724,9 +621,9 @@ int create_pid_file()
 	/* Create a new pid file and lock it */
 	pid_file = fopen(options.pid_file, "w");
 	if (pid_file == NULL) {
-		MSG(1,
-		    "Can't create pid file in %s, wrong permissions?\n",
-		    options.pid_file);
+		log_msg(OTTS_LOG_ERR,
+			"Can't create pid file in %s, wrong permissions?\n",
+			options.pid_file);
 		return -1;
 	}
 	fprintf(pid_file, "%d\n", getpid());
@@ -740,7 +637,7 @@ int create_pid_file()
 
 	ret = fcntl(pid_fd, F_SETLK, &lock);
 	if (ret == -1) {
-		MSG(1, "Can't set lock on pid file.\n");
+		log_msg(OTTS_LOG_ERR, "Can't set lock on pid file.\n");
 		return -1;
 	}
 
@@ -750,39 +647,6 @@ int create_pid_file()
 void destroy_pid_file(void)
 {
 	unlink(options.pid_file);
-}
-
-void logging_init(void)
-{
-	char *file_name =
-	    g_strdup_printf("%s/openttsd.log", options.log_dir);
-	assert(file_name != NULL);
-	if (!strncmp(file_name, "stdout", 6)) {
-		logfile = stdout;
-	} else if (!strncmp(file_name, "stderr", 6)) {
-		logfile = stderr;
-	} else {
-		logfile = fopen(file_name, "a");
-		if (logfile == NULL) {
-			fprintf(stderr,
-				"Error: can't open logging file %s! Using stdout.\n",
-				file_name);
-			logfile = stdout;
-		} else {
-			if (chmod(file_name, S_IRUSR|S_IWUSR) == -1) {
-				fprintf(stderr, "Unable to change permission for %s (%s)\n",
-				file_name, strerror(errno));
-			}
-			MSG(2, "openttsd is logging to file %s",
-			    file_name);
-		}
-	}
-
-	if (!debug_logfile)
-		debug_logfile = stdout;
-
-	g_free(file_name);
-	return;
 }
 
 /* --- Sockets --- */
@@ -810,11 +674,11 @@ int make_local_socket(const char *filename)
 	}
 
 	if (chmod(filename, S_IRUSR | S_IWUSR) == -1) {
-		MSG(2, "ERRNO:%s", strerror(errno));
+		log_msg(OTTS_LOG_WARN, "ERRNO:%s", strerror(errno));
 		FATAL("Unable to set permissions on local socket.");
 	}
 	if (listen(sock, OTTS_MAX_QUEUE_LEN) == -1) {
-		MSG(2, "ERRNO:%s", strerror(errno));
+		log_msg(OTTS_LOG_WARN, "ERRNO:%s", strerror(errno));
 		FATAL("listen() failed for local socket");
 	}
 
@@ -836,7 +700,7 @@ int make_inet_socket(const int port)
 	const int flag = 1;
 	if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &flag,
 		       sizeof(int)))
-		MSG(2, "Error: Setting socket option failed!");
+		log_msg(OTTS_LOG_WARN, "Error: Setting socket option failed!");
 
 	server_address.sin_family = AF_INET;
 
@@ -849,15 +713,15 @@ int make_inet_socket(const int port)
 
 	server_address.sin_port = htons(port);
 
-	MSG(3, "Openning inet socket connection");
+	log_msg(OTTS_LOG_NOTICE, "Openning inet socket connection");
 	if (bind(server_socket, (struct sockaddr *)&server_address,
 		 sizeof(server_address)) == -1) {
-		MSG(1, "bind() failed: %s", strerror(errno));
+		log_msg(OTTS_LOG_ERR, "bind() failed: %s", strerror(errno));
 		FATAL("Couldn't open inet socket, try a few minutes later.");
 	}
 
 	if (listen(server_socket, OTTS_MAX_QUEUE_LEN) == -1) {
-		MSG(2, "ERRNO:%s", strerror(errno));
+		log_msg(OTTS_LOG_WARN, "ERRNO:%s", strerror(errno));
 		FATAL
 		    ("listen() failed for inet socket, is another openttsd running?");
 	}
@@ -870,11 +734,11 @@ gboolean start_speak_thread(void)
 {
 	int ret;
 
-	MSG(4, "Creating new thread for speak()");
+	log_msg(OTTS_LOG_INFO, "Creating new thread for speak()");
 	ret = pthread_create(&speak_thread, NULL, speak, NULL);
 	if (ret != 0) {
 		speak_thread_started = FALSE;
-		MSG(0, "Speak thread failed!\n");
+		log_msg(OTTS_LOG_CRIT, "Speak thread failed!\n");
 	} else
 		speak_thread_started = TRUE;
 
@@ -918,19 +782,15 @@ int main(int argc, char *argv[])
 	/* Initialize threading and thread safety in Glib */
 	g_thread_init(NULL);
 
-	init_timestamps();	/* For correct timestamp generation. */
-
 	/* Initialize logging */
-	logfile = stderr;
-	options.log_level = 1;
-	custom_logfile = NULL;
-	custom_log_kind = NULL;
+	init_logging();
+	open_log("stderr", 5);
 
 	options_init();
 
 	options_parse(argc, argv);
 
-	MSG(1, "openttsd " VERSION " starting");
+	log_msg(OTTS_LOG_ERR, "openttsd " VERSION " starting");
 
 	/* By default, search for configuration options and put everything
 	 * in a .opentts directory  in user's home directory. */
@@ -945,14 +805,14 @@ int main(int argc, char *argv[])
 		if (user_home_dir) {
 			/* Setup a ~/.opentts/ directory or create a new one */
 			options.opentts_dir =
-			    g_strdup_printf("%s/.opentts",
-					    user_home_dir);
-			MSG(4, "Home dir found, trying to find %s",
-			    options.opentts_dir);
+			    g_strdup_printf("%s/.opentts", user_home_dir);
+			log_msg(OTTS_LOG_INFO,
+				"Home dir found, trying to find %s",
+				options.opentts_dir);
 			g_mkdir(options.opentts_dir, S_IRWXU);
-			MSG(4,
-			    "Using home directory: %s for configuration, pidfile and logging",
-			    options.opentts_dir);
+			log_msg(OTTS_LOG_INFO,
+				"Using home directory: %s for configuration, pidfile and logging",
+				options.opentts_dir);
 
 			/* Pidfile */
 			if (options.pid_file == NULL) {
@@ -972,16 +832,14 @@ int main(int argc, char *argv[])
 				    g_strdup_printf("%s/conf/",
 						    options.opentts_dir);
 				if (!g_file_test
-				    (options.conf_dir,
-				     G_FILE_TEST_IS_DIR)) {
+				    (options.conf_dir, G_FILE_TEST_IS_DIR)) {
 					/* If the local confiration dir doesn't exist, read the global configuration */
 					if (strcmp(SYS_CONF, ""))
 						options.conf_dir =
 						    g_strdup(SYS_CONF);
 					else
 						options.conf_dir =
-						    g_strdup
-						    ("/etc/opentts/");
+						    g_strdup("/etc/opentts/");
 				}
 			}
 		} else {
@@ -1001,14 +859,6 @@ int main(int argc, char *argv[])
 	if (create_pid_file() != 0)
 		exit(1);
 
-	/* Initialize logging mutex to workaround ctime threading bug */
-	/* Must be done no later than here */
-	ret = pthread_mutex_init(&logging_mutex, NULL);
-	if (ret != 0) {
-		fprintf(stderr, "Mutex initialization failed");
-		exit(1);
-	}
-
 	ret = pthread_mutex_init(&thread_controller, NULL);
 	if (ret != 0) {
 		fprintf(stderr, "Mutex initialization failed");
@@ -1023,8 +873,8 @@ int main(int argc, char *argv[])
 	init();
 
 	if (!strcmp(options.communication_method, "inet_socket")) {
-		MSG(2, "openttsd will use inet port %d",
-		    options.port);
+		log_msg(OTTS_LOG_WARN, "openttsd will use inet port %d",
+			options.port);
 		/* Connect and start listening on inet socket */
 		server_socket = make_inet_socket(options.port);
 	} else if (!strcmp(options.communication_method, "unix_socket")) {
@@ -1038,18 +888,17 @@ int main(int argc, char *argv[])
 			if (options.opentts_dir) {
 				g_string_printf(socket_filename,
 						"%s/openttsd.sock",
-						options.
-						opentts_dir);
+						options.opentts_dir);
 			} else {
 				FATAL
 				    ("Socket file name not set and user has no home directory");
 			}
 		} else {
-			socket_filename =
-			    g_string_new(options.socket_name);
+			socket_filename = g_string_new(options.socket_name);
 		}
-		MSG(2, "openttsd will use local unix socket: %s",
-		    socket_filename->str);
+		log_msg(OTTS_LOG_WARN,
+			"openttsd will use local unix socket: %s",
+			socket_filename->str);
 
 		/* Delete an old socket file if it exists */
 		if (g_file_test(socket_filename->str, G_FILE_TEST_EXISTS))
@@ -1075,7 +924,7 @@ int main(int argc, char *argv[])
 
 	pthread_mutex_lock(&thread_controller);
 
-	MSG(4, "Creating new thread for signal handling.");
+	log_msg(OTTS_LOG_INFO, "Creating new thread for signal handling.");
 	ret = pthread_create(&sighandler_thread, NULL, catch_signals, NULL);
 	if (ret != 0) {
 		pthread_mutex_unlock(&thread_controller);
@@ -1100,7 +949,8 @@ int main(int argc, char *argv[])
 	status.max_fd = max(server_socket, server_pipe[0]);
 
 	/* Now wait for clients and requests. */
-	MSG(1, "openttsd started, and it is waiting for clients ...");
+	log_msg(OTTS_LOG_ERR,
+		"openttsd started, and it is waiting for clients ...");
 	while (1) {
 		testfds = readfds;
 
@@ -1125,7 +975,8 @@ int main(int argc, char *argv[])
 			for (fd = 0;
 			     fd <= status.max_fd && fd < FD_SETSIZE; fd++) {
 				if (FD_ISSET(fd, &testfds)) {
-					MSG(4, "Activity on fd %d ...", fd);
+					log_msg(OTTS_LOG_INFO,
+						"Activity on fd %d ...", fd);
 
 					if (fd == server_socket) {
 						/* server activity (new client) */
@@ -1133,8 +984,8 @@ int main(int argc, char *argv[])
 						    connection_new
 						    (server_socket);
 						if (ret != 0) {
-							MSG(2,
-							    "Error: Failed to add new client!");
+							log_msg(OTTS_LOG_WARN,
+								"Error: Failed to add new client!");
 							if (OPENTTSD_DEBUG)
 								FATAL
 								    ("Failed to add new client");
@@ -1148,14 +999,16 @@ int main(int argc, char *argv[])
 							/* client has gone */
 							connection_destroy(fd);
 							if (ret != 0)
-								MSG(2,
-								    "Error: Failed to close the client!");
+								log_msg
+								    (OTTS_LOG_WARN,
+								     "Error: Failed to close the client!");
 						} else {
 							/* client sends some commands or data */
 							if (serve(fd) == -1)
-								MSG(2,
-								    "Error: Failed to serve client on fd %d!",
-								    fd);
+								log_msg
+								    (OTTS_LOG_WARN,
+								     "Error: Failed to serve client on fd %d!",
+								     fd);
 						}
 					}
 				}
@@ -1171,8 +1024,8 @@ int main(int argc, char *argv[])
 void check_locked(pthread_mutex_t * lock)
 {
 	if (pthread_mutex_trylock(lock) == 0) {
-		MSG(1,
-		    "CRITICAL ERROR: Not locked but accessing structure data!");
+		log_msg(OTTS_LOG_ERR,
+			"CRITICAL ERROR: Not locked but accessing structure data!");
 		fprintf(stderr, "WARNING! WARNING! MUTEX CHECK FAILED!\n");
 		fflush(stderr);
 		exit(0);

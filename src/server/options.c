@@ -29,6 +29,8 @@
 #include <sys/stat.h>
 
 #include <i18n.h>
+#include<logging.h>
+
 #include "openttsd.h"
 
 #include "options.h"
@@ -178,14 +180,14 @@ void options_parse(int argc, char *argv[])
 
 			ret = mkdir(options.debug_destination, S_IRWXU);
 			if (ret) {
-				MSG(1,
-				    "Can't create additional debug destination in %s, reason %d-%s",
-				    options.debug_destination, errno,
-				    strerror(errno));
+				log_msg(OTTS_LOG_ERR,
+					"Can't create additional debug destination in %s, reason %d-%s",
+					options.debug_destination, errno,
+					strerror(errno));
 				if (errno == EEXIST) {
-					MSG(1,
-					    "Debugging directory %s already exists, please delete it first",
-					    options.debug_destination);
+					log_msg(OTTS_LOG_ERR,
+						"Debugging directory %s already exists, please delete it first",
+						options.debug_destination);
 				}
 				exit(1);
 			}
@@ -194,14 +196,8 @@ void options_parse(int argc, char *argv[])
 							     options.
 							     debug_destination);
 			/* Open logfile for writing */
-			debug_logfile = fopen(debug_logfile_path, "wx");
+			open_debug_log(debug_logfile_path, DEBUG_ON);
 			g_free(debug_logfile_path);
-			if (debug_logfile == NULL) {
-				MSG(1,
-				    "Error: can't open additional debug logging file %s [%d-%s]!\n",
-				    debug_logfile_path, errno, strerror(errno));
-				exit(1);
-			}
 			options.debug = 1;
 			break;
 		case 'h':
@@ -209,7 +205,7 @@ void options_parse(int argc, char *argv[])
 			exit(0);
 			break;
 		default:
-			MSG(2, "Unrecognized option\n");
+			log_msg(OTTS_LOG_WARN, "Unrecognized option\n");
 			options_print_help(argv);
 			exit(1);
 		}

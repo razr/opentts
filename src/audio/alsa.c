@@ -36,11 +36,11 @@
 #include <glib.h>
 
 #include <alsa/asoundlib.h>
-#include <timestamp.h>
 
 #define AUDIO_PLUGIN_ENTRY otts_alsa_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 #include <opentts/opentts_types.h>
+#include<logging.h>
 
 typedef struct {
 	AudioID id;
@@ -78,31 +78,8 @@ do { \
  } while (0)
 #endif
 
-/* Put a message into the logfile (stderr) */
-#define MSG(level, arg...) \
- if(level <= alsa_log_level){ \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," ALSA: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
-
-#define ERR(arg...) \
- { \
-     char *tstr = get_timestamp(); \
-     fputs(tstr, stderr); \
-     fprintf(stderr," ALSA ERROR: "); \
-     fprintf(stderr,arg); \
-     fprintf(stderr,"\n"); \
-     fflush(stderr); \
-     g_free(tstr); \
-  }
-
-static int alsa_log_level;
 static char const *alsa_play_cmd = "aplay";
+static logging_func audio_log;
 
 /* I/O error handler */
 static int xrun(alsa_id_t * id)
@@ -113,11 +90,11 @@ static int xrun(alsa_id_t * id)
 	if (id == NULL)
 		return -1;
 
-	MSG(1, "WARNING: Entering XRUN handler");
+	audio_log(OTTS_LOG_ERR, "alsa: WARNING: Entering XRUN handler");
 
 	snd_pcm_status_alloca(&status);
 	if ((res = snd_pcm_status(id->alsa_pcm, status)) < 0) {
-		ERR("status error: %s", snd_strerror(res));
+		audio_log(OTTS_LOG_CRIT, "alsa: status error: %s", snd_strerror(res));
 
 		return -1;
 	}
@@ -126,18 +103,19 @@ static int xrun(alsa_id_t * id)
 		gettimeofday(&now, 0);
 		snd_pcm_status_get_trigger_tstamp(status, &tstamp);
 		timersub(&now, &tstamp, &diff);
-		MSG(1, "underrun!!! (at least %.3f ms long)",
-		    diff.tv_sec * 1000 + diff.tv_usec / 1000.0);
+		audio_log(OTTS_LOG_ERR, "alsa: underrun!!! (at least %.3f ms long)",
+			  diff.tv_sec * 1000 + diff.tv_usec / 1000.0);
 		if ((res = snd_pcm_prepare(id->alsa_pcm)) < 0) {
-			ERR("xrun: prepare error: %s", snd_strerror(res));
+			audio_log(OTTS_LOG_CRIT, "alsa: xrun: prepare error: %s",
+				  snd_strerror(res));
 
 			return -1;
 		}
 
 		return 0;	/* ok, data should be accepted again */
 	}
-	ERR("read/write error, state = %s",
-	    snd_pcm_state_name(snd_pcm_status_get_state(status)));
+	audio_log(OTTS_LOG_CRIT, "alsa: read/write error, state = %s",
+		  snd_pcm_state_name(snd_pcm_status_get_state(status)));
 
 	return -1;
 }
@@ -147,7 +125,7 @@ static int suspend(alsa_id_t * id)
 {
 	int res;
 
-	MSG(1, "WARNING: Entering SUSPEND handler.");
+	audio_log(OTTS_LOG_ERR, "alsa: WARNING: Entering SUSPEND handler.");
 
 	if (id == NULL)
 		return -1;
@@ -157,7 +135,8 @@ static int suspend(alsa_id_t * id)
 
 	if (res < 0) {
 		if ((res = snd_pcm_prepare(id->alsa_pcm)) < 0) {
-			ERR("suspend: prepare error: %s", snd_strerror(res));
+			audio_log(OTTS_LOG_CRIT, "alsa: suspend: prepare error: %s",
+				  snd_strerror(res));
 
 			return -1;
 		}
@@ -172,28 +151,29 @@ static int _alsa_open(alsa_id_t * id)
 {
 	int err;
 
-	MSG(1, "Opening ALSA device");
+	audio_log(OTTS_LOG_ERR, "Opening ALSA device");
 	fflush(stderr);
 
 	/* Open the device */
 	if ((err = snd_pcm_open(&id->alsa_pcm, id->alsa_device_name,
 				SND_PCM_STREAM_PLAYBACK,
 				SND_PCM_NONBLOCK)) < 0) {
-		ERR("Cannot open audio device %s (%s)", id->alsa_device_name,
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Cannot open audio device %s (%s)",
+			  id->alsa_device_name, snd_strerror(err));
 		return -1;
 	}
 
 	/* Allocate space for hw_params (description of the sound parameters) */
 	/* Allocate space for sw_params (description of the sound parameters) */
-	MSG(2, "Allocating new sw_params structure");
+	audio_log(OTTS_LOG_WARN, "alsa: Allocating new sw_params structure");
 	if ((err = snd_pcm_sw_params_malloc(&id->alsa_sw_params)) < 0) {
-		ERR("Cannot allocate hardware parameter structure (%s)",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Cannot allocate hardware parameter structure (%s)",
+			  snd_strerror(err));
 		return -1;
 	}
 
-	MSG(1, "Opening ALSA device ... success");
+	audio_log(OTTS_LOG_ERR, "alsa: Opening ALSA device ... success");
 
 	return 0;
 }
@@ -206,7 +186,7 @@ static int _alsa_close(alsa_id_t * id)
 {
 	int err;
 
-	MSG(1, "Closing ALSA device");
+	audio_log(OTTS_LOG_ERR, "Closing ALSA device");
 
 	if (id->alsa_opened == 0)
 		return 0;
@@ -215,7 +195,8 @@ static int _alsa_close(alsa_id_t * id)
 	id->alsa_opened = 0;
 
 	if ((err = snd_pcm_close(id->alsa_pcm)) < 0) {
-		MSG(2, "Cannot close ALSA device (%s)", snd_strerror(err));
+		audio_log(OTTS_LOG_WARN, "alsa: Cannot close ALSA device (%s)",
+			  snd_strerror(err));
 		return -1;
 	}
 
@@ -225,7 +206,7 @@ static int _alsa_close(alsa_id_t * id)
 	id->alsa_poll_fds = NULL;
 	pthread_mutex_unlock(&id->alsa_pipe_mutex);
 
-	MSG(1, "Closing ALSA device ... success");
+	audio_log(OTTS_LOG_ERR, "alsa: Closing ALSA device ... success");
 
 	return 0;
 }
@@ -238,13 +219,17 @@ static int _alsa_close(alsa_id_t * id)
                       on ALSA
   (void*) pars[1] ... =NULL
 */
-static AudioID *alsa_open(void **pars)
+static AudioID *alsa_open(void **pars, logging_func log)
 {
 	alsa_id_t *alsa_id;
 	int ret;
 
+	if (audio_log == NULL)
+		audio_log = log;
+
 	if (pars[1] == NULL) {
-		ERR("Can't open ALSA sound output, missing parameters in argument.");
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Can't open ALSA sound output, missing parameters in argument.");
 		return NULL;
 	}
 
@@ -254,21 +239,22 @@ static AudioID *alsa_open(void **pars)
 
 	alsa_id->alsa_opened = 0;
 
-	MSG(1, "Opening ALSA sound output");
+	audio_log(OTTS_LOG_ERR, "alsa: Opening ALSA sound output");
 
 	alsa_id->alsa_device_name = g_strdup(pars[1]);
 	alsa_id->alsa_poll_fds = NULL;
 
 	ret = _alsa_open(alsa_id);
 	if (ret) {
-		ERR("Cannot initialize Alsa device '%s': Can't open.",
-		    alsa_id->alsa_device_name);
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Cannot initialize Alsa device '%s': Can't open.",
+			  alsa_id->alsa_device_name);
 		g_free(alsa_id);
 		return NULL;
 	}
 
-	MSG(1, "Device '%s' initialized succesfully.",
-	    alsa_id->alsa_device_name);
+	audio_log(OTTS_LOG_ERR, "alsa: Device '%s' initialized succesfully.",
+		  alsa_id->alsa_device_name);
 
 	return (AudioID *) alsa_id;
 }
@@ -281,10 +267,10 @@ static int alsa_close(AudioID * id)
 
 	/* Close device */
 	if ((err = _alsa_close(alsa_id)) < 0) {
-		ERR("Cannot close audio device");
+		audio_log(OTTS_LOG_CRIT, "alsa: Cannot close audio device");
 		return -1;
 	}
-	MSG(1, "ALSA closed.");
+	audio_log(OTTS_LOG_ERR, "alsa: ALSA closed.");
 
 	g_free(alsa_id->alsa_device_name);
 	g_free(alsa_id);
@@ -305,18 +291,19 @@ int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 	snd_pcm_state_t state;
 	int ret;
 
-	//      MSG("Waiting for poll");
+	//      audio_log("Waiting for poll");
 
 	/* Wait for certain events */
 	while (1) {
 		ret = poll(id->alsa_poll_fds, count, -1);
-		//      MSG("wait_for_poll: activity on %d descriptors", ret);
+		//      audio_log("wait_for_poll: activity on %d descriptors", ret);
 
 		/* Check for stop request from alsa_stop on the last file
 		   descriptors */
 		if (revents = id->alsa_poll_fds[count - 1].revents) {
 			if (revents & POLLIN) {
-				MSG(4, "wait_for_poll: stop requested");
+				audio_log(OTTS_LOG_INFO,
+					  "alsa: wait_for_poll: stop requested");
 				return 1;
 			}
 		}
@@ -328,22 +315,23 @@ int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 
 		/* Ensure we are in the right state */
 		state = snd_pcm_state(id->alsa_pcm);
-		//      MSG("State after poll returned is %s", snd_pcm_state_name(state));
+		//      audio_log("State after poll returned is %s", snd_pcm_state_name(state));
 
 		if (SND_PCM_STATE_XRUN == state) {
 			if (!draining) {
-				MSG(1, "WARNING: Buffer underrun detected!");
+				audio_log(OTTS_LOG_ERR,
+					  "alsa: WARNING: Buffer underrun detected!");
 				if (xrun(id) != 0)
 					return -1;
 				return 0;
 			} else {
-				MSG(4, "Poll: Playback terminated");
+				audio_log(OTTS_LOG_INFO, "alsa: Poll: Playback terminated");
 				return 0;
 			}
 		}
 
 		if (SND_PCM_STATE_SUSPENDED == state) {
-			MSG(1, "WARNING: Suspend detected!");
+			audio_log(OTTS_LOG_ERR, "alsa: WARNING: Suspend detected!");
 			if (suspend(id) != 0)
 				return -1;
 			return 0;
@@ -351,13 +339,14 @@ int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 
 		/* Check for errors */
 		if (revents & POLLERR) {
-			MSG(4, "wait_for_poll: poll revents says POLLERR");
+			audio_log(OTTS_LOG_INFO,
+				  "alsa: wait_for_poll: poll revents says POLLERR");
 			return -EIO;
 		}
 
 		/* Is ALSA ready for more input? */
 		if ((revents & POLLOUT)) {
-			// MSG("Poll: Ready for more input");
+			// audio_log("Poll: Ready for more input");
 			return 0;
 		}
 	}
@@ -365,7 +354,7 @@ int wait_for_poll(alsa_id_t * id, struct pollfd *alsa_poll_fds,
 
 #define ERROR_EXIT()\
     g_free(track_volume.samples); \
-    ERR("alsa_play() abnormal exit"); \
+    audio_log(OTTS_LOG_CRIT, "alsa_play() abnormal exit"); \
     _alsa_close(alsa_id); \
     return -1;
 
@@ -409,13 +398,13 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	struct pollfd alsa_stop_pipe_pfd;
 
 	if (alsa_id == NULL) {
-		ERR("Invalid device passed to alsa_play()");
+		audio_log(OTTS_LOG_CRIT, "alsa: Invalid device passed to alsa_play()");
 		return -1;
 	}
 
 	pthread_mutex_lock(&alsa_id->alsa_pipe_mutex);
 
-	MSG(2, "Start of playback on ALSA");
+	audio_log(OTTS_LOG_WARN, "alsa: Start of playback on ALSA");
 
 	/* Is it not an empty track? */
 	/* Passing an empty track is not an error */
@@ -435,17 +424,19 @@ static int alsa_play(AudioID * id, AudioTrack track)
 		err = suspend(alsa_id);
 		if (err != 0) {
 			/* Fatal error: can't recover from suspend. */
-			ERR("Audio playback could not be resumed after a recent suspend.");
+			audio_log(OTTS_LOG_CRIT,
+				  "alsa: Audio playback could not be resumed after a recent suspend.");
 			pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 			return -1;
 		}
 	}
 
 	/* Allocate space for hw_params (description of the sound parameters) */
-	MSG(2, "Allocating new hw_params structure");
+	audio_log(OTTS_LOG_WARN, "alsa: Allocating new hw_params structure");
 	if ((err = snd_pcm_hw_params_malloc(&alsa_id->alsa_hw_params)) < 0) {
-		ERR("Cannot allocate hardware parameter structure (%s)",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Cannot allocate hardware parameter structure (%s)",
+			  snd_strerror(err));
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 		return -1;
 	}
@@ -454,15 +445,17 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	if ((err =
 	     snd_pcm_hw_params_any(alsa_id->alsa_pcm,
 				   alsa_id->alsa_hw_params)) < 0) {
-		ERR("Cannot initialize hardware parameter structure (%s)",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Cannot initialize hardware parameter structure (%s)",
+			  snd_strerror(err));
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 		return -1;
 	}
 
 	/* Create the pipe for communication about stop requests */
 	if (pipe(alsa_id->alsa_stop_pipe)) {
-		ERR("Stop pipe creation failed (%s)", strerror(errno));
+		audio_log(OTTS_LOG_CRIT, "alsa: Stop pipe creation failed (%s)",
+			  strerror(errno));
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 		return -1;
 	}
@@ -471,7 +464,8 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	alsa_id->alsa_fd_count =
 	    snd_pcm_poll_descriptors_count(alsa_id->alsa_pcm);
 	if (alsa_id->alsa_fd_count <= 0) {
-		ERR("Invalid poll descriptors count returned from ALSA.");
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Invalid poll descriptors count returned from ALSA.");
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 		return -1;
 	}
@@ -482,8 +476,9 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	if ((err =
 	     snd_pcm_poll_descriptors(alsa_id->alsa_pcm, alsa_id->alsa_poll_fds,
 				      alsa_id->alsa_fd_count)) < 0) {
-		ERR("Unable to obtain poll descriptors for playback: %s\n",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Unable to obtain poll descriptors for playback: %s\n",
+			  snd_strerror(err));
 		g_free(alsa_id->alsa_poll_fds);
 		alsa_id->alsa_poll_fds = NULL;
 		pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
@@ -504,8 +499,8 @@ static int alsa_play(AudioID * id, AudioTrack track)
 
 	/* Report current state */
 	state = snd_pcm_state(alsa_id->alsa_pcm);
-	MSG(4, "PCM state before setting audio parameters: %s",
-	    snd_pcm_state_name(state));
+	audio_log(OTTS_LOG_INFO, "alsa: PCM state before setting audio parameters: %s",
+		  snd_pcm_state_name(state));
 
 	/* Choose the correct format */
 	if (track.bits == 16) {
@@ -522,56 +517,63 @@ static int alsa_play(AudioID * id, AudioTrack track)
 		bytes_per_sample = 1;
 		format = SND_PCM_FORMAT_S8;
 	} else {
-		ERR("Unsupported sound data format, track.bits = %d",
-		    track.bits);
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Unsupported sound data format, track.bits = %d",
+			  track.bits);
 		return -1;
 	}
 
 	/* Set access mode, bitrate, sample rate and channels */
-	MSG(4, "Setting access type to INTERLEAVED");
+	audio_log(OTTS_LOG_INFO, "alsa: Setting access type to INTERLEAVED");
 	if ((err = snd_pcm_hw_params_set_access(alsa_id->alsa_pcm,
 						alsa_id->alsa_hw_params,
 						SND_PCM_ACCESS_RW_INTERLEAVED)
 	    ) < 0) {
-		ERR("Cannot set access type (%s)", snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Cannot set access type (%s)",
+			  snd_strerror(err));
 		return -1;
 	}
 
-	MSG(4, "Setting sample format to %s", snd_pcm_format_name(format));
+	audio_log(OTTS_LOG_INFO, "alsa: Setting sample format to %s",
+		  snd_pcm_format_name(format));
 	if ((err =
 	     snd_pcm_hw_params_set_format(alsa_id->alsa_pcm,
 					  alsa_id->alsa_hw_params,
 					  format)) < 0) {
-		ERR("Cannot set sample format (%s)", snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Cannot set sample format (%s)",
+			  snd_strerror(err));
 		return -1;
 	}
 
-	MSG(4, "Setting sample rate to %i", track.sample_rate);
+	audio_log(OTTS_LOG_INFO, "alsa: Setting sample rate to %i", track.sample_rate);
 	sr = track.sample_rate;
 	if ((err =
 	     snd_pcm_hw_params_set_rate_near(alsa_id->alsa_pcm,
 					     alsa_id->alsa_hw_params, &sr,
 					     0)) < 0) {
-		ERR("Cannot set sample rate (%s)", snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Cannot set sample rate (%s)",
+			  snd_strerror(err));
 
 		return -1;
 	}
 
-	MSG(4, "Setting channel count to %i", track.num_channels);
+	audio_log(OTTS_LOG_INFO, "alsa: Setting channel count to %i", track.num_channels);
 	if ((err =
 	     snd_pcm_hw_params_set_channels(alsa_id->alsa_pcm,
 					    alsa_id->alsa_hw_params,
 					    track.num_channels)) < 0) {
-		MSG(4, "cannot set channel count (%s)", snd_strerror(err));
+		audio_log(OTTS_LOG_INFO, "alsa: cannot set channel count (%s)",
+			  snd_strerror(err));
 		return -1;
 	}
 
-	MSG(4, "Setting hardware parameters on the ALSA device");
+	audio_log(OTTS_LOG_INFO, "alsa: Setting hardware parameters on the ALSA device");
 	if ((err =
 	     snd_pcm_hw_params(alsa_id->alsa_pcm,
 			       alsa_id->alsa_hw_params)) < 0) {
-		MSG(4, "cannot set parameters (%s) state=%s", snd_strerror(err),
-		    snd_pcm_state_name(snd_pcm_state(alsa_id->alsa_pcm)));
+		audio_log(OTTS_LOG_INFO, "alsa: cannot set parameters (%s) state=%s",
+			  snd_strerror(err),
+			  snd_pcm_state_name(snd_pcm_state(alsa_id->alsa_pcm)));
 		return -1;
 	}
 
@@ -579,27 +581,29 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	if ((err =
 	     snd_pcm_sw_params_current(alsa_id->alsa_pcm,
 				       alsa_id->alsa_sw_params)) < 0) {
-		ERR("Unable to determine current swparams for playback: %s\n",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Unable to determine current swparams for playback: %s\n",
+			  snd_strerror(err));
 		return -1;
 	}
-	//    MSG("Checking buffer size");
+	//    audio_log("Checking buffer size");
 	if ((err =
 	     snd_pcm_hw_params_get_buffer_size(alsa_id->alsa_hw_params,
 					       &(alsa_id->alsa_buffer_size))) <
 	    0) {
-		ERR("Unable to get buffer size for playback: %s\n",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Unable to get buffer size for playback: %s\n",
+			  snd_strerror(err));
 		return -1;
 	}
-	MSG(4, "Buffer size on ALSA device is %d bytes",
-	    (int)alsa_id->alsa_buffer_size);
+	audio_log(OTTS_LOG_INFO, "alsa: Buffer size on ALSA device is %d bytes",
+		  (int)alsa_id->alsa_buffer_size);
 
 	/* This is probably better left for the device driver to decide */
 	/* allow the transfer when at least period_size samples can be processed */
 	/*    err = snd_pcm_sw_params_set_avail_min(id->alsa_pcm, id->alsa_sw_params, id->alsa_buffer_size/4);
 	   if (err < 0) {
-	   ERR("Unable to set avail min for playback: %s\n", snd_strerror(err));
+	   audio_log(OTTS_LOG_CRIT, "alsa: Unable to set avail min for playback: %s\n", snd_strerror(err));
 	   return err;
 	   } */
 
@@ -609,30 +613,31 @@ static int alsa_play(AudioID * id, AudioTrack track)
 
 	/* Calculate size of silence at end of buffer. */
 	samples_per_period = period_size * track.num_channels;
-	//    MSG("samples per period = %i", samples_per_period);
-	//    MSG("num_samples = %i", track.num_samples);
+	//    audio_log("samples per period = %i", samples_per_period);
+	//    audio_log("num_samples = %i", track.num_samples);
 	silent_samples =
 	    samples_per_period - (track.num_samples % samples_per_period);
-	//    MSG("silent samples = %i", silent_samples);
+	//    audio_log("silent samples = %i", silent_samples);
 
-	MSG(4, "Preparing device for playback");
+	audio_log(OTTS_LOG_INFO, "alsa: Preparing device for playback");
 	if ((err = snd_pcm_prepare(alsa_id->alsa_pcm)) < 0) {
-		ERR("Cannot prepare audio interface for playback (%s)",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT,
+			  "alsa: Cannot prepare audio interface for playback (%s)",
+			  snd_strerror(err));
 
 		return -1;
 	}
 
 	/* Calculate space needed to round up to nearest period size. */
 	volume_size = bytes_per_sample * (track.num_samples + silent_samples);
-	MSG(4, "volume size = %i", (int)volume_size);
+	audio_log(OTTS_LOG_INFO, "alsa: volume size = %i", (int)volume_size);
 
 	/* Create a copy of track with adjusted volume. */
-	MSG(4, "Making copy of track and adjusting volume");
+	audio_log(OTTS_LOG_INFO, "alsa: Making copy of track and adjusting volume");
 	track_volume = track;
 	track_volume.samples = (short *)g_malloc(volume_size);
 	real_volume = (float)(alsa_id->id.volume - OTTS_VOICE_VOLUME_MIN)
-		/ (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
+	    / (float)(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
 	for (i = 0; i <= track.num_samples - 1; i++)
 		track_volume.samples[i] = track.samples[i] * real_volume;
 
@@ -641,9 +646,9 @@ static int alsa_play(AudioID * id, AudioTrack track)
 		u_int8_t silent8;
 
 		/* Fill remaining space with silence */
-		MSG(4,
-		    "Filling with silence up to the period size, silent_samples=%d",
-		    (int)silent_samples);
+		audio_log(OTTS_LOG_INFO,
+			  "alsa: Filling with silence up to the period size, silent_samples=%d",
+			  (int)silent_samples);
 		/* TODO: This hangs.  Why?
 		   snd_pcm_format_set_silence(format,
 		   track_volume.samples + (track.num_samples * bytes_per_sample), silent_samples);
@@ -667,7 +672,7 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	/* Loop until all samples are played on the device. */
 	output_samples = track_volume.samples;
 	num_bytes = (track.num_samples + silent_samples) * bytes_per_sample;
-	//    MSG("Still %d bytes left to be played", num_bytes);
+	//    audio_log("alsa: Still %d bytes left to be played", num_bytes);
 	while (num_bytes > 0) {
 
 		/* Write as much samples as possible */
@@ -677,17 +682,17 @@ static int alsa_play(AudioID * id, AudioTrack track)
 
 		/* Report current state state */
 		state = snd_pcm_state(alsa_id->alsa_pcm);
-		//      MSG("PCM state before writei: %s",
+		//      audio_log("PCM state before writei: %s",
 		//          snd_pcm_state_name(state));
 
-		/* MSG("snd_pcm_writei() called") */
+		/* audio_log("snd_pcm_writei() called") */
 		ret =
 		    snd_pcm_writei(alsa_id->alsa_pcm, output_samples,
 				   framecount);
-		//        MSG("Sent %d of %d remaining bytes", ret*bytes_per_sample, num_bytes);
+		//        audio_log("Sent %d of %d remaining bytes", ret*bytes_per_sample, num_bytes);
 
 		if (ret == -EAGAIN) {
-			MSG(4, "Warning: Forced wait!");
+			audio_log(OTTS_LOG_INFO, "alsa: Warning: Forced wait!");
 			snd_pcm_wait(alsa_id->alsa_pcm, 100);
 		} else if (ret == -EPIPE) {
 			if (xrun(alsa_id) != 0)
@@ -696,12 +701,13 @@ static int alsa_play(AudioID * id, AudioTrack track)
 			if (suspend(alsa_id) != 0)
 				ERROR_EXIT();
 		} else if (ret == -EBUSY) {
-			MSG(4, "WARNING: sleeping while PCM BUSY");
+			audio_log(OTTS_LOG_INFO, "alsa: WARNING: sleeping while PCM BUSY");
 			usleep(100);
 			continue;
 		} else if (ret < 0) {
-			ERR("Write to audio interface failed (%s)",
-			    snd_strerror(ret));
+			audio_log(OTTS_LOG_CRIT,
+				  "alsa: Write to audio interface failed (%s)",
+				  snd_strerror(ret));
 			ERROR_EXIT();
 		}
 
@@ -715,24 +721,24 @@ static int alsa_play(AudioID * id, AudioTrack track)
 
 		/* Report current state */
 		state = snd_pcm_state(alsa_id->alsa_pcm);
-		//      MSG("PCM state before polling: %s",
+		//      audio_log("PCM state before polling: %s",
 		//          snd_pcm_state_name(state));
 
 		err =
 		    wait_for_poll(alsa_id, alsa_id->alsa_poll_fds,
 				  alsa_id->alsa_fd_count, 0);
 		if (err < 0) {
-			ERR("Wait for poll() failed\n");
+			audio_log(OTTS_LOG_CRIT, "alsa: Wait for poll() failed\n");
 			ERROR_EXIT();
 		} else if (err == 1) {
-			MSG(4, "Playback stopped");
+			audio_log(OTTS_LOG_INFO, "alsa: Playback stopped");
 
 			/* Drop the playback on the sound device (probably
 			   still in progress up till now) */
 			err = snd_pcm_drop(alsa_id->alsa_pcm);
 			if (err < 0) {
-				ERR("snd_pcm_drop() failed: %s",
-				    snd_strerror(err));
+				audio_log(OTTS_LOG_CRIT, "alsa: snd_pcm_drop() failed: %s",
+					  snd_strerror(err));
 				return -1;
 			}
 
@@ -741,12 +747,12 @@ static int alsa_play(AudioID * id, AudioTrack track)
 
 		if (num_bytes <= 0)
 			break;
-//      MSG("ALSA ready for more samples");
+//      audio_log("ALSA ready for more samples");
 
 		/* Stop requests can be issued again */
 	}
 
-	MSG(4, "Draining...");
+	audio_log(OTTS_LOG_INFO, "alsa: Draining...");
 
 	/* We want to next "device ready" notification only after the buffer is
 	   already empty */
@@ -755,15 +761,15 @@ static int alsa_play(AudioID * id, AudioTrack track)
 					    alsa_id->alsa_sw_params,
 					    alsa_id->alsa_buffer_size);
 	if (err < 0) {
-		ERR("Unable to set avail min for playback: %s\n",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Unable to set avail min for playback: %s\n",
+			  snd_strerror(err));
 		return err;
 	}
 	/* write the parameters to the playback device */
 	err = snd_pcm_sw_params(alsa_id->alsa_pcm, alsa_id->alsa_sw_params);
 	if (err < 0) {
-		ERR("Unable to set sw params for playback: %s\n",
-		    snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: Unable to set sw params for playback: %s\n",
+			  snd_strerror(err));
 		return -1;
 	}
 
@@ -771,20 +777,21 @@ static int alsa_play(AudioID * id, AudioTrack track)
 	    wait_for_poll(alsa_id, alsa_id->alsa_poll_fds,
 			  alsa_id->alsa_fd_count, 1);
 	if (err < 0) {
-		ERR("Wait for poll() failed\n");
+		audio_log(OTTS_LOG_CRIT, "alsa: Wait for poll() failed\n");
 		return -1;
 	} else if (err == 1) {
-		MSG(4, "Playback stopped while draining");
+		audio_log(OTTS_LOG_INFO, "alsa: Playback stopped while draining");
 
 		/* Drop the playback on the sound device (probably
 		   still in progress up till now) */
 		err = snd_pcm_drop(alsa_id->alsa_pcm);
 		if (err < 0) {
-			ERR("snd_pcm_drop() failed: %s", snd_strerror(err));
+			audio_log(OTTS_LOG_CRIT, "alsa: snd_pcm_drop() failed: %s",
+				  snd_strerror(err));
 			return -1;
 		}
 	}
-	MSG(4, "Draining terminated");
+	audio_log(OTTS_LOG_INFO, "lsa: Draining terminated");
 
 terminate:
 	/* Terminating (successfully or after a stop) */
@@ -793,11 +800,12 @@ terminate:
 
 	err = snd_pcm_drop(alsa_id->alsa_pcm);
 	if (err < 0) {
-		ERR("snd_pcm_drop() failed: %s", snd_strerror(err));
+		audio_log(OTTS_LOG_CRIT, "alsa: snd_pcm_drop() failed: %s",
+			  snd_strerror(err));
 		return -1;
 	}
 
-	MSG(2, "Freeing HW parameters");
+	audio_log(OTTS_LOG_WARN, "alsa: Freeing HW parameters");
 	snd_pcm_hw_params_free(alsa_id->alsa_hw_params);
 
 	pthread_mutex_lock(&alsa_id->alsa_pipe_mutex);
@@ -809,7 +817,7 @@ terminate:
 	alsa_id->alsa_poll_fds = NULL;
 	pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
 
-	MSG(1, "End of playback on ALSA");
+	audio_log(OTTS_LOG_ERR, "alsa: End of playback on ALSA");
 
 	return 0;
 }
@@ -825,7 +833,7 @@ static int alsa_stop(AudioID * id)
 	int ret;
 	alsa_id_t *alsa_id = (alsa_id_t *) id;
 
-	MSG(1, "STOP!");
+	audio_log(OTTS_LOG_ERR, "alsa: STOP!");
 
 	if (alsa_id == NULL)
 		return 0;
@@ -837,8 +845,9 @@ static int alsa_stop(AudioID * id)
 
 		ret = write(alsa_id->alsa_stop_pipe[1], &buf, 1);
 		if (ret <= 0) {
-			ERR("Can't write stop request to pipe, err %d: %s",
-			    errno, strerror(errno));
+			audio_log(OTTS_LOG_CRIT,
+				  "alsa: Can't write stop request to pipe, err %d: %s",
+				  errno, strerror(errno));
 		}
 	}
 	pthread_mutex_unlock(&alsa_id->alsa_pipe_mutex);
@@ -857,13 +866,6 @@ static int alsa_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-static void alsa_set_loglevel(int level)
-{
-	if (level) {
-		alsa_log_level = level;
-	}
-}
-
 static char const *alsa_get_playcmd(void)
 {
 	return alsa_play_cmd;
@@ -877,7 +879,6 @@ static audio_plugin_t alsa_functions = {
 	alsa_stop,
 	alsa_close,
 	alsa_set_volume,
-	alsa_set_loglevel,
 	alsa_get_playcmd
 };
 

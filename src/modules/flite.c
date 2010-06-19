@@ -28,6 +28,7 @@
 
 #include "opentts/opentts_types.h"
 #include <flite/flite.h>
+#include<logging.h>
 #include "audio.h"
 #include "module_utils.h"
 
@@ -85,7 +86,7 @@ int module_load(void)
 }
 
 #define ABORT(msg) g_string_append(info, msg); \
-        dbg("FATAL ERROR:", info->str); \
+        log_msg(OTTS_LOG_CRIT, "FATAL ERROR:", info->str); \
 	*status_info = info->str; \
 	g_string_free(info, 0); \
 	return -1;
@@ -95,7 +96,7 @@ int module_init(char **status_info)
 	int ret;
 	GString *info;
 
-	dbg("Module init");
+	log_msg(OTTS_LOG_INFO, "Module init");
 	*status_info = NULL;
 	info = g_string_new("");
 
@@ -104,26 +105,29 @@ int module_init(char **status_info)
 	flite_voice = register_cmu_us_kal();
 
 	if (flite_voice == NULL) {
-		dbg("Couldn't register the basic kal voice.\n");
-		*status_info = g_strdup("Can't register the basic kal voice. "
-					"Currently only kal is supported. Seems your FLite "
-					"installation is incomplete.");
+		log_msg(OTTS_LOG_ERR,
+			"Couldn't register the basic kal voice.\n");
+		*status_info =
+		    g_strdup("Can't register the basic kal voice. "
+			     "Currently only kal is supported. Seems your FLite "
+			     "installation is incomplete.");
 		return -1;
 	}
 
-	dbg("FliteMaxChunkLength = %d\n", FliteMaxChunkLength);
-	dbg("FliteDelimiters = %s\n", FliteDelimiters);
+	log_msg(OTTS_LOG_DEBUG, "FliteMaxChunkLength = %d\n",
+		FliteMaxChunkLength);
+	log_msg(OTTS_LOG_DEBUG, "FliteDelimiters = %s\n", FliteDelimiters);
 
 	flite_message = g_malloc(sizeof(char *));
 	*flite_message = NULL;
 
 	flite_semaphore = module_semaphore_init();
 
-	dbg("Flite: creating new thread for flite_speak\n");
+	log_msg(OTTS_LOG_INFO, "Flite: creating new thread for flite_speak\n");
 	flite_speaking = 0;
 	ret = pthread_create(&flite_speak_thread, NULL, _flite_speak, NULL);
 	if (ret != 0) {
-		dbg("Flite: thread failed\n");
+		log_msg(OTTS_LOG_ERR, "Flite: thread failed\n");
 		*status_info =
 		    g_strdup("The module couldn't initialize threads "
 			     "This could be either an internal problem or an "
@@ -143,7 +147,7 @@ int module_init(char **status_info)
 
 int module_audio_init(char **status_info)
 {
-	dbg("Opening audio");
+	log_msg(OTTS_LOG_WARN, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
@@ -154,17 +158,17 @@ SPDVoice **module_list_voices(void)
 
 int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
-	dbg("write()\n");
+	log_msg(OTTS_LOG_DEBUG, "write()\n");
 
 	if (flite_speaking) {
-		dbg("Speaking when requested to write");
+		log_msg(OTTS_LOG_WARN, "Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	dbg("Requested data: |%s|\n", data);
+	log_msg(OTTS_LOG_INFO, "Requested data: |%s|\n", data);
 
 	if (*flite_message != NULL) {
 		g_free(*flite_message);
@@ -183,22 +187,23 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	flite_speaking = 1;
 	sem_post(flite_semaphore);
 
-	dbg("Flite: leaving write() normally\n\r");
+	log_msg(OTTS_LOG_NOTICE, "Flite: leaving write() normally\n\r");
 	return bytes;
 }
 
 int module_stop(void)
 {
 	int ret;
-	dbg("flite: stop()\n");
+	log_msg(OTTS_LOG_NOTICE, "flite: stop()\n");
 
 	flite_stop = 1;
 	if (module_audio_id) {
-		dbg("Stopping audio");
+		log_msg(OTTS_LOG_NOTICE, "Stopping audio");
 		ret = opentts_audio_stop(module_audio_id);
 		if (ret != 0)
-			dbg("WARNING: Non 0 value from spd_audio_stop: %d",
-			    ret);
+			log_msg(OTTS_LOG_WARN,
+				"WARNING: Non 0 value from spd_audio_stop: %d",
+				ret);
 	}
 
 	return 0;
@@ -206,9 +211,10 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	dbg("pause requested\n");
+	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (flite_speaking) {
-		dbg("Flite doesn't support pause, stopping\n");
+		log_msg(OTTS_LOG_DEBUG,
+			"Flite doesn't support pause, stopping\n");
 
 		module_stop();
 
@@ -221,20 +227,20 @@ size_t module_pause(void)
 void module_close(int status)
 {
 
-	dbg("flite: close()\n");
+	log_msg(OTTS_LOG_DEBUG, "flite: close()\n");
 
-	dbg("Stopping speech");
+	log_msg(OTTS_LOG_INFO, "Stopping speech");
 	if (flite_speaking) {
 		module_stop();
 	}
 
-	dbg("Terminating threads");
+	log_msg(OTTS_LOG_INFO, "Terminating threads");
 	if (module_terminate_thread(flite_speak_thread) != 0)
 		exit(1);
 
 	g_free(flite_voice);
 
-	dbg("Closing audio output");
+	log_msg(OTTS_LOG_INFO, "Closing audio output");
 	opentts_audio_close(module_audio_id);
 
 	exit(status);
@@ -270,13 +276,13 @@ void *_flite_speak(void *nothing)
 	int bytes;
 	int ret;
 
-	dbg("flite: speaking thread starting.......\n");
+	log_msg(OTTS_LOG_DEBUG, "flite: speaking thread starting.......\n");
 
 	set_speaking_thread_parameters();
 
 	while (1) {
 		sem_wait(flite_semaphore);
-		dbg("Semaphore on\n");
+		log_msg(OTTS_LOG_INFO, "Semaphore on\n");
 
 		flite_stop = 0;
 		flite_speaking = 1;
@@ -290,7 +296,8 @@ void *_flite_speak(void *nothing)
 		module_report_event_begin();
 		while (1) {
 			if (flite_stop) {
-				dbg("Stop in child, terminating");
+				log_msg(OTTS_LOG_INFO,
+					"Stop in child, terminating");
 				flite_speaking = 0;
 				module_report_event_stop();
 				break;
@@ -301,32 +308,37 @@ void *_flite_speak(void *nothing)
 						    FliteDelimiters);
 
 			if (bytes < 0) {
-				dbg("End of message");
+				log_msg(OTTS_LOG_DEBUG, "End of message");
 				flite_speaking = 0;
 				module_report_event_end();
 				break;
 			}
 
 			buf[bytes] = 0;
-			dbg("Returned %d bytes from get_part\n", bytes);
-			dbg("Text to synthesize is '%s'\n", buf);
+			log_msg(OTTS_LOG_DEBUG,
+				"Returned %d bytes from get_part\n", bytes);
+			log_msg(OTTS_LOG_NOTICE, "Text to synthesize is '%s'\n",
+				buf);
 
 			if (flite_pause_requested && (current_index_mark != -1)) {
-				dbg("Pause requested in parent, position %d\n",
-				    current_index_mark);
+				log_msg(OTTS_LOG_INFO,
+					"Pause requested in parent, position %d\n",
+					current_index_mark);
 				flite_pause_requested = 0;
 				flite_position = current_index_mark;
 				break;
 			}
 
 			if (bytes > 0) {
-				dbg("Speaking in child...");
+				log_msg(OTTS_LOG_DEBUG, "Speaking in child...");
 
-				dbg("Trying to synthesize text");
+				log_msg(OTTS_LOG_NOTICE,
+					"Trying to synthesize text");
 				wav = flite_text_to_wave(buf, flite_voice);
 
 				if (wav == NULL) {
-					dbg("Stop in child, terminating");
+					log_msg(OTTS_LOG_NOTICE,
+						"Stop in child, terminating");
 					flite_speaking = 0;
 					module_report_event_stop();
 					break;
@@ -339,16 +351,19 @@ void *_flite_speak(void *nothing)
 				track.samples = wav->samples;
 				flite_strip_silence(&track);
 
-				dbg("Got %d samples", track.num_samples);
+				log_msg(OTTS_LOG_INFO, "Got %d samples",
+					track.num_samples);
 				if (track.samples != NULL) {
 					if (flite_stop) {
-						dbg("Stop in child, terminating");
+						log_msg(OTTS_LOG_NOTICE,
+							"Stop in child, terminating");
 						flite_speaking = 0;
 						module_report_event_stop();
 						delete_wave(wav);
 						break;
 					}
-					dbg("Playing part of the message");
+					log_msg(OTTS_LOG_INFO,
+						"Playing part of the message");
 					switch (module_audio_id->format) {
 					case SPD_AUDIO_LE:
 						ret =
@@ -364,9 +379,11 @@ void *_flite_speak(void *nothing)
 						break;
 					}
 					if (ret < 0)
-						dbg("ERROR: spd_audio failed to play the track");
+						log_msg(OTTS_LOG_WARN,
+							"ERROR: spd_audio failed to play the track");
 					if (flite_stop) {
-						dbg("Stop in child, terminating (s)");
+						log_msg(OTTS_LOG_NOTICE,
+							"Stop in child, terminating (s)");
 						flite_speaking = 0;
 						module_report_event_stop();
 						delete_wave(wav);
@@ -375,7 +392,8 @@ void *_flite_speak(void *nothing)
 				}
 				delete_wave(wav);
 			} else if (bytes == -1) {
-				dbg("End of data in speaking thread");
+				log_msg(OTTS_LOG_INFO,
+					"End of data in speaking thread");
 				flite_speaking = 0;
 				module_report_event_end();
 				break;
@@ -386,7 +404,8 @@ void *_flite_speak(void *nothing)
 			}
 
 			if (flite_stop) {
-				dbg("Stop in child, terminating");
+				log_msg(OTTS_LOG_NOTICE,
+					"Stop in child, terminating");
 				flite_speaking = 0;
 				module_report_event_stop();
 				break;
@@ -398,32 +417,37 @@ void *_flite_speak(void *nothing)
 
 	flite_speaking = 0;
 
-	dbg("flite: speaking thread ended.......\n");
+	log_msg(OTTS_LOG_NOTICE, "flite: speaking thread ended.......\n");
 
 	pthread_exit(NULL);
 }
 
 static void flite_set_rate(signed int rate)
 {
-	const float stretch_default = 1., stretch_min = 3., stretch_max = (1 - 100./175.);
+	const float stretch_default = 1., stretch_min = 3., stretch_max =
+	    (1 - 100. / 175.);
 	float stretch;
 
 	assert(rate >= OTTS_VOICE_RATE_MIN && rate <= OTTS_VOICE_RATE_MAX);
 	if (rate < OTTS_VOICE_RATE_DEFAULT)
 		stretch = stretch_min + ((float)(rate - OTTS_VOICE_RATE_MIN))
-		* (stretch_default - stretch_min)
-		/ ((float)(OTTS_VOICE_RATE_DEFAULT - OTTS_VOICE_RATE_MIN));
+		    * (stretch_default - stretch_min)
+		    / ((float)(OTTS_VOICE_RATE_DEFAULT - OTTS_VOICE_RATE_MIN));
 	else
-		stretch = stretch_default + (((float)(rate - OTTS_VOICE_RATE_DEFAULT))
-		* (stretch_max - stretch_default)
-		/ ((float)(OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_DEFAULT)));
+		stretch =
+		    stretch_default + (((float)(rate - OTTS_VOICE_RATE_DEFAULT))
+				       * (stretch_max - stretch_default)
+				       / ((float)
+					  (OTTS_VOICE_RATE_MAX -
+					   OTTS_VOICE_RATE_DEFAULT)));
 
 	feat_set_float(flite_voice->features, "duration_stretch", stretch);
 }
 
 static void flite_set_volume(signed int volume)
 {
-	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
+	assert(volume >= OTTS_VOICE_VOLUME_MIN
+	       && volume <= OTTS_VOICE_VOLUME_MAX);
 	flite_volume = volume;
 }
 

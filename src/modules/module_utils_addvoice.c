@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <dotconf.h>
 
+#include<logging.h>
 #include "module_utils.h"
 
 GHashTable *module_voice_table = NULL;
@@ -56,17 +57,18 @@ DOTCONF_CB(AddVoice_cb)
 	SPDVoiceDef *value;
 
 	if (language == NULL) {
-		dbg("Missing language.\n");
+		log_msg(OTTS_LOG_WARN, "Missing language.\n");
 		return NULL;
 	}
 
 	if (cmd->data.list[1] == NULL) {
-		dbg("Missing symbolic name.\n");
+		log_msg(OTTS_LOG_WARN, "Missing symbolic name.\n");
 		return NULL;
 	}
 
 	if (voicename == NULL) {
-		dbg("Missing voice name for %s\n", cmd->data.list[0]);
+		log_msg(OTTS_LOG_WARN, "Missing voice name for %s\n",
+			cmd->data.list[0]);
 		return NULL;
 	}
 
@@ -112,7 +114,8 @@ DOTCONF_CB(AddVoice_cb)
 	else if (!strcmp(symbolic, "CHILD_FEMALE"))
 		voices->child_female = g_strdup(voicename);
 	else {
-		dbg("Unrecognized voice name in configuration\n");
+		log_msg(OTTS_LOG_WARN,
+			"Unrecognized voice name in configuration\n");
 		return NULL;
 	}
 
@@ -134,14 +137,16 @@ char *module_getvoice(char *language, SPDVoiceType voice)
 	char *ret;
 
 	if (module_voice_table == NULL) {
-		dbg("Can't get voice because voicetable is NULL\n");
+		log_msg(OTTS_LOG_WARN,
+			"Can't get voice because voicetable is NULL\n");
 		return NULL;
 	}
 
 	voices = g_hash_table_lookup(module_voice_table, language);
 	if (voices == NULL) {
-		dbg("There are no voices in the table for language=%s\n",
-		    language);
+		log_msg(OTTS_LOG_WARN,
+			"There are no voices in the table for language=%s\n",
+			language);
 		return NULL;
 	}
 

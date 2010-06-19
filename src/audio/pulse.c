@@ -44,6 +44,7 @@
 
 #define AUDIO_PLUGIN_ENTRY otts_pulse_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
+#include<logging.h>
 
 typedef struct {
 	AudioID id;
@@ -56,9 +57,6 @@ typedef struct {
 	int current_channels;
 } pulse_id_t;
 
-/* Switch this on to debug, see output log location in MSG() */
-/*#define DEBUG_PULSE*/
-
 /* send a packet of XXX bytes to the sound device */
 #define PULSE_SEND_BYTES 256
 
@@ -66,34 +64,18 @@ typedef struct {
 /* Changed to define on config file. Default is the same. */
 #define DEFAULT_PA_MIN_AUDIO_LENgTH 100
 
-static int pulse_log_level;
+static logging_func audio_log;
+
 static char const *pulse_play_cmd = "paplay";
 
 static FILE *pulseDebugFile = NULL;
 
-/* Write to /tmp/opentts-pulse.log */
-#ifdef DEBUG_PULSE
-static void MSG(char *message, ...)
-{
-	va_list ap;
-
-	if (pulseDebugFile == NULL) {
-		pulseDebugFile = fopen("/tmp/opentts-pulse.log", "w");
-	}
-	va_start(ap, message);
-	vfprintf(pulseDebugFile, message, ap);
-	va_end(ap);
-	fflush(pulseDebugFile);
-}
-#else
-static void MSG(char *message, ...)
-{
-}
-#endif
-
-static AudioID *pulse_open(void **pars)
+static AudioID *pulse_open(void **pars, logging_func log)
 {
 	pulse_id_t *pulse_id;
+
+	if (audio_log == NULL)
+		audio_log = log;
 
 	pulse_id = (pulse_id_t *) g_malloc(sizeof(pulse_id_t));
 
@@ -133,15 +115,16 @@ static int pulse_play(AudioID * id, AudioTrack track)
 	if (track.samples == NULL || track.num_samples <= 0) {
 		return 0;
 	}
-	MSG("Starting playback\n");
+	audio_log(OTTS_LOG_INFO, "pulse: Starting playback\n");
 	/* Choose the correct format */
 	if (track.bits == 16) {
 		bytes_per_sample = 2;
 	} else if (track.bits == 8) {
 		bytes_per_sample = 1;
 	} else {
-		MSG("ERROR: Unsupported sound data format, track.bits = %d\n",
-		    track.bits);
+		audio_log(OTTS_LOG_WARN,
+			  "pulse: ERROR: Unsupported sound data format, track.bits = %d\n",
+			  track.bits);
 		return -1;
 	}
 	output_samples = track.samples;
@@ -165,7 +148,8 @@ static int pulse_play(AudioID * id, AudioTrack track)
 				ss.format = PA_SAMPLE_S16BE;
 				break;
 			default:
-				ERR("invalid format %d", id->format);
+				audio_log(OTTS_LOG_WARN, "pulse:invalid format %d",
+					  id->format);
 				return -1;
 			}
 		} else {
@@ -182,7 +166,10 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		if (pulse_id->pa_simple != NULL) {
 			/* Close the old connection. */
 			pa_simple_free(pulse_id->pa_simple);
-			MSG("Reopenning connection due to change in track parameters sample_rate:%d bps:%d channels:%d\n", track.sample_rate, track.bits, track.num_channels);
+			audio_log(OTTS_LOG_INFO,
+				  "pulse: Reopenning connection due to change in track parameters sample_rate:%d bps:%d channels:%d\n",
+				  track.sample_rate, track.bits,
+				  track.num_channels);
 		}
 
 		if (!
@@ -200,8 +187,8 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		pulse_id->current_bps = track.bits;
 		pulse_id->current_channels = track.num_channels;
 	}
-	MSG("bytes to play: %d, (%f secs)\n", num_bytes,
-	    (((float)(num_bytes) / 2) / (float)track.sample_rate));
+	audio_log(OTTS_LOG_DEBUG, "pulse: bytes to play: %d, (%f secs)\n", num_bytes,
+		  (((float)(num_bytes) / 2) / (float)track.sample_rate));
 	pulse_id->pa_stop_playback = 0;
 	outcnt = 0;
 	i = 0;
@@ -217,10 +204,12 @@ static int pulse_play(AudioID * id, AudioTrack track)
 			pa_simple_drain(pulse_id->pa_simple, NULL);
 			pa_simple_free(pulse_id->pa_simple);
 			pulse_id->pa_simple = NULL;
-			MSG("ERROR: Audio: pulse_play(): %s - closing device - re-open it in next run\n", pa_strerror(error));
+			audio_log(OTTS_LOG_NOTICE,
+				  "pulse: ERROR: Audio: pulse_play(): %s - closing device - re-open it in next run\n",
+				  pa_strerror(error));
 			return -1;
 		} else {
-			MSG("Pulse: wrote %u bytes\n", i);
+			audio_log(OTTS_LOG_INFO, "pulse: wrote %u bytes\n", i);
 		}
 		outcnt += i;
 	}
@@ -257,13 +246,6 @@ static int pulse_set_volume(AudioID * id, int volume)
 	return 0;
 }
 
-static void pulse_set_loglevel(int level)
-{
-	if (level) {
-		pulse_log_level = level;
-	}
-}
-
 static char const *pulse_get_playcmd(void)
 {
 	return pulse_play_cmd;
@@ -277,7 +259,6 @@ static audio_plugin_t pulse_functions = {
 	pulse_stop,
 	pulse_close,
 	pulse_set_volume,
-	pulse_set_loglevel,
 	pulse_get_playcmd
 };
 

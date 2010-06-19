@@ -77,8 +77,8 @@ union semun {
 
 /* Mode of openttsd execution */
 typedef enum {
-	DAEMON,	/* Run as daemon (background, ...) */
-	SESSION		/*  */
+	DAEMON,			/* Run as daemon (background, ...) */
+	SESSION			/*  */
 } openttsd_mode;
 
 openttsd_mode mode;
@@ -117,11 +117,13 @@ struct {
 	char *pid_file;
 	char *conf_file;
 	char *conf_dir;
-char *opentts_dir;
+	char *opentts_dir;
 	char *log_dir;
 	int debug;
 	char *debug_destination;
 	char *debug_logfile;
+	char *custom_log_kind;
+	char *custom_log_filename;
 	int max_history_messages;	/* Maximum of messages in history before they expire */
 } options;
 
@@ -194,18 +196,12 @@ sock_t *openttsd_sockets;
 extern int server_socket;
 
 /* Debugging */
-void MSG(int level, char *format, ...);
 void MSG2(int level, char *kind, char *format, ...);
 
 #define OPENTTSD_DEBUG 0
 
-#define FATAL(msg) { fatal_error(); MSG(0,"Fatal error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
-#define DIE(msg) { MSG(0,"Error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
-
-FILE *logfile;
-FILE *custom_logfile;
-char *custom_log_kind;
-FILE *debug_logfile;
+#define FATAL(msg) { fatal_error(); log_msg(OTTS_LOG_CRIT,"Fatal error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
+#define DIE(msg) { log_msg(OTTS_LOG_CRIT,"Error [%s:%d]:"msg, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 
 /* For debugging purposes, does nothing */
 void fatal_error(void);
@@ -237,9 +233,7 @@ void modules_nodebug(void);
 int create_pid_file(void);
 void destroy_pid_file(void);
 
-void load_configuration(void);
-
-void logging_init(void);
+void configure(void);
 
 void check_locked(pthread_mutex_t * lock);
 

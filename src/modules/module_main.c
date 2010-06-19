@@ -33,7 +33,7 @@
 #include <dotconf.h>
 #include <ltdl.h>
 
-#include <timestamp.h>
+#include <logging.h>
 #include <getline.h>
 #include "module_utils.h"
 
@@ -44,9 +44,7 @@ int current_index_mark;
 OTTS_MsgSettings msg_settings;
 OTTS_MsgSettings msg_settings_old;
 
-int Debug;
-FILE *CustomDebugFile;
-
+int LogLevel;
 pthread_mutex_t module_stdout_mutex;
 
 configoption_t *module_dc_options;
@@ -94,7 +92,7 @@ int dispatch_cmd(char *cmd_line)
 
 	if (msg != NULL) {
 		if (0 > printf("%s\n", msg)) {
-			dbg("Broken pipe, exiting...\n");
+			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting...\n");
 			module_close(2);
 		}
 		fflush(stdout);
@@ -118,10 +116,11 @@ int main(int argc, char *argv[])
 	char *status_info;
 
 	g_thread_init(NULL);
+	init_logging();
+	open_log("stderr", 3);
 
 	/* Initialize ltdl's list of preloaded audio backends. */
 	LTDL_SET_PRELOADED_SYMBOLS();
-	init_timestamps();		/* For correct timestamp generation. */
 	module_num_dc_options = 0;
 	module_audio_id = 0;
 
@@ -138,27 +137,32 @@ int main(int argc, char *argv[])
 	if (configfilename != NULL) {
 		/* Add the LAST option */
 		module_dc_options = module_add_config_option(module_dc_options,
-						      &module_num_dc_options,
-						      "", 0, NULL, NULL, 0);
+							     &module_num_dc_options,
+							     "", 0, NULL, NULL,
+							     0);
 
 		configfile =
 		    dotconf_create(configfilename, module_dc_options, 0,
 				   CASE_INSENSITIVE);
 		if (configfile) {
 			if (dotconf_command_loop(configfile) == 0) {
-				dbg("Error reading config file\n");
+				log_msg(OTTS_LOG_CRIT,
+					"Error reading config file\n");
 				module_close(1);
 			}
 			dotconf_cleanup(configfile);
-			dbg("Configuration (pre) has been read from \"%s\"\n",
-			    configfilename);
+			log_msg(OTTS_LOG_NOTICE,
+				"Configuration (pre) has been read from \"%s\"\n",
+				configfilename);
 
 			g_free(configfilename);
 		} else {
-			dbg("Can't read specified config file!\n");
+			log_msg(OTTS_LOG_ERR,
+				"Can't read specified config file!\n");
 		}
 	} else {
-		dbg("No config file specified, using defaults...\n");
+		log_msg(OTTS_LOG_WARN,
+			"No config file specified, using defaults...\n");
 	}
 
 	ret_init = module_init(&status_info);
@@ -167,7 +171,8 @@ int main(int argc, char *argv[])
 	n = 0;
 	ret = otts_getline(&cmd_buf, &n, stdin);
 	if (ret == -1) {
-		dbg("Broken pipe when reading INIT, exiting... \n");
+		log_msg(OTTS_LOG_CRIT,
+			"Broken pipe when reading INIT, exiting... \n");
 		module_close(2);
 	}
 
@@ -183,12 +188,13 @@ int main(int argc, char *argv[])
 		g_free(status_info);
 
 		if (ret < 0) {
-			dbg("Broken pipe, exiting...\n");
+			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting...\n");
 			module_close(2);
 		}
 		fflush(stdout);
 	} else {
-		dbg("ERROR: Wrong communication from module client: didn't call INIT\n");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Wrong communication from module client: didn't call INIT\n");
 		module_close(3);
 	}
 	xfree(cmd_buf);
@@ -198,11 +204,11 @@ int main(int argc, char *argv[])
 		n = 0;
 		ret = otts_getline(&cmd_buf, &n, stdin);
 		if (ret == -1) {
-			dbg("Broken pipe, exiting... \n");
+			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting... \n");
 			module_close(2);
 		}
 
-		dbg("CMD: <%s>", cmd_buf);
+		log_msg(OTTS_LOG_INFO, "CMD: <%s>", cmd_buf);
 
 		dispatch_cmd(cmd_buf);
 

@@ -31,6 +31,7 @@
 #include "opentts/opentts_types.h"
 #include "configuration.h"
 #include <fdsetconv.h>
+#include<logging.h>
 
 static TFDSetClientSpecific *cl_spec_section;
 
@@ -38,9 +39,10 @@ static TFDSetClientSpecific *cl_spec_section;
 static void cfg_fatal(const char *errmsg)
 {
 	fatal_error();
-	MSG(0, "Aborting: %s", errmsg);
+	log_msg(OTTS_LOG_CRIT, "Aborting: %s", errmsg);
 	exit(EXIT_FAILURE);
 }
+
 int num_options;
 configoption_t *configoptions;
 
@@ -193,12 +195,8 @@ OPTION_CB_INT_M(LocalhostAccessOnly, localhost_access_only, val >= 0,
 			 "Invalid access controll mode!")
 OPTION_CB_INT_M(Port, port, val >= 0,
 			"Invalid port number!")
-GLOBAL_SET_LOGLEVEL(LogLevel,
-								    log_level,
-								    (val >= 0)
-								    && (val <=
-									5),
-								    "Invalid log (verbosity) level!")
+GLOBAL_SET_LOGLEVEL(LogLevel, log_level, (val >= 0)
+			&& (val <= 5), "Invalid log (verbosity) level!")
 OPTION_CB_INT(MaxHistoryMessages, max_history_messages, val >= 0,
 		      "Invalid parameter!")
 
@@ -311,11 +309,11 @@ DOTCONF_CB(cb_LogFile)
 {
 	/* This option is DEPRECATED. If it is specified, get the directory. */
 	assert(cmd->data.str != NULL);
+	g_free(options.log_dir);
 	options.log_dir = g_path_get_dirname(cmd->data.str);
-	logging_init();
 
-	MSG(1,
-	    "WARNING: The LogFile option is deprecated. Directory accepted but filename ignored");
+	log_msg(OTTS_LOG_ERR,
+		"WARNING: The LogFile option is deprecated. Directory accepted but filename ignored");
 	return NULL;
 }
 
@@ -325,41 +323,25 @@ DOTCONF_CB(cb_LogDir)
 
 	if (strcmp(cmd->data.str, "default")) {
 		// cmd->data.str different from "default"
+		g_free(options.log_dir);
 		options.log_dir = g_strdup(cmd->data.str);
 	}
-	logging_init();
+
 	return NULL;
 }
 
 DOTCONF_CB(cb_CustomLogFile)
 {
-	char *kind;
-	char *file;
-
 	if (cmd->data.list[0] == NULL)
 		FATAL("No log kind specified in CustomLogFile");
 	if (cmd->data.list[1] == NULL)
 		FATAL("No log file specified in CustomLogFile");
-	kind = g_strdup(cmd->data.list[0]);
-	file = g_strdup(cmd->data.list[1]);
 
-	custom_log_kind = kind;
-	if (!strncmp(file, "stdout", 6)) {
-		custom_logfile = stdout;
-		return NULL;
-	}
-	if (!strncmp(file, "stderr", 6)) {
-		custom_logfile = stderr;
-		return NULL;
-	}
-	custom_logfile = fopen(file, "a");
-	if (custom_logfile == NULL) {
-		fprintf(stderr,
-			"Error: can't open custom log file, using stdout\n");
-		custom_logfile = stdout;
-	}
+	g_free(options.custom_log_kind);
+	g_free(options.custom_log_filename);
+	options.custom_log_kind = g_strdup(cmd->data.list[0]);
+	options.custom_log_filename = g_strdup(cmd->data.list[1]);
 
-	MSG(2, "openttsd custom logging to file %s", file);
 	return NULL;
 }
 
@@ -388,11 +370,13 @@ DOTCONF_CB(cb_AddModule)
 	    load_output_module(module_name, module_prgname, module_cfgfile,
 			       module_dbgfile);
 	if (cur_mod == NULL) {
-		MSG(3, "Couldn't load specified output module");
+		log_msg(OTTS_LOG_NOTICE,
+			"Couldn't load specified output module");
 		return NULL;
 	}
 
-	MSG(5, "Module name=%s being inserted into hash table", cur_mod->name);
+	log_msg(OTTS_LOG_DEBUG, "Module name=%s being inserted into hash table",
+		cur_mod->name);
 	assert(cur_mod->name != NULL);
 	g_hash_table_insert(output_modules, g_strdup(module_name), cur_mod);
 	output_modules_list =
@@ -425,7 +409,8 @@ DOTCONF_CB(cb_BeginClient)
 	cl_spec->pattern = g_strdup(cmd->data.str);
 	cl_spec_section = cl_spec;
 
-	MSG(3, "Reading configuration for pattern %s", cl_spec->pattern);
+	log_msg(OTTS_LOG_NOTICE, "Reading configuration for pattern %s",
+		cl_spec->pattern);
 
 	/*  Warning: If you modify this, you must also modify update_cl_settings() in set.c ! */
 	SET_PAR(msg_settings.rate, (OTTS_VOICE_RATE_MIN - 1))
@@ -464,7 +449,7 @@ DOTCONF_CB(cb_EndClient)
 
 DOTCONF_CB(cb_unknown)
 {
-	MSG(2, "Unknown option in configuration!");
+	log_msg(OTTS_LOG_WARN, "Unknown option in configuration!");
 	return NULL;
 }
 
@@ -560,14 +545,13 @@ void load_default_global_set_options()
 	if (!options.log_level_set)
 		options.log_level = 3;
 	if (!options.communication_method)
-		 options.communication_method = g_strdup("unix_socket");
+		options.communication_method = g_strdup("unix_socket");
 	if (!options.socket_name)
-		 options.socket_name = g_strdup("default");
+		options.socket_name = g_strdup("default");
 	if (!options.port_set)
 		options.port = OPENTTSD_DEFAULT_PORT;
 	if (!options.localhost_access_only_set)
 		options.localhost_access_only = 1;
 
-	logfile = stderr;
-	custom_logfile = NULL;
+	options.custom_log_filename = NULL;
 }

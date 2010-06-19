@@ -28,6 +28,7 @@
 #include <config.h>
 #endif
 
+#include<logging.h>
 #include "index_marking.h"
 
 void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
@@ -46,8 +47,9 @@ void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
 	assert(msg != NULL);
 	assert(msg->buf != NULL);
 
-	MSG2(5, "index_marking", "MSG before index marking: |%s|, ssml_mode=%d",
-	     msg->buf, ssml_mode);
+	log_msg2(5, "index_marking",
+		 "MSG before index marking: |%s|, ssml_mode=%d", msg->buf,
+		 ssml_mode);
 
 	if (ssml_mode == SPD_DATA_TEXT)
 		g_string_printf(marked_text, "<speak>");
@@ -90,8 +92,9 @@ void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
 			if ((ret == 0) || (strlen(character2) == 0)) {
 				g_string_append_printf(marked_text, "%s",
 						       character);
-				MSG2(6, "index_marking", "MSG altering 1: |%s|",
-				     marked_text->str);
+				log_msg2(6, "index_marking",
+					 "MSG altering 1: |%s|",
+					 marked_text->str);
 				break;
 			}
 			u_char = g_utf8_get_char(character2);
@@ -102,14 +105,17 @@ void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
 						       SD_MARK_TAIL,
 						       character, n);
 				n++;
-				MSG2(6, "index_marking", "MSG altering 2: |%s|",
-				     marked_text->str);
+				log_msg2(6, "index_marking",
+					 "MSG altering 2: |%s|",
+					 marked_text->str);
 				continue;
 			} else {
 				g_string_append_printf(marked_text, "%s",
 						       character);
-				MSG2(6, "index_marking", "MSG altering 3: |%s|",
-				     marked_text->str);
+				//              pos = g_utf8_find_prev_char(pos, NULL);
+				log_msg2(6, "index_marking",
+					 "MSG altering 3: |%s|",
+					 marked_text->str);
 				continue;
 			}
 		} else {
@@ -127,7 +133,7 @@ void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)
 
 	g_string_free(marked_text, 0);
 
-	MSG2(5, "index_marking", "MSG after index marking: |%s|", msg->buf);
+	log_msg2(5, "index_marking", "MSG after index marking: |%s|", msg->buf);
 }
 
 /* Finds the index mark specified in _mark_ . */
@@ -137,7 +143,7 @@ char *find_index_mark(openttsd_message * msg, int mark)
 	char *pos;
 	char *p;
 
-	MSG(5, "Trying to find index mark %d", mark);
+	log_msg(OTTS_LOG_DEBUG, "Trying to find index mark %d", mark);
 
 	/* Fix this for variable space number */
 	sprintf(str_mark, SD_MARK_HEAD "%d" SD_MARK_TAIL, mark);
@@ -148,7 +154,7 @@ char *find_index_mark(openttsd_message * msg, int mark)
 
 	pos = p + strlen(str_mark);
 
-	MSG(5, "Search for index mark sucessfull");
+	log_msg(OTTS_LOG_DEBUG, "Search for index mark sucessfull");
 
 	return pos;
 }
@@ -169,8 +175,8 @@ char *strip_index_marks(char *buf, SPDDataMode ssml_mode)
 	else
 		str = g_string_new("");
 
-	MSG2(5, "index_marking", "Message before stripping index marks: |%s|",
-	     buf);
+	log_msg2(5, "index_marking",
+		 "Message before stripping index marks: |%s|", buf);
 
 	p = buf;
 
@@ -201,8 +207,8 @@ char *strip_index_marks(char *buf, SPDDataMode ssml_mode)
 	strret = str->str;
 	g_string_free(str, 0);
 
-	MSG2(5, "index_marking", "Message after stripping index marks: |%s|",
-	     strret);
+	log_msg2(5, "index_marking",
+		 "Message after stripping index marks: |%s|", strret);
 
 	return strret;
 }

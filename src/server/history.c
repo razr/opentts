@@ -27,6 +27,7 @@
 #include <config.h>
 #endif
 
+#include<logging.h>
 #include "openttsd.h"
 #include "msg.h"
 #include "set.h"
@@ -54,8 +55,8 @@ char *history_get_client_list()
 	clist = g_string_new("");
 
 	for (i = 1; i <= status.max_uid; i++) {
-		MSG(3, "Getting settings for client %d of %d", i,
-		    status.max_uid - 1);
+		log_msg(OTTS_LOG_NOTICE, "Getting settings for client %d of %d",
+			i, status.max_uid - 1);
 		client = get_client_settings_by_uid(i);
 		assert(client != NULL);
 		g_string_append_printf(clist, C_OK_CLIENTS "-");
@@ -137,8 +138,8 @@ char *history_get_message_list(guint client_id, int from, int num)
 	GList *client_msgs;
 	int i;
 
-	MSG(4, "message_list: from %d num %d, client %d\n", from, num,
-	    client_id);
+	log_msg(OTTS_LOG_INFO, "message_list: from %d num %d, client %d\n",
+		from, num, client_id);
 
 	mlist = g_string_new("");
 
@@ -236,7 +237,7 @@ char *history_cursor_set_pos(int fd, guint client_id, int pos)
 
 	settings->hist_cur_pos = pos;
 	settings->hist_cur_uid = client_id;
-	MSG(4, "cursor pos:%d\n", settings->hist_cur_pos);
+	log_msg(OTTS_LOG_INFO, "cursor pos:%d\n", settings->hist_cur_pos);
 	return g_strdup(OK_CUR_SET_POS);
 }
 
@@ -307,7 +308,7 @@ char *history_say_id(int fd, int id)
 	if (msg == NULL)
 		return g_strdup(ERR_INTERNAL);
 
-	MSG(4, "putting history message into queue\n");
+	log_msg(OTTS_LOG_INFO, "putting history message into queue\n");
 	new = copy_message(msg);
 	//      queue_message(new, fd, 0, 0);
 

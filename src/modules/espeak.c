@@ -45,6 +45,7 @@
 #include "opentts/opentts_types.h"
 #include "audio.h"
 #include "module_utils.h"
+#include<logging.h>
 
 #if HAVE_SNDFILE
 #include <sndfile.h>
@@ -59,10 +60,9 @@
 #define DEBUG_MODULE 1
 DECLARE_DEBUG()
 #define DBG_WARN(e, msg)						\
-	if (Debug && !(e)) {						\
-		dbg("Espeak: Warning:  " msg);			\
+	if ( !(e)) {						\
+		log_msg(OTTS_LOG_WARN, "Espeak: Warning:  " msg);			\
 	}
-
 typedef enum {
 	FATAL_ERROR = -1,
 	OK = 0,
@@ -230,7 +230,7 @@ int module_load(void)
 
 #define ABORT(msg)								\
 	g_string_append(info, msg);					\
-	dbg("FATAL ERROR: %s", info->str);			\
+	log_msg(OTTS_LOG_CRIT, "FATAL ERROR: %s", info->str);			\
 	*status_info = info->str;					\
 	g_string_free(info, FALSE);					\
 	return FATAL_ERROR;
@@ -241,7 +241,7 @@ int module_init(char **status_info)
 	const char *espeak_version;
 	GString *info;
 
-	dbg("Espeak: Module init().");
+	log_msg(OTTS_LOG_NOTICE, "Espeak: Module init().");
 	/* Make sure the glib functions are thread safe. */
 	if (!g_thread_supported())
 		g_thread_init(NULL);
@@ -251,13 +251,15 @@ int module_init(char **status_info)
 
 	/* Report versions. */
 	espeak_version = espeak_Info(NULL);
-	dbg("Espeak: espeak Output Module version %s, espeak Engine version %s",
-	    MODULE_VERSION, espeak_version);
+	log_msg(OTTS_LOG_INFO,
+		"Espeak: espeak Output Module version %s, espeak Engine version %s",
+		MODULE_VERSION, espeak_version);
 
 	/* <Espeak setup */
 
-	dbg("Espeak: Initializing engine with buffer size %d ms.",
-	    EspeakAudioChunkSize);
+	log_msg(OTTS_LOG_INFO,
+		"Espeak: Initializing engine with buffer size %d ms.",
+		EspeakAudioChunkSize);
 #if ESPEAK_API_REVISION == 1
 	espeak_sample_rate =
 	    espeak_Initialize(AUDIO_OUTPUT_RETRIEVAL, EspeakAudioChunkSize,
@@ -268,19 +270,21 @@ int module_init(char **status_info)
 			      NULL, 0);
 #endif
 	if (espeak_sample_rate == EE_INTERNAL_ERROR) {
-		dbg("Espeak: Could not initialize engine.");
+		log_msg(OTTS_LOG_CRIT, "Espeak: Could not initialize engine.");
 		*status_info = g_strdup("Could not initialize engine. ");
 		return FATAL_ERROR;
 	}
 
-	dbg("Espeak: Registering callbacks.");
+	log_msg(OTTS_LOG_INFO, "Espeak: Registering callbacks.");
 	espeak_SetSynthCallback(synth_callback);
 	espeak_SetUriCallback(uri_callback);
 
-	dbg("Setting up espeak specific configuration settings.");
+	log_msg(OTTS_LOG_DEBUG,
+		"Setting up espeak specific configuration settings.");
 	ret = espeak_set_punctuation_list_from_utf8(EspeakPunctuationList);
 	if (ret != OK)
-		dbg("Espeak: Failed to set punctuation list.");
+		log_msg(OTTS_LOG_WARN,
+			"Espeak: Failed to set punctuation list.");
 
 	espeak_voice_list = espeak_list_synthesis_voices();
 
@@ -300,7 +304,8 @@ int module_init(char **status_info)
 	/* The following mutex protects access to various flags */
 	pthread_mutex_init(&espeak_state_mutex, NULL);
 
-	dbg("Espeak: Creating new thread for stop or pause.");
+	log_msg(OTTS_LOG_NOTICE,
+		"Espeak: Creating new thread for stop or pause.");
 	espeak_stop_or_pause_semaphore = module_semaphore_init();
 	ret =
 	    pthread_create(&espeak_stop_or_pause_thread, NULL,
@@ -310,7 +315,7 @@ int module_init(char **status_info)
 	}
 
 	espeak_play_semaphore = module_semaphore_init();
-	dbg("Espeak: Creating new thread for playback.");
+	log_msg(OTTS_LOG_INFO, "Espeak: Creating new thread for playback.");
 	ret = pthread_create(&espeak_play_thread, NULL, _espeak_play, NULL);
 	if (ret != OK) {
 		ABORT("Failed to create playback thread.");
@@ -325,7 +330,7 @@ int module_init(char **status_info)
 
 int module_audio_init(char **status_info)
 {
-	dbg("Opening audio");
+	log_msg(OTTS_LOG_NOTICE, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
@@ -339,11 +344,12 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	espeak_ERROR result = EE_INTERNAL_ERROR;
 	int flags = espeakSSML | espeakCHARS_UTF8;
 
-	dbg("Espeak: module_speak().");
+	log_msg(OTTS_LOG_INFO, "Espeak: module_speak().");
 
 	pthread_mutex_lock(&espeak_state_mutex);
 	if (espeak_state != IDLE) {
-		dbg("Espeak: Warning, module_speak called when not ready.");
+		log_msg(OTTS_LOG_WARN,
+			"Espeak: Warning, module_speak called when not ready.");
 		pthread_mutex_unlock(&espeak_state_mutex);
 		return FALSE;
 	}
@@ -352,7 +358,8 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 		pthread_mutex_unlock(&espeak_state_mutex);
 		return FATAL_ERROR;
 	}
-	dbg("Espeak: Requested data: |%s| %d %ld", data, msgtype, bytes);
+	log_msg(OTTS_LOG_DEBUG, "Espeak: Requested data: |%s| %d %ld", data,
+		msgtype, bytes);
 
 	espeak_state_reset();
 	espeak_state = BEFORE_SYNTH;
@@ -405,7 +412,8 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 					wchar_t *wc_ptr = (wchar_t *) tmp;
 					wc = wc_ptr[0];
 				} else {
-					dbg("Espeak: Failed to convert utf-8 to wchar_t, or not exactly one utf-8 character given.");
+					log_msg(OTTS_LOG_NOTICE,
+						"Espeak: Failed to convert utf-8 to wchar_t, or not exactly one utf-8 character given.");
 				}
 				g_free(tmp);
 			}
@@ -443,24 +451,24 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 
 	pthread_mutex_unlock(&espeak_state_mutex);
 
-	dbg("Espeak: Leaving module_speak() normally.");
+	log_msg(OTTS_LOG_DEBUG, "Espeak: Leaving module_speak() normally.");
 	return bytes;
 }
 
 int module_stop(void)
 {
-	dbg("Espeak: module_stop().");
+	log_msg(OTTS_LOG_INFO, "Espeak: module_stop().");
 
 	pthread_mutex_lock(&espeak_state_mutex);
 	if (espeak_state != IDLE &&
 	    !espeak_stop_requested &&
 	    !is_thread_busy(&espeak_stop_or_pause_suspended_mutex)) {
-		dbg("Espeak: stopping...");
+		log_msg(OTTS_LOG_INFO, "Espeak: stopping...");
 		espeak_stop_requested = TRUE;
 		/* Wake the stop_or_pause thread. */
 		sem_post(espeak_stop_or_pause_semaphore);
 	} else {
-		dbg("Espeak: Cannot stop now.");
+		log_msg(OTTS_LOG_WARN, "Espeak: Cannot stop now.");
 	}
 	pthread_mutex_unlock(&espeak_state_mutex);
 
@@ -469,7 +477,7 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	dbg("Espeak: module_pause().");
+	log_msg(OTTS_LOG_INFO, "Espeak: module_pause().");
 	pthread_mutex_lock(&espeak_state_mutex);
 	if (espeak_pause_state == ESPEAK_PAUSE_OFF && !espeak_stop_requested) {
 		espeak_pause_state = ESPEAK_PAUSE_REQUESTED;
@@ -481,9 +489,9 @@ size_t module_pause(void)
 
 void module_close(int status)
 {
-	dbg("Espeak: close().");
+	log_msg(OTTS_LOG_INFO, "Espeak: close().");
 
-	dbg("Espeak: Terminating threads");
+	log_msg(OTTS_LOG_NOTICE, "Espeak: Terminating threads");
 	espeak_stop_requested = TRUE;
 	espeak_close_requested = TRUE;
 
@@ -500,20 +508,20 @@ void module_close(int status)
 	pthread_cancel(espeak_play_thread);
 	pthread_cancel(espeak_stop_or_pause_thread);
 
-	dbg("Joining  play thread.");
+	log_msg(OTTS_LOG_INFO, "Joining  play thread.");
 	pthread_join(espeak_play_thread, NULL);
-	dbg("Joinging stop thread.");
+	log_msg(OTTS_LOG_DEBUG, "Joininging stop thread.");
 	pthread_join(espeak_stop_or_pause_thread, NULL);
 
-	dbg("Espeak: terminating synthesis.");
+	log_msg(OTTS_LOG_NOTICE, "Espeak: terminating synthesis.");
 	espeak_Terminate();
 
-	dbg("Espeak: Closing audio output");
+	log_msg(OTTS_LOG_INFO, "Espeak: Closing audio output");
 	if (module_audio_id) {
 		opentts_audio_close(module_audio_id);
 	}
 
-	dbg("Freeing resources.");
+	log_msg(OTTS_LOG_INFO, "Freeing resources.");
 	espeak_clear_playback_queue();
 	espeak_free_voice_list();
 
@@ -553,7 +561,7 @@ static void *_espeak_stop_or_pause(void *nothing)
 {
 	int ret;
 
-	dbg("Espeak: Stop or pause thread starting.......");
+	log_msg(OTTS_LOG_INFO, "Espeak: Stop or pause thread starting.......");
 
 	/* Block all signals to this thread. */
 	set_speaking_thread_parameters();
@@ -567,12 +575,13 @@ static void *_espeak_stop_or_pause(void *nothing)
 			pthread_mutex_unlock
 			    (&espeak_stop_or_pause_suspended_mutex);
 		}
-		dbg("Espeak: Stop or pause semaphore on.");
+		log_msg(OTTS_LOG_INFO, "Espeak: Stop or pause semaphore on.");
 		if (espeak_close_requested)
 			break;
 		if (!espeak_stop_requested) {
 			/* This sometimes happens after wake-up from suspend-to-disk.  */
-			dbg("Espeak: Warning: spurious wake-up  of stop thread.");
+			log_msg(OTTS_LOG_WARN,
+				"Espeak: Warning: spurious wake-up  of stop thread.");
 			continue;
 		}
 
@@ -581,7 +590,7 @@ static void *_espeak_stop_or_pause(void *nothing)
 		pthread_mutex_unlock(&playback_queue_mutex);
 
 		if (module_audio_id) {
-			dbg("Espeak: Stopping audio.");
+			log_msg(OTTS_LOG_WARN, "Espeak: Stopping audio.");
 			ret = opentts_audio_stop(module_audio_id);
 			DBG_WARN(ret == 0,
 				 "spd_audio_stop returned non-zero value.");
@@ -597,11 +606,12 @@ static void *_espeak_stop_or_pause(void *nothing)
 			}
 		}
 
-		dbg("Espeak: Waiting for synthesis to stop.");
+		log_msg(OTTS_LOG_INFO,
+			"Espeak: Waiting for synthesis to stop.");
 		ret = espeak_Cancel();
 		DBG_WARN(ret == EE_OK, "Espeak: error in espeak_Cancel().");
 
-		dbg("Espeak: Clearing playback queue.");
+		log_msg(OTTS_LOG_DEBUG, "Espeak: Clearing playback queue.");
 		espeak_clear_playback_queue();
 
 		int save_pause_state = espeak_pause_state;
@@ -615,7 +625,8 @@ static void *_espeak_stop_or_pause(void *nothing)
 			module_report_event_stop();
 		}
 
-		dbg("Espeak: Stop or pause thread ended.......\n");
+		log_msg(OTTS_LOG_INFO,
+			"Espeak: Stop or pause thread ended.......\n");
 	}
 	pthread_exit(NULL);
 }
@@ -639,9 +650,9 @@ static void espeak_set_rate(signed int rate)
 
 	espeak_ERROR ret = espeak_SetParameter(espeakRATE, speed, 0);
 	if (ret != EE_OK) {
-		dbg("Espeak: Error setting rate %i.", speed);
+		log_msg(OTTS_LOG_WARN, "Espeak: Error setting rate %i.", speed);
 	} else {
-		dbg("Espeak: Rate set to %i.", speed);
+		log_msg(OTTS_LOG_DEBUG, "Espeak: Rate set to %i.", speed);
 	}
 }
 
@@ -649,21 +660,22 @@ static void espeak_set_volume(signed int volume)
 {
 	int vol;
 
-	assert(volume >= OTTS_VOICE_VOLUME_MIN && volume <= OTTS_VOICE_VOLUME_MAX);
+	assert(volume >= OTTS_VOICE_VOLUME_MIN
+	       && volume <= OTTS_VOICE_VOLUME_MAX);
 
 	/* Possible range 0 to 100. */
 	if (volume < OTTS_VOICE_VOLUME_DEFAULT)
 		vol = (volume - OTTS_VOICE_VOLUME_MIN) * 100 /
-			(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
+		    (OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN);
 	else
 		vol = 50 + ((volume - OTTS_VOICE_VOLUME_DEFAULT) * 100 /
-			(OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN));
+			    (OTTS_VOICE_VOLUME_MAX - OTTS_VOICE_VOLUME_MIN));
 
 	espeak_ERROR ret = espeak_SetParameter(espeakVOLUME, vol, 0);
 	if (ret != EE_OK) {
-		dbg("Espeak: Error setting volume %i.", vol);
+		log_msg(OTTS_LOG_WARN, "Espeak: Error setting volume %i.", vol);
 	} else {
-		dbg("Espeak: Volume set to %i.", vol);
+		log_msg(OTTS_LOG_DEBUG, "Espeak: Volume set to %i.", vol);
 	}
 }
 
@@ -676,19 +688,24 @@ static void espeak_set_pitch(signed int pitch)
 	/* Possible range 0 to 100. */
 	if (pitch < OTTS_VOICE_PITCH_DEFAULT) {
 		pitchBaseline =
-		    ((OTTS_VOICE_PITCH_DEFAULT - pitch) * espeak_voice_pitch_baseline) /
+		    ((OTTS_VOICE_PITCH_DEFAULT -
+		      pitch) * espeak_voice_pitch_baseline) /
 		    (OTTS_VOICE_PITCH_DEFAULT - OTTS_VOICE_PITCH_MIN);
 	} else {
 		pitchBaseline = espeak_voice_pitch_baseline
-			+ (((pitch - OTTS_VOICE_PITCH_DEFAULT) * (100 - espeak_voice_pitch_baseline))
-			/ (OTTS_VOICE_PITCH_MAX - OTTS_VOICE_PITCH_DEFAULT));
+		    +
+		    (((pitch - OTTS_VOICE_PITCH_DEFAULT) * (100 -
+							    espeak_voice_pitch_baseline))
+		     / (OTTS_VOICE_PITCH_MAX - OTTS_VOICE_PITCH_DEFAULT));
 	}
 
 	espeak_ERROR ret = espeak_SetParameter(espeakPITCH, pitchBaseline, 0);
 	if (ret != EE_OK) {
-		dbg("Espeak: Error setting pitch %i.", pitchBaseline);
+		log_msg(OTTS_LOG_WARN, "Espeak: Error setting pitch %i.",
+			pitchBaseline);
 	} else {
-		dbg("Espeak: Pitch set to %i.", pitchBaseline);
+		log_msg(OTTS_LOG_DEBUG, "Espeak: Pitch set to %i.",
+			pitchBaseline);
 	}
 }
 
@@ -714,9 +731,10 @@ static void espeak_set_punctuation_mode(SPDPunctuation punct_mode)
 	espeak_ERROR ret =
 	    espeak_SetParameter(espeakPUNCTUATION, espeak_punct_mode, 0);
 	if (ret != EE_OK) {
-		dbg("Espeak: Failed to set punctuation mode.");
+		log_msg(OTTS_LOG_WARN,
+			"Espeak: Failed to set punctuation mode.");
 	} else {
-		dbg("Set punctuation mode.");
+		log_msg(OTTS_LOG_INFO, "Set punctuation mode.");
 	}
 }
 
@@ -741,16 +759,17 @@ static void espeak_set_cap_let_recogn(SPDCapitalLetters cap_mode)
 	espeak_ERROR ret =
 	    espeak_SetParameter(espeakCAPITALS, espeak_cap_mode, 1);
 	if (ret != EE_OK) {
-		dbg("Espeak: Failed to set capitals mode.");
+		log_msg(OTTS_LOG_WARN, "Espeak: Failed to set capitals mode.");
 	} else {
-		dbg("Set capitals mode.");
+		log_msg(OTTS_LOG_INFO, "Set capitals mode.");
 	}
 }
 
 /* Given a language code and SD voice code, sets the espeak voice. */
 static void espeak_set_language_and_voice(char *lang, SPDVoiceType voice_code)
 {
-	dbg("Espeak: set_language_and_voice %s %d", lang, voice_code);
+	log_msg(OTTS_LOG_DEBUG, "Espeak: set_language_and_voice %s %d", lang,
+		voice_code);
 	espeak_ERROR ret;
 
 	unsigned char overlay = 0;
@@ -785,13 +804,15 @@ static void espeak_set_language_and_voice(char *lang, SPDVoiceType voice_code)
 	}
 
 	char *name = g_strdup_printf("%s+%d", lang, overlay);
-	dbg("Espeak: set_language_and_voice name=%s", name);
+	log_msg(OTTS_LOG_INFO, "Espeak: set_language_and_voice name=%s", name);
 	ret = espeak_SetVoiceByName(name);
 
 	if (ret != EE_OK) {
-		dbg("Espeak: Error selecting language %s", name);
+		log_msg(OTTS_LOG_WARN, "Espeak: Error selecting language %s",
+			name);
 	} else {
-		dbg("Espeak: Successfully set voice to \"%s\"", name);
+		log_msg(OTTS_LOG_DEBUG,
+			"Espeak: Successfully set voice to \"%s\"", name);
 	}
 	g_free(name);
 }
@@ -812,8 +833,9 @@ static void espeak_set_synthesis_voice(char *synthesis_voice)
 	if (synthesis_voice != NULL) {
 		espeak_ERROR ret = espeak_SetVoiceByName(synthesis_voice);
 		if (ret != EE_OK) {
-			dbg("Espeak: Failed to set synthesis voice to %s.",
-			    synthesis_voice);
+			log_msg(OTTS_LOG_WARN,
+				"Espeak: Failed to set synthesis voice to %s.",
+				synthesis_voice);
 		}
 	}
 }
@@ -885,8 +907,8 @@ static int synth_callback(short *wav, int numsamples, espeak_EVENT * events)
 			break;
 		case espeakEVENT_PLAY:
 			result =
-			    espeak_add_sound_icon_to_playback_queue(events->id.
-								    name);
+			    espeak_add_sound_icon_to_playback_queue(events->
+								    id.name);
 			break;
 		case espeakEVENT_MSG_TERMINATED:
 			// This event never has any audio in the same callback
@@ -1062,15 +1084,17 @@ static gboolean espeak_send_to_audio(TPlaybackQueueEntry * playback_queue_entry)
 	track.bits = 16;
 	track.samples = playback_queue_entry->data.audio.audio_chunk;
 
-	dbg("Espeak: Sending %i samples to audio.", track.num_samples);
+	log_msg(OTTS_LOG_DEBUG, "Espeak: Sending %i samples to audio.",
+		track.num_samples);
 	/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
 	opentts_audio_set_volume(module_audio_id, 85);
 	ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 	if (ret < 0) {
-		dbg("ERROR: Can't play track for unknown reason.");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Can't play track for unknown reason.");
 		return FALSE;
 	}
-	dbg("Espeak: Sent to audio.");
+	log_msg(OTTS_LOG_DEBUG, "Espeak: Sent to audio.");
 	return TRUE;
 }
 
@@ -1080,7 +1104,7 @@ static void *_espeak_play(void *nothing)
 	char *markId;
 	TPlaybackQueueEntry *playback_queue_entry = NULL;
 
-	dbg("Espeak: Playback thread starting.......");
+	log_msg(OTTS_LOG_NOTICE, "Espeak: Playback thread starting.......");
 
 	/* Block all signals to this thread. */
 	set_speaking_thread_parameters();
@@ -1092,12 +1116,13 @@ static void *_espeak_play(void *nothing)
 			sem_wait(espeak_play_semaphore);
 			pthread_mutex_unlock(&espeak_play_suspended_mutex);
 		}
-		dbg("Espeak: Playback semaphore on.");
+		log_msg(OTTS_LOG_INFO, "Espeak: Playback semaphore on.");
 		if (espeak_close_requested)
 			break;
 		if (espeak_state < BEFORE_PLAY) {
 			/* This can happen after wake-up  from suspend-to-disk */
-			dbg("Espeak: Warning: Spurious wake of of playback thread.");
+			log_msg(OTTS_LOG_NOTICE,
+				"Espeak: Warning: Spurious wake of of playback thread.");
 			continue;
 		}
 
@@ -1105,7 +1130,8 @@ static void *_espeak_play(void *nothing)
 			gboolean finished = FALSE;
 			playback_queue_entry = playback_queue_pop();
 			if (playback_queue_entry == NULL) {
-				dbg("Espeak: playback thread detected stop.");
+				log_msg(OTTS_LOG_INFO,
+					"Espeak: playback thread detected stop.");
 				break;
 			}
 
@@ -1115,10 +1141,12 @@ static void *_espeak_play(void *nothing)
 				break;
 			case ESPEAK_QET_INDEX_MARK:
 				markId = playback_queue_entry->data.markId;
-				dbg("Espeak: reporting index mark |%s|.",
-				    markId);
+				log_msg(OTTS_LOG_DEBUG,
+					"Espeak: reporting index mark |%s|.",
+					markId);
 				module_report_index_mark(markId);
-				dbg("Espeak: index mark reported.");
+				log_msg(OTTS_LOG_DEBUG,
+					"Espeak: index mark reported.");
 				pthread_mutex_lock(&espeak_state_mutex);
 				if (espeak_state == SPEAKING
 				    && espeak_pause_state ==
@@ -1127,7 +1155,8 @@ static void *_espeak_play(void *nothing)
 				    !is_thread_busy
 				    (&espeak_stop_or_pause_suspended_mutex)
 				    && g_str_has_prefix(markId, "__spd_")) {
-					dbg("Espeak: Pause requested in playback thread.  Stopping.");
+					log_msg(OTTS_LOG_INFO,
+						"Espeak: Pause requested in playback thread.  Stopping.");
 					espeak_stop_requested = TRUE;
 					espeak_pause_state =
 					    ESPEAK_PAUSE_MARK_REPORTED;
@@ -1138,8 +1167,8 @@ static void *_espeak_play(void *nothing)
 				pthread_mutex_unlock(&espeak_state_mutex);
 				break;
 			case ESPEAK_QET_SOUND_ICON:
-				espeak_play_file(playback_queue_entry->data.
-						 sound_icon_filename);
+				espeak_play_file(playback_queue_entry->
+						 data.sound_icon_filename);
 				break;
 			case ESPEAK_QET_BEGIN:
 				{
@@ -1157,10 +1186,12 @@ static void *_espeak_play(void *nothing)
 				}
 			case ESPEAK_QET_END:
 				pthread_mutex_lock(&espeak_state_mutex);
-				dbg("Espeak: playback thread got END from queue.");
+				log_msg(OTTS_LOG_INFO,
+					"Espeak: playback thread got END from queue.");
 				if (espeak_state == SPEAKING) {
 					if (!espeak_stop_requested) {
-						dbg("Espeak: playback thread reporting end.");
+						log_msg(OTTS_LOG_NOTICE,
+							"Espeak: playback thread reporting end.");
 						espeak_state = IDLE;
 						espeak_pause_state =
 						    ESPEAK_PAUSE_OFF;
@@ -1179,7 +1210,7 @@ static void *_espeak_play(void *nothing)
 				break;
 		}
 	}
-	dbg("Espeak: Playback thread ended.......");
+	log_msg(OTTS_LOG_NOTICE, "Espeak: Playback thread ended.......");
 	return 0;
 }
 
@@ -1194,23 +1225,28 @@ static gboolean espeak_play_file(char *filename)
 	SNDFILE *sf;
 	SF_INFO sfinfo;
 
-	dbg("Espeak: Playing |%s|", filename);
+	log_msg(OTTS_LOG_INFO, "Espeak: Playing |%s|", filename);
 	memset(&sfinfo, 0, sizeof(sfinfo));
 	sf = sf_open(filename, SFM_READ, &sfinfo);
 	subformat = sfinfo.format & SF_FORMAT_SUBMASK;
 	items = sfinfo.channels * sfinfo.frames;
-	dbg("Espeak: frames = %ld, channels = %d", sfinfo.frames,
-	    sfinfo.channels);
-	dbg("Espeak: samplerate = %i, items = %Ld", sfinfo.samplerate,
-	    (long long)items);
-	dbg("Espeak: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X", sfinfo.format & SF_FORMAT_TYPEMASK, subformat, sfinfo.format & SF_FORMAT_ENDMASK);
+	log_msg(OTTS_LOG_DEBUG, "Espeak: frames = %ld, channels = %d",
+		sfinfo.frames, sfinfo.channels);
+	log_msg(OTTS_LOG_DEBUG, "Espeak: samplerate = %i, items = %Ld",
+		sfinfo.samplerate, (long long)items);
+	log_msg(OTTS_LOG_DEBUG,
+		"Espeak: major format = 0x%08X, subformat = 0x%08X, endian = 0x%08X",
+		sfinfo.format & SF_FORMAT_TYPEMASK, subformat,
+		sfinfo.format & SF_FORMAT_ENDMASK);
 	if (sfinfo.channels < 1 || sfinfo.channels > 2) {
-		dbg("Espeak: ERROR: channels = %d.\n", sfinfo.channels);
+		log_msg(OTTS_LOG_NOTICE, "Espeak: ERROR: channels = %d.\n",
+			sfinfo.channels);
 		result = FALSE;
 		goto cleanup1;
 	}
 	if (sfinfo.frames > 0x7FFFFFFF) {
-		dbg("Espeak: ERROR: Unknown number of frames.");
+		log_msg(OTTS_LOG_WARN,
+			"Espeak: ERROR: Unknown number of frames.");
 		result = FALSE;
 		goto cleanup1;
 	}
@@ -1225,20 +1261,25 @@ static gboolean espeak_play_file(char *filename)
 	track.bits = 16;
 	track.samples = g_malloc(items * sizeof(short));
 	readcount = sf_read_short(sf, (short *)track.samples, items);
-	dbg("Espeak: read %Ld items from audio file.", (long long)readcount);
+	log_msg(OTTS_LOG_INFO, "Espeak: read %Ld items from audio file.",
+		(long long)readcount);
 
 	if (readcount > 0) {
 		track.num_samples = readcount / sfinfo.channels;
-		dbg("Espeak: Sending %i samples to audio.", track.num_samples);
+		log_msg(OTTS_LOG_INFO, "Espeak: Sending %i samples to audio.",
+			track.num_samples);
 		/* Volume is controlled by the synthesizer.  Always play at normal on audio device. */
-		opentts_audio_set_volume(module_audio_id, EspeakSoundIconVolume);
-		int ret = opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
+		opentts_audio_set_volume(module_audio_id,
+					 EspeakSoundIconVolume);
+		int ret =
+		    opentts_audio_play(module_audio_id, track, SPD_AUDIO_LE);
 		if (ret < 0) {
-			dbg("ERROR: Can't play track for unknown reason.");
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Can't play track for unknown reason.");
 			result = FALSE;
 			goto cleanup2;
 		}
-		dbg("Espeak: Sent to audio.");
+		log_msg(OTTS_LOG_INFO, "Espeak: Sent to audio.");
 	}
 cleanup2:
 	g_free(track.samples);
@@ -1260,7 +1301,7 @@ static SPDVoice **espeak_list_synthesis_voices()
 	while (espeak_voices[numvoices] != NULL) {
 		numvoices++;
 	}
-	dbg("Espeak: %d voices total.", numvoices);
+	log_msg(OTTS_LOG_INFO, "Espeak: %d voices total.", numvoices);
 	result = g_new0(SPDVoice *, numvoices + 1);
 	for (i = j = 0; espeak_voices[i] != NULL; i++) {
 		const espeak_VOICE *v = espeak_voices[i];
@@ -1287,8 +1328,9 @@ static SPDVoice **espeak_list_synthesis_voices()
 					lang = g_strdup(first_lang);
 				}
 			} else {
-				dbg("Espeak: Not a valid utf8 string: %s",
-				    first_lang);;
+				log_msg(OTTS_LOG_WARN,
+					"Espeak: Not a valid utf8 string: %s",
+					first_lang);;
 			}
 			voice->language = lang;
 			voice->variant = dialect;
@@ -1297,7 +1339,7 @@ static SPDVoice **espeak_list_synthesis_voices()
 		}
 	}
 	result[j] = NULL;
-	dbg("Espeak: %d usable voices.", j);
+	log_msg(OTTS_LOG_NOTICE, "Espeak: %d usable voices.", j);
 
 	return result;
 }

@@ -32,6 +32,7 @@
 #include <langinfo.h>
 #include <sys/stat.h>
 
+#include<logging.h>
 #include "module_utils.h"
 
 #define MODULE_NAME     "cicero"
@@ -115,7 +116,7 @@ static void mywrite(int fd, const void *buf, int len)
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			else if (errno == EPIPE) {
-				dbg("Broken pipe\n");
+				log_msg(OTTS_LOG_CRIT, "Broken pipe\n");
 			} else
 				perror("Pipe write");
 			return;
@@ -149,41 +150,44 @@ int module_init(char **status_info)
 	sigemptyset(&ignore.sa_mask);
 	ignore.sa_handler = SIG_IGN;
 
-	dbg("Module init\n");
+	log_msg(OTTS_LOG_NOTICE, "Module init\n");
 
 	sigaction(SIGPIPE, &ignore, NULL);
 
-	dbg("call the pipe system call\n");
+	log_msg(OTTS_LOG_DEBUG, "call the pipe system call\n");
 	if (pipe(fd1) < 0 || pipe(fd2) < 0) {
-		dbg("Error pipe()\n");
+		log_msg(OTTS_LOG_ERR, "Error pipe()\n");
 		return -1;
 	}
-	dbg("Call fork system call\n");
+	log_msg(OTTS_LOG_INFO, "Call fork system call\n");
 
 	stderr_redirect = open(CiceroExecutableLog,
 			       O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (stderr_redirect == -1) {
-		dbg("ERROR: Openning debug file for Cicero binary failed: (error=%d) %s", stderr_redirect, strerror(errno));
+		log_msg(OTTS_LOG_WARN,
+			"ERROR: Openning debug file for Cicero binary failed: (error=%d) %s",
+			stderr_redirect, strerror(errno));
 	} else {
-		dbg("Cicero synthesizer logging to file %s",
-		    CiceroExecutableLog);
+		log_msg(OTTS_LOG_INFO, "Cicero synthesizer logging to file %s",
+			CiceroExecutableLog);
 	}
 	switch (fork()) {
 	case -1:
 		{
-			dbg("Error fork()\n");
+			log_msg(OTTS_LOG_CRIT, "Error fork()\n");
 			return -1;
 		}
 	case 0:
 		{
 			if (dup2(fd2[0], 0) < 0	/* stdin */
 			    || dup2(fd1[1], 1) < 0) {	/* stdout */
-				dbg("Error dup2()\n");
+				log_msg(OTTS_LOG_CRIT, "Error dup2()\n");
 				exit(1);
 			}
 			if (stderr_redirect >= 0) {
 				if (dup2(stderr_redirect, 2) < 0)
-					dbg("ERROR: Couldn't redirect stderr, not logging for Cicero synthesizer.");
+					log_msg(OTTS_LOG_ERR,
+						"ERROR: Couldn't redirect stderr, not logging for Cicero synthesizer.");
 			}
 			/*close(2);
 			   close(fd2[1]);
@@ -193,7 +197,7 @@ int module_init(char **status_info)
 				close(i);
 			sigaction(SIGPIPE, &ignore, NULL);
 			execl(CiceroExecutable, CiceroExecutable, (void *)NULL);
-			dbg("Error execl()\n");
+			log_msg(OTTS_LOG_CRIT, "Error execl()\n");
 			exit(1);
 		}
 	default:
@@ -202,7 +206,7 @@ int module_init(char **status_info)
 			close(fd2[0]);
 			if (fcntl(fd2[1], F_SETFL, O_NDELAY) < 0
 			    || fcntl(fd1[0], F_SETFL, O_NDELAY) < 0) {
-				dbg("Error fcntl()\n");
+				log_msg(OTTS_LOG_ERR, "Error fcntl()\n");
 				return -1;
 			}
 		}
@@ -213,12 +217,13 @@ int module_init(char **status_info)
 
 	cicero_semaphore = module_semaphore_init();
 
-	dbg("Cicero: creating new thread for cicero_tracking\n");
+	log_msg(OTTS_LOG_NOTICE,
+		"Cicero: creating new thread for cicero_tracking\n");
 	cicero_speaking = 0;
 	ret =
 	    pthread_create(&cicero_speaking_thread, NULL, _cicero_speak, NULL);
 	if (ret != 0) {
-		dbg("Cicero: thread failed\n");
+		log_msg(OTTS_LOG_ERR, "Cicero: thread failed\n");
 		*status_info =
 		    g_strdup("The module couldn't initialize threads "
 			     "This can be either an internal problem or an "
@@ -246,18 +251,18 @@ SPDVoice **module_list_voices(void)
 
 int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
-	dbg("Module speak\n");
+	log_msg(OTTS_LOG_NOTICE, "Module speak\n");
 
 	/* The following should not happen */
 	if (cicero_speaking) {
-		dbg("Speaking when requested to write");
+		log_msg(OTTS_LOG_ERR, "Speaking when requested to write");
 		return 0;
 	}
 
 	if (module_write_data_ok(data) != 0)
 		return -1;
 
-	dbg("Requested data: |%s|\n", data);
+	log_msg(OTTS_LOG_DEBUG, "Requested data: |%s|\n", data);
 
 	if (*cicero_message != NULL) {
 		g_free(*cicero_message);
@@ -275,7 +280,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	cicero_speaking = 1;
 	sem_post(cicero_semaphore);
 
-	dbg("Cicero: leaving module_speak() normaly\n\r");
+	log_msg(OTTS_LOG_INFO, "Cicero: leaving module_speak() normaly\n\r");
 	return bytes;
 }
 
@@ -283,7 +288,7 @@ int module_stop(void)
 {
 	unsigned char c = 1;
 
-	dbg("cicero: stop()\n");
+	log_msg(OTTS_LOG_NOTICE, "cicero: stop()\n");
 	cicero_stop = 1;
 	mywrite(fd2[1], &c, 1);
 	return 0;
@@ -291,9 +296,9 @@ int module_stop(void)
 
 size_t module_pause(void)
 {
-	dbg("pause requested\n");
+	log_msg(OTTS_LOG_NOTICE, "pause requested\n");
 	if (cicero_speaking) {
-		dbg("Pause not supported by cicero\n");
+		log_msg(OTTS_LOG_WARN, "Pause not supported by cicero\n");
 		cicero_pause_requested = 1;
 		module_stop();
 		return -1;
@@ -304,7 +309,7 @@ size_t module_pause(void)
 
 void module_close(int status)
 {
-	dbg("cicero: close()\n");
+	log_msg(OTTS_LOG_NOTICE, "cicero: close()\n");
 	if (cicero_speaking) {
 		module_stop();
 	}
@@ -328,11 +333,11 @@ void *_cicero_speak(void *nothing)
 	char buf[CiceroMaxChunkLength], l[5], b[2];
 	struct pollfd ufds = { fd1[0], POLLIN | POLLPRI, 0 };
 
-	dbg("cicero: speaking thread starting.......\n");
+	log_msg(OTTS_LOG_INFO, "cicero: speaking thread starting.......\n");
 	set_speaking_thread_parameters();
 	while (1) {
 		sem_wait(cicero_semaphore);
-		dbg("Semaphore on\n");
+		log_msg(OTTS_LOG_DEBUG, "Semaphore on\n");
 		len = strlen(*cicero_message);
 		cicero_stop = 0;
 		cicero_speaking = 1;
@@ -342,36 +347,43 @@ void *_cicero_speak(void *nothing)
 		while (1) {
 			flag = 0;
 			if (cicero_stop) {
-				dbg("Stop in thread, terminating");
+				log_msg(OTTS_LOG_DEBUG,
+					"Stop in thread, terminating");
 				cicero_speaking = 0;
 				module_report_event_stop();
 				break;
 			}
 			if (pos >= len) {	/* end of text */
-				dbg("End of text in speaking thread\n");
+				log_msg(OTTS_LOG_DEBUG,
+					"End of text in speaking thread\n");
 				module_report_event_end();
 				cicero_speaking = 0;
 				break;
 			}
-			dbg("Call get_parts: pos=%d, msg=\"%s\" \n", pos,
-			    *cicero_message);
+			log_msg(OTTS_LOG_DEBUG,
+				"Call get_parts: pos=%d, msg=\"%s\" \n", pos,
+				*cicero_message);
 			bytes =
 			    module_get_message_part(*cicero_message, buf, &pos,
 						    CiceroMaxChunkLength,
 						    ".;?!");
-			dbg("Returned %d bytes from get_part\n", bytes);
+			log_msg(OTTS_LOG_DEBUG,
+				"Returned %d bytes from get_part\n", bytes);
 			if (bytes < 0) {
-				dbg("ERROR: Can't get message part, terminating");
+				log_msg(OTTS_LOG_WARN,
+					"ERROR: Can't get message part, terminating");
 				cicero_speaking = 0;
 				module_report_event_stop();
 				break;
 			}
 			buf[bytes] = 0;
-			dbg("Text to synthesize is '%s'\n", buf);
+			log_msg(OTTS_LOG_INFO, "Text to synthesize is '%s'\n",
+				buf);
 
 			if (bytes > 0) {
-				dbg("Speaking ...");
-				dbg("Trying to synthesize text");
+				log_msg(OTTS_LOG_NOTICE, "Speaking ...");
+				log_msg(OTTS_LOG_DEBUG,
+					"Trying to synthesize text");
 				l[0] = 2;	/* say code */
 				l[1] = bytes >> 8;
 				l[2] = bytes & 0xFF;
@@ -383,7 +395,9 @@ void *_cicero_speak(void *nothing)
 				while (1) {
 					ret = poll(&ufds, 1, 60);
 					if (ret)
-						dbg("poll() system call returned %d, events=%d\n", ret, ufds.events);
+						log_msg(OTTS_LOG_DEBUG,
+							"poll() system call returned %d, events=%d\n",
+							ret, ufds.events);
 					if (ret < 0) {
 						perror("poll");
 						module_report_event_stop();
@@ -402,8 +416,9 @@ void *_cicero_speak(void *nothing)
 					if (ret == 0)
 						continue;
 					inx = (b[0] << 8 | b[1]);
-					dbg("Tracking: index=%u, bytes=%d\n",
-					    inx, bytes);
+					log_msg(OTTS_LOG_INFO,
+						"Tracking: index=%u, bytes=%d\n",
+						inx, bytes);
 					if (inx == bytes) {
 						cicero_speaking = 0;
 						break;
@@ -422,7 +437,7 @@ void *_cicero_speak(void *nothing)
 		cicero_stop = 0;
 	}
 	cicero_speaking = 0;
-	dbg("cicero: tracking thread ended.......\n");
+	log_msg(OTTS_LOG_DEBUG, "cicero: tracking thread ended.......\n");
 	pthread_exit(NULL);
 }
 
@@ -460,7 +475,7 @@ static void cicero_set_rate(signed int rate)
 	 * Then use table lookup to find the appropriate value.
 	 */
 	pos = (OTTS_VOICE_RATE_MAX - rate) * (size - 1)
-		/ (OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_MIN);
+	    / (OTTS_VOICE_RATE_MAX - OTTS_VOICE_RATE_MIN);
 	expand = spkRateTable[pos];
 
 	unsigned char *p = (unsigned char *)&expand;

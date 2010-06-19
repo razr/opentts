@@ -30,6 +30,7 @@
 
 #include <fdsetconv.h>
 #include <getline.h>
+#include<logging.h>
 #include "parse.h"
 
 #ifdef TEMP_FAILURE_RETRY	/* GNU libc */
@@ -88,27 +89,27 @@ OutputModule *get_output_module(const openttsd_message * message)
 	int i;
 
 	if (message->settings.output_module != NULL) {
-		MSG(5, "Desired output module is %s",
-		    message->settings.output_module);
+		log_msg(OTTS_LOG_DEBUG, "Desired output module is %s",
+			message->settings.output_module);
 		output =
 		    get_output_module_by_name(message->settings.output_module);
 		if ((output == NULL) || !output->working) {
 			// If the requested module was not found or is not working,
 			// first try to use the default output module
 			if (GlobalFDSet.output_module != NULL) {
-				MSG(3,
-				    "Warning: Didn't find prefered output module, using default");
+				log_msg(OTTS_LOG_NOTICE,
+					"Warning: Didn't find prefered output module, using default");
 				output =
-				    get_output_module_by_name(GlobalFDSet.
-							      output_module);
+				    get_output_module_by_name
+				    (GlobalFDSet.output_module);
 			}
 			if (output == NULL || !output->working) {
-				MSG(3,
-				    "Couldn't load default output module, trying other modules");
+				log_msg(OTTS_LOG_NOTICE,
+					"Couldn't load default output module, trying other modules");
 			}
 			// Try all other output modules now to see if some of them
 			// is working
-			MSG(3, "Trying other output modules");
+			log_msg(OTTS_LOG_NOTICE, "Trying other output modules");
 			for (i = 0; i <= g_list_length(output_modules_list) - 1;
 			     i++) {
 				gl = g_list_nth(output_modules_list, i);
@@ -118,9 +119,9 @@ OutputModule *get_output_module(const openttsd_message * message)
 					output =
 					    get_output_module_by_name(gl->data);
 				if ((output != NULL) && (output->working)) {
-					MSG(3,
-					    "Output module %s seems to be working, using it",
-					    gl->data);
+					log_msg(OTTS_LOG_NOTICE,
+						"Output module %s seems to be working, using it",
+						gl->data);
 					break;
 				}
 			}
@@ -128,14 +129,14 @@ OutputModule *get_output_module(const openttsd_message * message)
 			// Did we get something working? If not, use dummy (it will just play
 			// a pre-synthesized error message with some hints over and over).
 			if (output == NULL || !output->working) {
-				MSG(1,
-				    "Error: No output module seems to be working, using the dummy output module");
+				log_msg(OTTS_LOG_ERR,
+					"Error: No output module seems to be working, using the dummy output module");
 				output = get_output_module_by_name("dummy");
 			}
 			// Give up....
 			if (output == NULL) {
-				MSG(1,
-				    "Error: No output module working, not even dummy, no sound produced!\n");
+				log_msg(OTTS_LOG_ERR,
+					"Error: No output module working, not even dummy, no sound produced!\n");
 				return NULL;
 			}
 		}
@@ -174,14 +175,15 @@ GString *output_read_reply(OutputModule * output)
 	do {
 		bytes = otts_getline(&line, &N, output->stream_out);
 		if (bytes == -1) {
-			MSG(2, "Error: Broken pipe to module.");
+			log_msg(OTTS_LOG_WARN, "Error: Broken pipe to module.");
 			output->working = 0;
 			speaking_module = NULL;
 			output_check_module(output);
 			errors = TRUE;	/* Broken pipe */
 		} else {
-			MSG(5, "Got %d bytes from output module over socket",
-			    bytes);
+			log_msg(OTTS_LOG_DEBUG,
+				"Got %d bytes from output module over socket",
+				bytes);
 			g_string_append(rstr, line);
 		}
 		/* terminate if we reached the last line (without '-' after numcode) */
@@ -211,14 +213,14 @@ int output_send_data(char *cmd, OutputModule * output, int wfr)
 	ret = safe_write(output->pipe_in[1], cmd, strlen(cmd));
 	fflush(NULL);
 	if (ret == -1) {
-		MSG(2, "Error: Broken pipe to module.");
+		log_msg(OTTS_LOG_WARN, "Error: Broken pipe to module.");
 		output->working = 0;
 		speaking_module = NULL;
 		output_check_module(output);
 		return -1;	/* Broken pipe */
 	}
-	MSG2(5, "output_module", "Command sent to output module: |%s| (%d)",
-	     cmd, wfr);
+	log_msg2(5, "output_module", "Command sent to output module: |%s| (%d)",
+		 cmd, wfr);
 
 	if (wfr) {		/* wait for reply? */
 		int ret = 0;
@@ -226,21 +228,21 @@ int output_send_data(char *cmd, OutputModule * output, int wfr)
 		if (response == NULL)
 			return -1;
 
-		MSG2(5, "output_module", "Reply from output module: |%s|",
-		     response->str);
+		log_msg2(5, "output_module", "Reply from output module: |%s|",
+			 response->str);
 
 		switch (response->str[0]) {
 		case '3':
-			MSG(2,
-			    "Error: Module reported error in request from openttsd (code 3xx): %s.",
-			    response->str);
+			log_msg(OTTS_LOG_WARN,
+				"Error: Module reported error in request from openttsd (code 3xx): %s.",
+				response->str);
 			ret = -2;	/* User (openttsd) side error */
 			break;
 
 		case '4':
-			MSG(2,
-			    "Error: Module reported error in itself (code 4xx): %s",
-			    response->str);
+			log_msg(OTTS_LOG_WARN,
+				"Error: Module reported error in itself (code 4xx): %s",
+				response->str);
 			ret = -3;	/* Module side error */
 			break;
 
@@ -248,7 +250,8 @@ int output_send_data(char *cmd, OutputModule * output, int wfr)
 			ret = 0;
 			break;
 		default:	/* unknown response */
-			MSG(3, "Unknown response from output module!");
+			log_msg(OTTS_LOG_NOTICE,
+				"Unknown response from output module!");
 			ret = -3;
 			break;
 		}
@@ -272,7 +275,8 @@ int _output_get_voices(OutputModule * module)
 	output_lock();
 
 	if (module == NULL) {
-		MSG(1, "ERROR: Can't list voices for broken output module");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Can't list voices for broken output module");
 		OL_RET(-1);
 	}
 	output_send_data("LIST_VOICES\n", module, 0);
@@ -288,10 +292,10 @@ int _output_get_voices(OutputModule * module)
 	g_string_free(reply, TRUE);
 	voice_dscr = g_malloc(256 * sizeof(SPDVoice *));
 	for (i = 0; !errors && (lines[i] != NULL); i++) {
-		MSG(1, "LINE here:|%s|", lines[i]);
+		log_msg(OTTS_LOG_ERR, "LINE here:|%s|", lines[i]);
 		if (strlen(lines[i]) <= 4) {
-			MSG(1,
-			    "ERROR: Bad communication from driver in synth_voices");
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Bad communication from driver in synth_voices");
 			ret = -1;
 			errors = TRUE;
 		} else if (lines[i][3] == ' ')
@@ -305,8 +309,7 @@ int _output_get_voices(OutputModule * module)
 				errors = TRUE;
 			} else {
 				//Fill in VoiceDescription
-				voice_dscr[i] =
-				    (SPDVoice *)
+				voice_dscr[i] = (SPDVoice *)
 				    g_malloc(sizeof(SPDVoice));
 				voice_dscr[i]->name = g_strdup(atoms[0]);
 				voice_dscr[i]->language = g_strdup(atoms[1]);
@@ -334,7 +337,8 @@ SPDVoice **output_list_voices(char *module_name)
 		return NULL;
 	module = get_output_module_by_name(module_name);
 	if (module == NULL) {
-		MSG(1, "ERROR: Can't list voices for module %s", module_name);
+		log_msg(OTTS_LOG_ERR, "ERROR: Can't list voices for module %s",
+			module_name);
 		return NULL;
 	}
 	return module->voices;
@@ -383,7 +387,7 @@ int output_send_settings(openttsd_message * msg, OutputModule * output)
 	char *val;
 	int err;
 
-	MSG(4, "Module set parameters.");
+	log_msg(OTTS_LOG_INFO, "Module set parameters.");
 	set_str = g_string_new("");
 	g_string_append_printf(set_str, "pitch=%d\n",
 			       msg->settings.msg_settings.pitch);
@@ -435,7 +439,7 @@ int output_send_audio_settings(OutputModule * output)
 	GString *set_str;
 	int err;
 
-	MSG(4, "Module set parameters.");
+	log_msg(OTTS_LOG_INFO, "Module set parameters.");
 	set_str = g_string_new("");
 	ADD_SET_STR(audio_output_method);
 	ADD_SET_STR(audio_oss_device);
@@ -458,7 +462,7 @@ int output_send_loglevel_setting(OutputModule * output)
 	GString *set_str;
 	int err;
 
-	MSG(4, "Module set parameters.");
+	log_msg(OTTS_LOG_INFO, "Module set parameters.");
 	set_str = g_string_new("");
 	ADD_SET_INT(log_level);
 
@@ -479,7 +483,8 @@ int output_send_debug(OutputModule * output, int flag, char *log_path)
 	char *cmd_str;
 	int err;
 
-	MSG(4, "Module sending debug flag %d with file %s", flag, log_path);
+	log_msg(OTTS_LOG_INFO, "Module sending debug flag %d with file %s",
+		flag, log_path);
 
 	output_lock();
 	if (flag) {
@@ -487,17 +492,17 @@ int output_send_debug(OutputModule * output, int flag, char *log_path)
 		err = output_send_data(cmd_str, output, 1);
 		g_free(cmd_str);
 		if (err) {
-			MSG(3,
-			    "ERROR: Can't set debugging on for output module %s",
-			    output->name);
+			log_msg(OTTS_LOG_NOTICE,
+				"ERROR: Can't set debugging on for output module %s",
+				output->name);
 			OL_RET(-1);
 		}
 	} else {
 		err = output_send_data("DEBUG OFF \n", output, 1);
 		if (err) {
-			MSG(3,
-			    "ERROR: Can't switch debugging off for output module %s",
-			    output->name);
+			log_msg(OTTS_LOG_NOTICE,
+				"ERROR: Can't switch debugging off for output module %s",
+				output->name);
 			OL_RET(-1);
 		}
 
@@ -520,7 +525,7 @@ int output_speak(openttsd_message * msg)
 	/* Determine which output module should be used */
 	output = get_output_module(msg);
 	if (output == NULL) {
-		MSG(3, "Output module doesn't work...");
+		log_msg(OTTS_LOG_NOTICE, "Output module doesn't work...");
 		OL_RET(-1)
 	}
 
@@ -533,7 +538,7 @@ int output_speak(openttsd_message * msg)
 	if (ret != 0)
 		OL_RET(ret);
 
-	MSG(4, "Module speak!");
+	log_msg(OTTS_LOG_INFO, "Module speak!");
 
 	switch (msg->settings.type) {
 	case SPD_MSGTYPE_TEXT:
@@ -548,7 +553,8 @@ int output_speak(openttsd_message * msg)
 		SEND_CMD("KEY");
 		break;
 	default:
-		MSG(2, "Invalid message type in output_speak()!");
+		log_msg(OTTS_LOG_WARN,
+			"Invalid message type in output_speak()!");
 	}
 
 	SEND_DATA(msg->buf)
@@ -570,7 +576,7 @@ int output_stop()
 		output = speaking_module;
 	}
 
-	MSG(4, "Module stop!");
+	log_msg(OTTS_LOG_INFO, "Module stop!");
 	SEND_DATA("STOP\n");
 
 	OL_RET(0)
@@ -589,7 +595,7 @@ size_t output_pause()
 		output = speaking_module;
 	}
 
-	MSG(4, "Module pause!");
+	log_msg(OTTS_LOG_INFO, "Module pause!");
 	SEND_DATA("PAUSE\n");
 
 	OL_RET(0)
@@ -602,10 +608,11 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 
 	output_lock();
 
-	MSG(5, "output_module_is_speaking()");
+	log_msg(OTTS_LOG_DEBUG, "output_module_is_speaking()");
 
 	if (output == NULL) {
-		MSG(5, "output==NULL in output_module_is_speaking()");
+		log_msg(OTTS_LOG_DEBUG,
+			"output==NULL in output_module_is_speaking()");
 		OL_RET(-1);
 	}
 
@@ -615,25 +622,26 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 		OL_RET(-1);
 	}
 
-	MSG2(5, "output_module", "Reply from output module: |%s|",
-	     response->str);
+	log_msg2(5, "output_module", "Reply from output module: |%s|",
+		 response->str);
 
 	if (response->len < 4) {
-		MSG2(2, "output_module",
-		     "Error: Wrong communication from output module! Reply less than four bytes.");
+		log_msg2(2, "output_module",
+			 "Error: Wrong communication from output module! Reply less than four bytes.");
 		g_string_free(response, TRUE);
 		OL_RET(-1);
 	}
 
 	switch (response->str[0]) {
 	case '3':
-		MSG(2,
-		    "Error: Module reported error in request from openttsd (code 3xx).");
+		log_msg(OTTS_LOG_WARN,
+			"Error: Module reported error in request from openttsd (code 3xx).");
 		retcode = -2;	/* User (openttsd) side error */
 		break;
 
 	case '4':
-		MSG(2, "Error: Module reported error in itself (code 4xx).");
+		log_msg(OTTS_LOG_WARN,
+			"Error: Module reported error in itself (code 4xx).");
 		retcode = -3;	/* Module side error */
 		break;
 
@@ -646,12 +654,13 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 				*index_mark =
 				    g_strndup(response->str + 4,
 					      p - response->str - 4);
-				MSG2(5, "output_module",
-				     "Detected INDEX MARK: %s", *index_mark);
+				log_msg2(5, "output_module",
+					 "Detected INDEX MARK: %s",
+					 *index_mark);
 			} else {
-				MSG2(2, "output_module",
-				     "Error: Wrong communication from output module!"
-				     "Reply on SPEAKING not multi-line.");
+				log_msg2(2, "output_module",
+					 "Error: Wrong communication from output module!"
+					 "Reply on SPEAKING not multi-line.");
 				retcode = -1;
 			}
 		}
@@ -659,7 +668,8 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 
 	case '7':
 		retcode = 0;
-		MSG2(5, "output_module", "Received event:\n %s", response->str);
+		log_msg2(5, "output_module", "Received event:\n %s",
+			 response->str);
 		if (!strncmp(response->str, "701", 3))
 			*index_mark = g_strdup("__spd_begin");
 		else if (!strncmp(response->str, "702", 3))
@@ -671,21 +681,22 @@ int output_module_is_speaking(OutputModule * output, char **index_mark)
 		else if (!strncmp(response->str, "700", 3)) {
 			char *p;
 			p = strchr(response->str, '\n');
-			MSG2(5, "output_module", "response:|%s|\n p:|%s|",
-			     response->str, p);
+			log_msg2(5, "output_module", "response:|%s|\n p:|%s|",
+				 response->str, p);
 			*index_mark =
 			    g_strndup(response->str + 4, p - response->str - 4);
-			MSG2(5, "output_module", "Detected INDEX MARK: %s",
-			     *index_mark);
+			log_msg2(5, "output_module", "Detected INDEX MARK: %s",
+				 *index_mark);
 		} else {
-			MSG2(2, "output_module",
-			     "ERROR: Unknown event received from output module");
+			log_msg2(2, "output_module",
+				 "ERROR: Unknown event received from output module");
 			retcode = -5;
 		}
 		break;
 
 	default:		/* unknown response */
-		MSG(3, "Unknown response from output module!");
+		log_msg(OTTS_LOG_NOTICE,
+			"Unknown response from output module!");
 		retcode = -3;
 		break;
 
@@ -742,7 +753,7 @@ int output_close(OutputModule * module)
 	output_lock();
 
 	assert(output->name != NULL);
-	MSG(3, "Closing module \"%s\"...", output->name);
+	log_msg(OTTS_LOG_NOTICE, "Closing module \"%s\"...", output->name);
 	if (output->working) {
 		SEND_DATA("STOP\n");
 		SEND_CMD("QUIT");
@@ -750,26 +761,27 @@ int output_close(OutputModule * module)
 		/* So that the module has some time to exit() correctly */
 	}
 
-	MSG(4, "Waiting for module pid %d", module->pid);
+	log_msg(OTTS_LOG_INFO, "Waiting for module pid %d", module->pid);
 	ret = waitpid_with_timeout(module->pid, NULL, 0, 1000);
 	if (ret > 0) {
-		MSG(3, "Ok, closed succesfully.");
+		log_msg(OTTS_LOG_NOTICE, "Ok, closed succesfully.");
 	} else if (ret == 0) {
 		int ret2;
-		MSG(1, "ERROR: Timed out when waiting for child cancelation");
-		MSG(3, "Killing the module");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: Timed out when waiting for child cancelation");
+		log_msg(OTTS_LOG_NOTICE, "Killing the module");
 		kill(module->pid, SIGKILL);
-		MSG(3, "Waiting until the child terminates.");
+		log_msg(OTTS_LOG_NOTICE, "Waiting until the child terminates.");
 		ret2 = waitpid_with_timeout(module->pid, NULL, 0, 1000);
 		if (ret2 > 0) {
-			MSG(3, "Module terminated");
+			log_msg(OTTS_LOG_NOTICE, "Module terminated");
 		} else {
-			MSG(1,
-			    "ERROR: Module is not able to terminate, giving up.");
+			log_msg(OTTS_LOG_ERR,
+				"ERROR: Module is not able to terminate, giving up.");
 		}
 	} else {
-		MSG(1,
-		    "ERROR: waitpid() failed when waiting for child (module).");
+		log_msg(OTTS_LOG_ERR,
+			"ERROR: waitpid() failed when waiting for child (module).");
 	}
 
 	OL_RET(0)
@@ -787,14 +799,14 @@ int output_check_module(OutputModule * output)
 	if (output == NULL)
 		return -1;
 
-	MSG(3, "Output module working status: %d (pid:%d)", output->working,
-	    output->pid);
+	log_msg(OTTS_LOG_NOTICE, "Output module working status: %d (pid:%d)",
+		output->working, output->pid);
 
 	if (output->working == 0) {
 		/* Investigate on why it crashed */
 		ret = waitpid(output->pid, &status, WNOHANG);
 		if (ret == 0) {
-			MSG(2, "Output module not running.");
+			log_msg(OTTS_LOG_WARN, "Output module not running.");
 			return 0;
 		}
 		ret = WIFEXITED(status);
@@ -803,25 +815,27 @@ int output_check_module(OutputModule * output)
 		//        if (ret == 0){
 		if (1) {
 			/* Module terminated abnormally */
-			MSG(2,
-			    "Output module terminated abnormally, probably crashed.");
+			log_msg(OTTS_LOG_WARN,
+				"Output module terminated abnormally, probably crashed.");
 		} else {
 			/* Module terminated normally, check status */
 			err = WEXITSTATUS(status);
 			if (err == 0)
-				MSG(2, "Module exited normally");
+				log_msg(OTTS_LOG_WARN,
+					"Module exited normally");
 			if (err == 1)
-				MSG(2, "Internal error in output module!");
+				log_msg(OTTS_LOG_WARN,
+					"Internal error in output module!");
 			if (err == 2) {
-				MSG(2,
-				    "Output device not working. For software devices, this can mean"
-				    "that they are not running or they are not accessible due to wrong"
-				    "acces permissions.");
+				log_msg(OTTS_LOG_WARN,
+					"Output device not working. For software devices, this can mean"
+					"that they are not running or they are not accessible due to wrong"
+					"acces permissions.");
 			}
 			if (err > 2)
-				MSG(2,
-				    "Unknown error happened in output module, exit status: %d !",
-				    err);
+				log_msg(OTTS_LOG_WARN,
+					"Unknown error happened in output module, exit status: %d !",
+					err);
 		}
 	}
 	return 0;
@@ -838,7 +852,7 @@ char *escape_dot(char *otext)
 	if (otext == NULL)
 		return NULL;
 
-	MSG2(5, "escaping", "Incomming text: |%s|", otext);
+	log_msg2(5, "escaping", "Incomming text: |%s|", otext);
 
 	ootext = otext;
 
@@ -858,7 +872,7 @@ char *escape_dot(char *otext)
 		}
 	}
 
-	MSG2(6, "escaping", "Altering text (I): |%s|", ntext->str);
+	log_msg2(6, "escaping", "Altering text (I): |%s|", ntext->str);
 
 	while ((seq = strstr(otext, "\n.\n"))) {
 		*seq = 0;
@@ -867,7 +881,7 @@ char *escape_dot(char *otext)
 		otext = seq + 3;
 	}
 
-	MSG2(6, "escaping", "Altering text (II): |%s|", ntext->str);
+	log_msg2(6, "escaping", "Altering text (II): |%s|", ntext->str);
 
 	len = strlen(otext);
 	if (len >= 2) {
@@ -875,8 +889,8 @@ char *escape_dot(char *otext)
 			g_string_append(ntext, otext);
 			g_string_append(ntext, ".");
 			otext = otext + len;
-			MSG2(6, "escaping", "Altering text (II-b): |%s|",
-			     ntext->str);
+			log_msg2(6, "escaping", "Altering text (II-b): |%s|",
+				 ntext->str);
 		}
 	}
 
@@ -890,7 +904,7 @@ char *escape_dot(char *otext)
 		g_string_free(ntext, 0);
 	}
 
-	MSG2(6, "escaping", "Altered text: |%s|", ret);
+	log_msg2(6, "escaping", "Altered text: |%s|", ret);
 
 	return ret;
 }

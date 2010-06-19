@@ -25,6 +25,7 @@
 #include <signal.h>
 #include <glib.h>
 
+#include <logging.h>
 #include "openttsd.h"
 #include "server.h"
 #include "sighandler.h"
@@ -72,8 +73,8 @@ void *catch_signals(void *data)
 			quitting = TRUE;
 			break;
 		case SIGUSR1:
-			MSG(3,
-			    "Reloading dead output modules at user request.");
+			log_msg(OTTS_LOG_NOTICE,
+				"Reloading dead output modules at user request.");
 			stop_speak_thread();
 			reload_dead_modules();
 			start_speak_thread();
@@ -83,9 +84,10 @@ void *catch_signals(void *data)
 			pthread_mutex_unlock(&thread_controller);
 			break;
 		case SIGHUP:
-			MSG(3, "Reloading configuration file at user request.");
+			log_msg(OTTS_LOG_NOTICE,
+				"Reloading configuration file at user request.");
 			stop_speak_thread();
-			load_configuration();
+			configure();
 			start_speak_thread();
 			pthread_mutex_lock(&thread_controller);
 			if (speak_thread_started == FALSE)

@@ -1,5 +1,5 @@
 /*
- * timestamp.h - Generate timestamps for log messages
+* logging.h - prototypes for logging routines
  *
  * Copyright (C) 2010 OpenTTS Developers
  *
@@ -20,8 +20,32 @@
  *
  */
 
-#ifndef TIMESTAMP_H
-#define TIMESTAMP_H
-void init_timestamps(void);
-char *get_timestamp(void);
-#endif /* TIMESTAMP_H */
+#ifndef _LOGGING_H
+#define _LOGGING_H
+
+enum LogLevel {
+	OTTS_LOG_CRIT,
+	OTTS_LOG_ERR,
+	OTTS_LOG_WARN,
+	OTTS_LOG_NOTICE,
+	OTTS_LOG_INFO,
+	OTTS_LOG_DEBUG,
+};
+
+enum DebugLevel {
+	DEBUG_OFF,
+	DEBUG_ON,
+};
+
+void init_logging(void);
+void open_log(char *new_log_file, enum LogLevel new_log_level);
+void close_log(void);
+void open_debug_log(char *new_debug_file, enum DebugLevel new_debug);
+void close_debug_log(void);
+void open_custom_log(char *file_name, char *new_type);
+void close_custom_log(void);
+void log_msg(enum LogLevel level, char *format, ...);
+void log_msg2(enum LogLevel level, char *kind, char *format, ...);
+void logging_end(void);
+
+#endif

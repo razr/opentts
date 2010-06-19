@@ -51,9 +51,9 @@
 #include <ltdl.h>
 
 #include <opentts/opentts_types.h>
+#include <logging.h>
 
 typedef audio_plugin_t *(*plugin_entry_func) (void);
-static int audio_log_level;
 static lt_dlhandle lt_h;
 
 /* Open the audio device.
@@ -116,7 +116,7 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 		return NULL;
 	}
 
-	id = p->open(pars);
+	id = p->open(pars, log_msg);
 	if (id == NULL) {
 		*error =
 		    (char *)g_strdup_printf("Couldn't open %s plugin", name);
@@ -282,15 +282,6 @@ int opentts_audio_set_volume(AudioID * id, int volume)
 
 	id->volume = volume;
 	return 0;
-}
-
-void opentts_audio_set_loglevel(AudioID * id, int level)
-{
-	if (level) {
-		audio_log_level = level;
-		if (id != NULL && id->function != NULL)
-			id->function->set_loglevel(level);
-	}
 }
 
 char const *opentts_audio_get_playcmd(AudioID * id)

@@ -35,6 +35,8 @@ extern "C" {
 
 typedef enum { SPD_AUDIO_LE, SPD_AUDIO_BE } AudioFormat;
 
+enum LogLevel;
+typedef void (*logging_func) (enum LogLevel level, char *format, ...);
 typedef struct {
 	int bits;
 	int num_channels;
@@ -59,12 +61,11 @@ typedef struct {
 
 typedef struct audio_plugin {
 	const char *name;
-	AudioID *(*open) (void **pars);
+	AudioID *(*open) (void **pars, logging_func log);
 	int (*play) (AudioID * id, AudioTrack track);
 	int (*stop) (AudioID * id);
 	int (*close) (AudioID * id);
 	int (*set_volume) (AudioID * id, int);
-	void (*set_loglevel) (int level);
 	char const *(*get_playcmd) (void);
 } audio_plugin_t;
 

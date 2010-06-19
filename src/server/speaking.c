@@ -29,6 +29,7 @@
 
 #include <glib.h>
 #include <poll.h>
+#include<logging.h>
 #include "openttsd.h"
 #include "server.h"
 #include "index_marking.h"
@@ -84,14 +85,14 @@ void *speak(void *data)
 
 	while (1) {
 		ret = poll(poll_fds, poll_count, -1);
-		MSG(5,
-		    "Poll in speak() returned socket activity, main_pfd revents=%d, poll_pfd revents=%d",
-		    poll_fds[0].revents, poll_fds[1].revents);
+		log_msg(OTTS_LOG_DEBUG,
+			"Poll in speak() returned socket activity, main_pfd revents=%d, poll_pfd revents=%d",
+			poll_fds[0].revents, poll_fds[1].revents);
 		if ((revents = poll_fds[0].revents)) {
 			if (revents & POLLIN) {
 				char buf[100];
-				MSG(5,
-				    "wait_for_poll: activity in openttsd");
+				log_msg(OTTS_LOG_DEBUG,
+					"wait_for_poll: activity in openttsd");
 				read(poll_fds[0].fd, buf, 1);
 			}
 		}
@@ -100,13 +101,13 @@ void *speak(void *data)
 				if (revents & POLLHUP) {
 					/* The speaking module terminated */
 					/* abnormally.  Clean up. */
-					MSG(1,
-					    "The current output module failed.");
+					log_msg(OTTS_LOG_ERR,
+						"The current output module failed.");
 					speaking_module_cleanup();
 				} else if ((revents & POLLIN)
 					   || (revents & POLLPRI)) {
-					MSG(5,
-					    "wait_for_poll: activity on output_module");
+					log_msg(OTTS_LOG_DEBUG,
+						"wait_for_poll: activity on output_module");
 					/* Check if sb is speaking or they are all silent. 
 					 * If some synthesizer is speaking, we must wait. */
 					is_sb_speaking();
@@ -116,20 +117,20 @@ void *speak(void *data)
 
 		/* Handle pause requests */
 		if (pause_requested) {
-			MSG(4, "Trying to pause...");
+			log_msg(OTTS_LOG_INFO, "Trying to pause...");
 			if (pause_requested == 1)
 				speaking_pause_all(pause_requested_fd);
 			if (pause_requested == 2)
 				speaking_pause(pause_requested_fd,
 					       pause_requested_uid);
-			MSG(4, "Paused...");
+			log_msg(OTTS_LOG_INFO, "Paused...");
 			pause_requested = 0;
 			continue;
 		}
 
 		if (SPEAKING) {
-			MSG(5,
-			    "Continuing because already speaking in speak()");
+			log_msg(OTTS_LOG_DEBUG,
+				"Continuing because already speaking in speak()");
 			continue;
 		}
 
@@ -137,7 +138,7 @@ void *speak(void *data)
 		if (resume_requested) {
 			GList *gl;
 
-			MSG(5, "Resume requested");
+			log_msg(OTTS_LOG_DEBUG, "Resume requested");
 
 			/* Is there any message after resume? */
 			if (g_list_length(MessagePausedList) != 0) {
@@ -146,22 +147,23 @@ void *speak(void *data)
 					gl = g_list_find_custom
 					    (MessagePausedList, (void *)NULL,
 					     message_nto_speak);
-					MSG(5,
-					    "Message insterted back to the queues!");
+					log_msg(OTTS_LOG_DEBUG,
+						"Message insterted back to the queues!");
 					MessagePausedList =
 					    g_list_remove_link
 					    (MessagePausedList, gl);
 					pthread_mutex_unlock
 					    (&element_free_mutex);
 					if ((gl != NULL) && (gl->data != NULL)) {
-						MSG(5, "Reloading message");
+						log_msg(OTTS_LOG_DEBUG,
+							"Reloading message");
 						reload_message((openttsd_message
 								*) gl->data);
 					} else
 						break;
 				}
 			}
-			MSG(5, "End of resume processing");
+			log_msg(OTTS_LOG_DEBUG, "End of resume processing");
 			resume_requested = 0;
 		}
 
@@ -173,7 +175,8 @@ void *speak(void *data)
 		} else
 			pthread_mutex_unlock(&speak_stop_mutex);
 
-		MSG(5, "Locking element_free_mutex in speak()");
+		log_msg(OTTS_LOG_DEBUG,
+			"Locking element_free_mutex in speak()");
 		pthread_mutex_lock(&element_free_mutex);
 		/* Handle postponed priority progress message */
 
@@ -207,7 +210,8 @@ void *speak(void *data)
 			message = get_message_from_queues();
 			if (message == NULL) {
 				pthread_mutex_unlock(&element_free_mutex);
-				MSG(5, "No message in the queue");
+				log_msg(OTTS_LOG_DEBUG,
+					"No message in the queue");
 				continue;
 			}
 		}
@@ -215,7 +219,8 @@ void *speak(void *data)
 		/* Isn't the parent client of this message paused? 
 		 * If it is, insert the message to the MessagePausedList. */
 		if (message_nto_speak(message, NULL)) {
-			MSG(4, "Inserting message to paused list...");
+			log_msg(OTTS_LOG_INFO,
+				"Inserting message to paused list...");
 			MessagePausedList =
 			    g_list_append(MessagePausedList, message);
 			pthread_mutex_unlock(&element_free_mutex);
@@ -230,17 +235,17 @@ void *speak(void *data)
 
 		/* Write the message to the output layer. */
 		ret = output_speak(message);
-		MSG(4, "Message sent to output module");
+		log_msg(OTTS_LOG_INFO, "Message sent to output module");
 		if (ret == -1) {
-			MSG(2, "Error: Output module failed");
+			log_msg(OTTS_LOG_WARN, "Error: Output module failed");
 			output_check_module(get_output_module(message));
 			pthread_mutex_unlock(&element_free_mutex);
 			continue;
 		}
 		if (ret != 0) {
-			MSG(2,
-			    "ERROR: Can't say message. Module reported error in speaking: %d",
-			    ret);
+			log_msg(OTTS_LOG_WARN,
+				"ERROR: Can't say message. Module reported error in speaking: %d",
+				ret);
 			pthread_mutex_unlock(&element_free_mutex);
 			continue;
 		}
@@ -316,32 +321,36 @@ int reload_message(openttsd_message * msg)
 	char *tptr;
 
 	if (msg == NULL) {
-		MSG(4, "Warning: msg == NULL in reload_message()");
+		log_msg(OTTS_LOG_INFO,
+			"Warning: msg == NULL in reload_message()");
 		return -1;
 	}
 
 	if (msg->settings.index_mark != NULL) {
-		MSG(5, "Recovering index mark %s", msg->settings.index_mark);
+		log_msg(OTTS_LOG_DEBUG, "Recovering index mark %s",
+			msg->settings.index_mark);
 		client_settings = get_client_settings_by_uid(msg->settings.uid);
 		/* Scroll back to provide context, if required */
 		/* WARNING: This relies on ordered SD_MARK_BODY index marks! */
-		MSG(5, "Recovering index mark (number)");
+		log_msg(OTTS_LOG_DEBUG, "Recovering index mark (number)");
 		im = strtol(msg->settings.index_mark + SD_MARK_BODY_LEN, &tptr,
 			    10);
-		MSG(5, "Recovering index mark (comparing tptr)");
+		log_msg(OTTS_LOG_DEBUG,
+			"Recovering index mark (comparing tptr)");
 		if (msg->settings.index_mark + SD_MARK_BODY_LEN == tptr) {
-			MSG2(2, "index_marking",
-			     "ERROR: Invalid index_mark '%s'. Message not reloaded.",
-			     msg->settings.index_mark);
+			log_msg2(2, "index_marking",
+				 "ERROR: Invalid index_mark '%s'. Message not reloaded.",
+				 msg->settings.index_mark);
 			return -1;
 		}
-		MSG(5, "Recovered index mark number: %d", im);
+		log_msg(OTTS_LOG_DEBUG, "Recovered index mark number: %d", im);
 
 		im += client_settings->pause_context;
 
-		MSG2(5, "index_marking",
-		     "Requested index mark (with context) is %d (%d+%d)", im,
-		     msg->settings.index_mark, client_settings->pause_context);
+		log_msg2(5, "index_marking",
+			 "Requested index mark (with context) is %d (%d+%d)",
+			 im, msg->settings.index_mark,
+			 client_settings->pause_context);
 		if (im < 0) {
 			im = 0;
 			pos = msg->buf;
@@ -359,7 +368,8 @@ int reload_message(openttsd_message * msg)
 		msg->buf = newtext;
 		msg->bytes = strlen(msg->buf);
 
-		if (queue_message(msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
+		if (queue_message
+		    (msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
 		    == 0) {
 			if (OPENTTSD_DEBUG)
 				FATAL("Can't queue message\n");
@@ -370,9 +380,11 @@ int reload_message(openttsd_message * msg)
 
 		return 0;
 	} else {
-		MSG(5, "Index mark unknown, inserting the whole message.");
+		log_msg(OTTS_LOG_DEBUG,
+			"Index mark unknown, inserting the whole message.");
 
-		if (queue_message(msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
+		if (queue_message
+		    (msg, -msg->settings.uid, 0, SPD_MSGTYPE_TEXT, 0)
 		    == 0) {
 			if (OPENTTSD_DEBUG)
 				FATAL("Can't queue message\n");
@@ -530,36 +542,38 @@ int speaking_pause(int fd, int uid)
 	TFDSetElement *settings;
 	int ret;
 
-	MSG(3, "Pause");
+	log_msg(OTTS_LOG_NOTICE, "Pause");
 
 	/* Find settings for this particular client */
 	settings = get_client_settings_by_uid(uid);
 	if (settings == NULL) {
-		MSG(3,
-		    "ERROR: Can't get settings of active client in speaking_pause()!");
+		log_msg(OTTS_LOG_NOTICE,
+			"ERROR: Can't get settings of active client in speaking_pause()!");
 		return 1;
 	}
 	settings->paused = 1;
 
 	if (speaking_uid != uid) {
-		MSG(5, "given uid %d not speaking_uid", speaking_uid, uid);
+		log_msg(OTTS_LOG_DEBUG, "given uid %d not speaking_uid",
+			speaking_uid, uid);
 		return 0;
 	}
 
 	if (SPEAKING) {
 		if (current_message == NULL) {
-			MSG(5, "current_message is null");
+			log_msg(OTTS_LOG_DEBUG, "current_message is null");
 			return 0;
 		}
 
 		ret = output_pause();
 		if (ret < 0) {
-			MSG(5, "output_pause returned %d", ret);
+			log_msg(OTTS_LOG_DEBUG, "output_pause returned %d",
+				ret);
 			return 0;
 		}
 
-		MSG(5,
-		    "Including current message into the message paused list");
+		log_msg(OTTS_LOG_DEBUG,
+			"Including current message into the message paused list");
 		current_message->settings.paused = 2;
 		current_message->settings.paused_while_speaking = 1;
 		MessagePausedList =
@@ -611,11 +625,11 @@ int socket_send_msg(int fd, char *msg)
 
 	assert(msg != NULL);
 	pthread_mutex_lock(&socket_com_mutex);
-	MSG2(5, "protocol", "%d:REPLY:|%s|", fd, msg);
+	log_msg2(5, "protocol", "%d:REPLY:|%s|", fd, msg);
 	ret = write(fd, msg, strlen(msg));
 	pthread_mutex_unlock(&socket_com_mutex);
 	if (ret < 0) {
-		MSG(1, "write() error: %s", strerror(errno));
+		log_msg(OTTS_LOG_ERR, "write() error: %s", strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -634,7 +648,7 @@ int report_index_mark(openttsd_message * msg, char *index_mark)
 	ret = socket_send_msg(msg->settings.fd, cmd);
 	g_free(cmd);
 	if (ret) {
-		MSG(1, "ERROR: Can't report index mark!");
+		log_msg(OTTS_LOG_ERR, "ERROR: Can't report index mark!");
 		return -1;
 	}
 	return 0;
@@ -650,7 +664,7 @@ int report_index_mark(openttsd_message * msg, char *index_mark)
 	     msg->id, msg->settings.uid); \
     ret = socket_send_msg(msg->settings.fd, cmd); \
     if (ret){ \
-      MSG(2, "ERROR: Can't report index mark!"); \
+      log_msg(OTTS_LOG_WARN, "ERROR: Can't report index mark!"); \
       return -1; \
     } \
     g_free(cmd); \
@@ -669,13 +683,13 @@ int is_sb_speaking(void)
 	char *index_mark;
 	TFDSetElement *settings;
 
-	MSG(5, "is_sb_speaking(), SPEAKING=%d", SPEAKING);
+	log_msg(OTTS_LOG_DEBUG, "is_sb_speaking(), SPEAKING=%d", SPEAKING);
 
 	/* Determine if the current module is still speaking */
 	if (speaking_module != NULL) {
 		if (current_message == NULL) {
-			MSG(1,
-			    "Error: Current message is NULL in is_sb_speaking()");
+			log_msg(OTTS_LOG_ERR,
+				"Error: Current message is NULL in is_sb_speaking()");
 			return -1;
 		}
 		settings = &(current_message->settings);
@@ -689,7 +703,7 @@ int is_sb_speaking(void)
 			return SPEAKING;
 		}
 
-		MSG(5, "INDEX MARK: %s", index_mark);
+		log_msg(OTTS_LOG_DEBUG, "INDEX MARK: %s", index_mark);
 
 		if (!strcmp(index_mark, SD_MARK_BODY "begin")) {
 			SPEAKING = 1;
@@ -727,9 +741,9 @@ int is_sb_speaking(void)
 					report_index_mark(current_message,
 							  index_mark);
 			} else {
-				MSG(5,
-				    "Setting current index_mark for the message to %s",
-				    index_mark);
+				log_msg(OTTS_LOG_DEBUG,
+					"Setting current index_mark for the message to %s",
+					index_mark);
 				if (current_message->settings.index_mark !=
 				    NULL)
 					g_free(current_message->settings.
@@ -741,7 +755,8 @@ int is_sb_speaking(void)
 		}
 		g_free(index_mark);
 	} else {
-		MSG(5, "Speaking module is NULL, SPEAKING==%d", SPEAKING);
+		log_msg(OTTS_LOG_DEBUG, "Speaking module is NULL, SPEAKING==%d",
+			SPEAKING);
 		SPEAKING = 0;
 	}
 
@@ -903,11 +918,11 @@ void set_speak_thread_attributes()
 	if (ret == 0) {
 		ret = pthread_sigmask(SIG_BLOCK, &all_signals, NULL);
 		if (ret != 0)
-			MSG(1,
-			    "Can't set signal set, expect problems when terminating!");
+			log_msg(OTTS_LOG_ERR,
+				"Can't set signal set, expect problems when terminating!");
 	} else {
-		MSG(1,
-		    "Can't fill signal set, expect problems when terminating!");
+		log_msg(OTTS_LOG_ERR,
+			"Can't fill signal set, expect problems when terminating!");
 	}
 
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -967,7 +982,7 @@ void stop_priority_except_first(SPDPriority priority)
 void resolve_priorities(SPDPriority priority)
 {
 	/* for the priority algorithm see
-	http://cvs.freebsoft.org/doc/speechd/ssip_10.html#SEC11 */
+	   http://cvs.freebsoft.org/doc/speechd/ssip_10.html#SEC11 */
 	switch (priority) {
 	case SPD_IMPORTANT:
 		/* stop current */
@@ -1012,10 +1027,12 @@ void resolve_priorities(SPDPriority priority)
 			check_locked(&element_free_mutex);
 			gl = g_list_last(MessageQueue->p5);
 			check_locked(&element_free_mutex);
-			MessageQueue->p5 = g_list_remove_link(MessageQueue->p5, gl);
+			MessageQueue->p5 =
+			    g_list_remove_link(MessageQueue->p5, gl);
 			if (gl != NULL) {
 				check_locked(&element_free_mutex);
-				MessageQueue->p5 = empty_queue(MessageQueue->p5);
+				MessageQueue->p5 =
+				    empty_queue(MessageQueue->p5);
 				if (gl->data != NULL) {
 					MessageQueue->p5 = gl;
 				}
@@ -1039,11 +1056,14 @@ openttsd_message *get_message_from_queues()
 		gl = g_list_first(current_queue);
 
 		while (gl != NULL) {
-			if (message_nto_speak((openttsd_message *)gl->data, NULL)) {
+			if (message_nto_speak
+			    ((openttsd_message *) gl->data, NULL)) {
 				gl = g_list_next(gl);
 				continue;
 			}
-			speaking_set_queue(prio, g_list_remove_link(current_queue, gl));
+			speaking_set_queue(prio,
+					   g_list_remove_link(current_queue,
+							      gl));
 			current_priority = prio;
 			return (openttsd_message *) gl->data;
 		}
