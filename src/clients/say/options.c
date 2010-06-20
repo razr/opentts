@@ -50,6 +50,7 @@ SPDSpelling spelling = SPD_SPELL_OFF; /* default */
 int wait_till_end;
 int stop_previous;
 int cancel_previous;
+int list_synthesis_voices = 0;
 
 char *application_name;
 char *connection_name;
@@ -61,6 +62,7 @@ static struct option long_options[] = {
 	{"output-module", 1, 0, 'o'},
 	{"language", 1, 0, 'l'},
 	{"voice-type", 1, 0, 't'},
+	{"list-synthesis-voices", no_argument, 0, 'L'},
 	{"punctuation-mode", 1, 0, 'm'},
 	{"spelling", no_argument, 0, 's'},
 	{"ssml", no_argument, 0, 'x'},
@@ -76,7 +78,7 @@ static struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
-static char *short_options = "r:p:i:l:o:t:m:sxeP:N:n:wSCvh";
+static char *short_options = "r:p:i:l:o:t:Lm:sxeP:N:n:wSCvh";
 
 void options_print_help(char *argv[])
 {
@@ -102,6 +104,8 @@ void options_print_help(char *argv[])
 	printf("-t, --voice-type \t");
 	printf(_("Set the preferred voice type, (%s)\n"),
 		"male1, male2, male3, female1, female2, female3, child_male, child_female");
+	printf("-L, --list-synthesis-voices\t");
+	printf(_("Get the list of synthesis voices\n"));
 	printf("-m, --punctuation-mode\t");
 	printf(_("Set the punctuation mode (%s)\n"), "none, some, all");
 	printf("-s, --spelling\t");
@@ -207,6 +211,9 @@ int options_parse(int argc, char *argv[])
 			break;
 		case 't':
 			OPT_SET_STR(voice_type);
+			break;
+		case 'L':
+			list_synthesis_voices = 1;
 			break;
 		case 'm':
 			OPT_SET_STR(punctuation_mode);

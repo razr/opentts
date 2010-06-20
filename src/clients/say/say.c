@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
 	/* Check if the text to say or options are specified in the argument */
 	msg_arg_required = (pipe_mode != 1) && (stop_previous != 1)
-	    && (cancel_previous != 1);
+	    && (cancel_previous != 1) && (list_synthesis_voices != 1);
 	if ((optind >= argc) && msg_arg_required) {
 		/*
 		 * We require a message on the command-line, but there
@@ -139,6 +139,24 @@ int main(int argc, char **argv)
 				printf("Can't set this voice!\n");
 		} else {
 			printf("Invalid voice\n");
+		}
+	}
+
+	if (list_synthesis_voices) {
+		SPDVoice **list;
+		int i;
+
+		list = spd_list_synthesis_voices(conn);
+		if (list != NULL) {
+			printf ("%25s%25s%25s\n","NAME", "LANGUAGE", "VARIANT");
+			for (i = 0; list[i]; i++) {
+				printf ("%25s%25s%25s\n",
+					list[i]->name,
+					list[i]->language,
+					list[i]->variant);
+			}
+		} else {
+			printf(_("Failed to get voice list.\n"));
 		}
 	}
 
