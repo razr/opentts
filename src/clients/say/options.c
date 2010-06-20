@@ -46,7 +46,7 @@ char *punctuation_mode;
 char *priority;
 int pipe_mode;
 SPDDataMode ssml_mode;
-int spelling;
+SPDSpelling spelling = SPD_SPELL_OFF; /* default */
 int wait_till_end;
 int stop_previous;
 int cancel_previous;
@@ -62,7 +62,7 @@ static struct option long_options[] = {
 	{"language", 1, 0, 'l'},
 	{"voice-type", 1, 0, 't'},
 	{"punctuation-mode", 1, 0, 'm'},
-	{"spelling", 0, 0, 's'},
+	{"spelling", no_argument, 0, 's'},
 	{"ssml", 0, 0, 'x'},
 	{"pipe-mode", 0, 0, 'e'},
 	{"priority", 1, 0, 'P'},
@@ -212,7 +212,7 @@ int options_parse(int argc, char *argv[])
 			OPT_SET_STR(punctuation_mode);
 			break;
 		case 's':
-			spelling = 1;
+			spelling = SPD_SPELL_ON;
 			break;
 		case 'e':
 			pipe_mode = 1;

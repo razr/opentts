@@ -68,7 +68,6 @@ int main(int argc, char **argv)
 	language = NULL;
 	voice_type = NULL;
 	punctuation_mode = NULL;
-	spelling = -2;
 	ssml_mode = SPD_DATA_TEXT;
 	wait_till_end = 0;
 	stop_previous = 0;
@@ -160,8 +159,8 @@ int main(int argc, char **argv)
 		if (spd_set_volume(conn, volume))
 			printf(_("Invalid volume!\n"));
 
-	if (spelling == 1)
-		if (spd_set_spelling(conn, SPD_SPELL_ON))
+	if (spelling != SPD_SPELL_OFF)
+		if (spd_set_spelling(conn, spelling))
 			printf(_("Can't enable spelling!\n"));
 
 	if (punctuation_mode != NULL) {
