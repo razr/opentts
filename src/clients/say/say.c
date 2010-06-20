@@ -160,6 +160,10 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (synthesis_voice != NULL)
+		if (spd_set_synthesis_voice(conn, synthesis_voice))
+			printf(_("Failed to set synthesis voice!\n"));
+
 	if (data_mode != SPD_DATA_TEXT)
 		if (spd_set_data_mode(conn, data_mode))
 			printf(_("Failed to set SSML mode.\n"));

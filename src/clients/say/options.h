@@ -41,6 +41,7 @@ extern int wait_till_end;
 extern int stop_previous;
 extern int cancel_previous;
 extern int list_synthesis_voices;
+extern char *synthesis_voice;
 
 extern char *application_name;
 extern char *connection_name;
