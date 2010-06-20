@@ -65,9 +65,6 @@ int main(int argc, char **argv)
 	bindtextdomain(GETTEXT_PACKAGE,LOCALEDIR);
 	textdomain(GETTEXT_PACKAGE);
 
-	rate = OTTS_VOICE_RATE_MIN - 1;
-	pitch = OTTS_VOICE_PITCH_MIN - 1;
-	volume = OTTS_VOICE_VOLUME_MIN - 1;
 	language = NULL;
 	voice_type = NULL;
 	punctuation_mode = NULL;
@@ -151,15 +148,15 @@ int main(int argc, char **argv)
 		if (spd_execute_command(conn, "SET SELF SSML_MODE ON"))
 			printf(_("Failed to set SSML mode.\n"));
 
-	if (rate != (OTTS_VOICE_RATE_MIN - 1))
+	if (rate != OTTS_VOICE_RATE_DEFAULT)
 		if (spd_set_voice_rate(conn, rate))
 			printf(_("Invalid rate!\n"));
 
-	if (pitch != (OTTS_VOICE_PITCH_MIN - 1))
+	if (pitch != OTTS_VOICE_PITCH_DEFAULT)
 		if (spd_set_voice_pitch(conn, pitch))
 			printf(_("Invalid pitch!\n"));
 
-	if (volume != (OTTS_VOICE_VOLUME_MIN - 1))
+	if (volume != OTTS_VOICE_VOLUME_DEFAULT)
 		if (spd_set_volume(conn, volume))
 			printf(_("Invalid volume!\n"));
 

@@ -35,9 +35,9 @@
 #include <glib/gi18n.h>
 
 /* Definitions of global variables. */
-signed int rate;
-signed int pitch;
-signed int volume;
+signed int rate = OTTS_VOICE_RATE_DEFAULT;
+signed int pitch = OTTS_VOICE_PITCH_DEFAULT;
+signed int volume = OTTS_VOICE_VOLUME_DEFAULT;
 
 char *output_module;
 char *language;
@@ -55,9 +55,9 @@ char *application_name;
 char *connection_name;
 
 static struct option long_options[] = {
-	{"rate", 1, 0, 'r'},
-	{"pitch", 1, 0, 'p'},
-	{"volume", 1, 0, 'i'},
+	{"rate", required_argument, 0, 'r'},
+	{"pitch", required_argument, 0, 'p'},
+	{"volume", required_argument, 0, 'i'},
 	{"output-module", 1, 0, 'o'},
 	{"language", 1, 0, 'l'},
 	{"voice-type", 1, 0, 't'},
