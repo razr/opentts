@@ -45,7 +45,7 @@ char *voice_type;
 char *punctuation_mode;
 char *priority;
 int pipe_mode;
-SPDDataMode ssml_mode;
+SPDDataMode data_mode = SPD_DATA_TEXT;  /* default */
 SPDSpelling spelling = SPD_SPELL_OFF; /* default */
 int wait_till_end;
 int stop_previous;
@@ -63,7 +63,7 @@ static struct option long_options[] = {
 	{"voice-type", 1, 0, 't'},
 	{"punctuation-mode", 1, 0, 'm'},
 	{"spelling", no_argument, 0, 's'},
-	{"ssml", 0, 0, 'x'},
+	{"ssml", no_argument, 0, 'x'},
 	{"pipe-mode", 0, 0, 'e'},
 	{"priority", 1, 0, 'P'},
 	{"application-name", 1, 0, 'N'},
@@ -107,7 +107,7 @@ void options_print_help(char *argv[])
 	printf("-s, --spelling\t");
 	printf(_("Spell the message\n"));
 	printf("-x, --ssml\t");
-	printf(_("Set SSML mode on (default: off)\n"));
+	printf(_("Set data mode to SSML (default: TEXT)\n"));
 	printf("\n");
 	printf("-e, --pipe-mode\t");
 	printf(_("Pipe from stdin to stdout plus openttsd\n"));
@@ -221,7 +221,7 @@ int options_parse(int argc, char *argv[])
 			OPT_SET_STR(priority);
 			break;
 		case 'x':
-			ssml_mode = SPD_DATA_SSML;
+			data_mode = SPD_DATA_SSML;
 			break;
 		case 'N':
 			OPT_SET_STR(application_name);

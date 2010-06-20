@@ -35,7 +35,7 @@ extern char *voice_type;
 extern char *punctuation_mode;
 extern char *priority;
 extern int pipe_mode;
-extern SPDDataMode ssml_mode;
+extern SPDDataMode data_mode;
 extern SPDSpelling spelling;
 extern int wait_till_end;
 extern int stop_previous;

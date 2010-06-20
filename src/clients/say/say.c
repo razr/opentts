@@ -68,7 +68,6 @@ int main(int argc, char **argv)
 	language = NULL;
 	voice_type = NULL;
 	punctuation_mode = NULL;
-	ssml_mode = SPD_DATA_TEXT;
 	wait_till_end = 0;
 	stop_previous = 0;
 	cancel_previous = 0;
@@ -143,8 +142,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (ssml_mode == SPD_DATA_SSML)
-		if (spd_execute_command(conn, "SET SELF SSML_MODE ON"))
+	if (data_mode != SPD_DATA_TEXT)
+		if (spd_set_data_mode(conn, data_mode))
 			printf(_("Failed to set SSML mode.\n"));
 
 	if (rate != OTTS_VOICE_RATE_DEFAULT)
