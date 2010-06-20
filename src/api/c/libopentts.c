@@ -888,7 +888,7 @@ SPDVoice **spd_list_synthesis_voices(SPDConnection * connection)
 	num_items = i;
 	svoices = (SPDVoice **) malloc((num_items + 1) * sizeof(SPDVoice *));
 
-	for (i = 0; i <= num_items; i++) {
+	for (i = 0; i < num_items; i++) {
 		const char delimiters[] = " ";
 		char *running;
 
