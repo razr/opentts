@@ -29,6 +29,7 @@ extern signed int rate;
 extern signed int pitch;
 extern signed int volume;
 
+extern int list_output_modules;
 extern char *output_module;
 extern char *language;
 extern char *voice_type;

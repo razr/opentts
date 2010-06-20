@@ -39,6 +39,7 @@ signed int rate = OTTS_VOICE_RATE_DEFAULT;
 signed int pitch = OTTS_VOICE_PITCH_DEFAULT;
 signed int volume = OTTS_VOICE_VOLUME_DEFAULT;
 
+int list_output_modules = 0;
 char *output_module;
 char *language;
 char *voice_type;
@@ -61,6 +62,7 @@ static struct option long_options[] = {
 	{"pitch", required_argument, 0, 'p'},
 	{"volume", required_argument, 0, 'i'},
 	{"output-module", 1, 0, 'o'},
+	{"list-output-modules", no_argument, 0, 'O'},
 	{"language", 1, 0, 'l'},
 	{"voice-type", 1, 0, 't'},
 	{"list-synthesis-voices", no_argument, 0, 'L'},
@@ -80,7 +82,7 @@ static struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
-static char *short_options = "r:p:i:l:o:t:Ly:m:sxeP:N:n:wSCvh";
+static char *short_options = "r:p:i:l:o:Ot:Ly:m:sxeP:N:n:wSCvh";
 
 void options_print_help(char *argv[])
 {
@@ -101,6 +103,8 @@ void options_print_help(char *argv[])
 		   OTTS_VOICE_VOLUME_DEFAULT);
 	printf("-o, --output-module\t");
 	printf(_("Set the output module\n"));
+	printf("-O, --list-output-modules\t");
+	printf(_("Get the list of output modules\n"));
 	printf("-l, --language\t");
 	printf(_("Set the language (iso code)\n"));
 	printf("-t, --voice-type \t");
@@ -212,6 +216,9 @@ int options_parse(int argc, char *argv[])
 			break;
 		case 'o':
 			OPT_SET_STR(output_module);
+			break;
+		case 'O':
+			list_output_modules = 1;
 			break;
 		case 't':
 			OPT_SET_STR(voice_type);
