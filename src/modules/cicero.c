@@ -144,6 +144,7 @@ int module_init(char **status_info)
 	int ret;
 	int stderr_redirect;
 	struct sigaction ignore;
+	memset(&ignore, '\0', sizeof(ignore));
 	ignore.sa_flags = SA_RESTART;
 	sigemptyset(&ignore.sa_mask);
 	ignore.sa_handler = SIG_IGN;

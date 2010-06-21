@@ -909,6 +909,7 @@ int main(int argc, char *argv[])
 	int fd;
 	int ret;
 	struct sigaction sig;
+	memset(&sig, '\0', sizeof(sig));
 	sig.sa_flags = SA_RESTART;
 	sigemptyset(&sig.sa_mask);
 

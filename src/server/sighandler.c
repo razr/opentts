@@ -21,6 +21,7 @@
  *
  */
 
+#include <stdlib.h>
 #include <signal.h>
 #include <glib.h>
 
@@ -143,6 +144,7 @@ static void install_dummy_handlers(void)
 {
 	/* install dummy handlers for the signals we want to process */
 	struct sigaction temp;
+	memset(&temp, '\0', sizeof(temp));
 	temp.sa_handler = dummy_handler;
 	sigemptyset(&temp.sa_mask);
 	sigaction(SIGINT, &temp, NULL);
