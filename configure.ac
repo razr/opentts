@@ -175,7 +175,7 @@ AS_IF([test $with_libao != "no"],
 	[AC_CHECK_LIB([ao],
 		[ao_play],
 		[with_libao=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/libao.la";
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/ao.la";
 		LIBAO_LIBS="-lao";],
 		[AS_IF([test $with_libao = "yes"],
 			[AC_MSG_FAILURE([libao is not available])])])])

@@ -80,6 +80,10 @@ AudioID *opentts_audio_open(char *name, void **pars, char **error)
 	gchar *libname;
 	int ret;
 
+	if (!strcmp(name, "libao"))
+		name = "ao";
+	/* The module is called ao, but we still accept the old name libao. */
+
 	/* now check whether dynamic plugin is available */
 	ret = lt_dlinit();
 	if (ret != 0) {

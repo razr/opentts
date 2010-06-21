@@ -15,10 +15,10 @@ alsa_la_LDFLAGS = -module -avoid-version
 endif
 
 if libao_support
-audio_LTLIBRARIES += libao.la
-libao_la_SOURCES = libao.c
-libao_la_LIBADD = $(LIBAO_LIBS) $(common_libs)
-libao_la_LDFLAGS = -module -avoid-version
+audio_LTLIBRARIES += ao.la
+ao_la_SOURCES = libao.c
+ao_la_LIBADD = $(LIBAO_LIBS) $(common_libs)
+ao_la_LDFLAGS = -module -avoid-version
 endif
 
 if nas_support

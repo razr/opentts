@@ -32,7 +32,7 @@
 #include <glib.h>
 #include <timestamp.h>
 
-#define AUDIO_PLUGIN_ENTRY libao_LTX_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY ao_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 
 /* send a packet of XXX bytes to the sound device */
