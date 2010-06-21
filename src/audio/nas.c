@@ -33,7 +33,7 @@
 
 #include <pthread.h>
 
-#define AUDIO_PLUGIN_ENTRY nas_LTX_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY otts_nas_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 #include <opentts/opentts_types.h>
 

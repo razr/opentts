@@ -42,7 +42,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#define AUDIO_PLUGIN_ENTRY pulse_LTX_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY otts_pulse_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 
 typedef struct {

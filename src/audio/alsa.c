@@ -38,7 +38,7 @@
 #include <alsa/asoundlib.h>
 #include <timestamp.h>
 
-#define AUDIO_PLUGIN_ENTRY alsa_LTX_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY otts_alsa_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 #include <opentts/opentts_types.h>
 

@@ -41,7 +41,7 @@
 #include <timestamp.h>
 #include <glib.h>
 
-#define AUDIO_PLUGIN_ENTRY oss_LTX_audio_plugin_get
+#define AUDIO_PLUGIN_ENTRY otts_oss_LTX_audio_plugin_get
 #include <opentts/opentts_audio_plugin.h>
 #include <opentts/opentts_types.h>
 
