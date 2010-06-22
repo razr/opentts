@@ -172,14 +172,13 @@ AC_SUBST(ALSA_LIBS)
 AM_CONDITIONAL(alsa_support, test $with_alsa = "yes")
 
 AS_IF([test $with_libao != "no"],
-	[AC_CHECK_LIB([ao],
-		[ao_play],
+	[PKG_CHECK_MODULES([LIBAO], [ao],
 		[with_libao=yes;
-		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la";
-		LIBAO_LIBS="-lao";],
+		AUDIO_DLOPEN_MODULES="${AUDIO_DLOPEN_MODULES} -dlopen ../audio/otts_libao.la"],
 		[AS_IF([test $with_libao = "yes"],
 			[AC_MSG_FAILURE([libao is not available])])])])
 
+AC_SUBST(LIBAO_CFLAGS)
 AC_SUBST(LIBAO_LIBS)
 AM_CONDITIONAL(libao_support, test $with_libao = "yes")
 

@@ -17,6 +17,7 @@ endif
 if libao_support
 audio_LTLIBRARIES += otts_libao.la
 otts_libao_la_SOURCES = libao.c
+otts_libao_la_CFLAGS = $(LIBAO_CFLAGS)
 otts_libao_la_LIBADD = $(LIBAO_LIBS) $(common_libs)
 otts_libao_la_LDFLAGS = -module -avoid-version
 endif
