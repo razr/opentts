@@ -215,6 +215,24 @@ output_close(module);
 
 		}
 
+		g_string_append_printf(reply, "---------------\n");
+
+		if (s == '2')
+			log_msg(OTTS_LOG_WARN,
+			    "Module %s started sucessfully with message: %s",
+			    module->name, reply->str);
+		else if (s == '3') {
+			log_msg(OTTS_LOG_CRIT,
+			    "ERROR: Module %s failed to initialize. Reason: %s",
+			    module->name, reply->str);
+			module->working = 0;
+			kill(module->pid, 9);
+			waitpid(module->pid, NULL, WNOHANG);
+			destroy_module(module);
+			return NULL;
+		}
+		g_string_free(reply, 1);
+
 		if (options.debug) {
 			log_msg(OTTS_LOG_INFO,
 			    "Switching debugging on for output module %s",
@@ -248,23 +266,6 @@ output_close(module);
 		/* Get a list of supported voices */
 		_output_get_voices(module);
 		fclose(f);
-		g_string_append_printf(reply, "---------------\n");
-
-		if (s == '2')
-			log_msg(OTTS_LOG_WARN,
-			    "Module %s started sucessfully with message: %s",
-			    module->name, reply->str);
-		else if (s == '3') {
-			log_msg(OTTS_LOG_CRIT,
-			    "ERROR: Module %s failed to initialize. Reason: %s",
-			    module->name, reply->str);
-			module->working = 0;
-			kill(module->pid, 9);
-			waitpid(module->pid, NULL, WNOHANG);
-			destroy_module(module);
-			return NULL;
-		}
-		g_string_free(reply, 1);
 	}
 
 	return module;
