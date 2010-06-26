@@ -465,16 +465,6 @@ static void init()
 		options.conf_file);
 	configure();
 
-	/* Check for output modules */
-	if (g_hash_table_size(output_modules) == 0) {
-		DIE("No speech output modules were loaded - aborting...");
-	} else {
-		log_msg(OTTS_LOG_NOTICE,
-			"openttsd started with %d output module%s",
-			g_hash_table_size(output_modules),
-			g_hash_table_size(output_modules) > 1 ? "s" : "");
-	}
-
 	last_p5_block = NULL;
 }
 
@@ -488,6 +478,8 @@ void configure(void)
 {
 	char *log_file;
 	configfile_t *configfile = NULL;
+	char *output_module;
+	GList *list;
 
 	/* Clean previous configuration */
 	assert(output_modules != NULL);
@@ -533,6 +525,26 @@ void configure(void)
 	}
 
 	free_config_options(configoptions, &num_options);
+
+	/* Check for output modules */
+	if (g_hash_table_size(output_modules) == 0)
+		DIE("No speech output modules were loaded - aborting...");
+	log_msg(OTTS_LOG_NOTICE,
+		"%d output module%s were loaded",
+		g_hash_table_size(output_modules),
+		g_hash_table_size(output_modules) > 1 ? "s" : "");
+
+	/* If the default module isn't available, pick the first one. */
+	list = g_list_find(output_modules_list, GlobalFDSet.output_module);
+	if (list == NULL) {
+		output_module = g_list_nth_data(output_modules_list, 0);
+		log_msg(OTTS_LOG_WARN,
+			"default module (%s) not found, %s set to default",
+			GlobalFDSet.output_module, output_module);
+		g_free(GlobalFDSet.output_module);
+		GlobalFDSet.output_module = g_strdup(output_module);
+	}
+
 }
 
 static void quit(void)
