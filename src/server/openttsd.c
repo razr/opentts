@@ -176,9 +176,9 @@ int connection_new(int server_socket)
 	/* Check if there is space for server status data; allocate it */
 	if (client_socket >= status.num_fds - 1) {
 		openttsd_sockets = (sock_t *) g_realloc(openttsd_sockets,
-							status.num_fds
+							client_socket
 							* 2 * sizeof(sock_t));
-		status.num_fds *= 2;
+		status.num_fds = client_socket * 2;
 	}
 
 	openttsd_sockets[client_socket].o_buf = NULL;
