@@ -173,7 +173,6 @@ int module_init(char **status_info)
 
 int module_audio_init(char **status_info)
 {
-	status_info = NULL;
 	log_msg(OTTS_LOG_INFO, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
