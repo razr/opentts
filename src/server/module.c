@@ -49,8 +49,8 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				 char *mod_cfgfile, char *mod_dbgfile)
 {
 	OutputModule *module;
-	int cfg = 0, ret, fr;
-	char s, *arg1 = NULL, *rep_line = NULL, *module_conf_dir;
+	int ret, fr;
+	char s, *rep_line = NULL, *module_conf_dir;
 	FILE *f;
 	size_t n = 0;
 	GString *reply;
@@ -83,11 +83,6 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	    || (pipe(module->pipe_out) != 0)) {
 		log_msg(OTTS_LOG_NOTICE, "Can't open pipe! Module not loaded.");
 		return NULL;
-	}
-
-	if (mod_cfgfile) {
-		arg1 = g_strdup_printf("%s", module->configfilename);
-		cfg = 1;
 	}
 
 	/* Open the file for child stderr (logging) redirection */
@@ -134,20 +129,17 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 			ret = dup2(module->stderr_redirect, 2);
 		}
 
-		if (cfg == 0) {
-			if (execlp(module->filename, "", (char *)0) == -1) {
-				exit(1);
-			}
+		if(module->configfilename) {
+			execlp(module->filename, "", module->configfilename,
+			       (char *)0);
 		} else {
-			if (execlp(module->filename, "", arg1, (char *)0) == -1) {
-				exit(1);
-			}
+			execlp(module->filename, "", (char *)0);
 		}
-		assert(0);
-	}
 
-	if (cfg)
-		g_free(arg1);
+		log_msg(OTTS_LOG_CRIT, "failed to exec module %s!",
+		        module->filename);
+		exit(1);
+	}
 
 	module->pid = fr;
 	close(module->pipe_in[0]);
