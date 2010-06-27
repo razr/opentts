@@ -44,6 +44,8 @@ void destroy_module(OutputModule * module)
 {
 	g_free(module->name);
 	g_free(module->filename);
+	if (module->debugfilename)
+		g_free(module->debugfilename);
 	g_free(module->configfilename);
 	g_free(module);
 }
@@ -83,9 +85,9 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 		return module;
 	}
 
-	if ((pipe(module->pipe_in) != 0)
-	    || (pipe(module->pipe_out) != 0)) {
+	if ((pipe(module->pipe_in) != 0) || (pipe(module->pipe_out) != 0)) {
 		log_msg(OTTS_LOG_NOTICE, "Can't open pipe! Module not loaded.");
+		destroy_module(module);
 		return NULL;
 	}
 
@@ -116,6 +118,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	fr = fork();
 	if (fr == -1) {
 		printf("Can't fork, error! Module not loaded.");
+		destroy_module(module);
 		return NULL;
 	}
 
