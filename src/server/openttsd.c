@@ -535,7 +535,9 @@ void configure(void)
 		g_hash_table_size(output_modules) > 1 ? "s" : "");
 
 	/* If the default module isn't available, pick the first one. */
-	list = g_list_find(output_modules_list, GlobalFDSet.output_module);
+	list =
+	    g_list_find_custom(output_modules_list, GlobalFDSet.output_module,
+			       strcmp);
 	if (list == NULL) {
 		output_module = g_list_nth_data(output_modules_list, 0);
 		log_msg(OTTS_LOG_WARN,
