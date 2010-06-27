@@ -128,12 +128,12 @@ static AudioID *pulse_open(void **pars, logging_func log)
 
 	pulse_id = (pulse_id_t *) g_malloc(sizeof(pulse_id_t));
 
-	pulse_id->pa_server = (char *)pars[3];
-	pulse_id->pa_min_audio_length = DEFAULT_PA_MIN_AUDIO_LENgTH;
-
-	if (!strcmp(pulse_id->pa_server, "default")) {
+	if (!strcmp(pars[3], "default"))
 		pulse_id->pa_server = NULL;
-	}
+	else
+		pulse_id->pa_server = (char *)g_strdup(pars[3]);
+
+	pulse_id->pa_min_audio_length = DEFAULT_PA_MIN_AUDIO_LENgTH;
 
 	if (pars[4] != NULL && atoi(pars[4]) != 0)
 		pulse_id->pa_min_audio_length = atoi(pars[4]);
@@ -142,6 +142,7 @@ static AudioID *pulse_open(void **pars, logging_func log)
 
 	if (pulse_open_helper
 	    (pulse_id, INITIAL_FORMAT, INITIAL_RATE, INITIAL_CHANNELS) != 0) {
+		g_free(pulse_id->pa_server);
 		g_free(pulse_id);
 		pulse_id = NULL;
 		audio_log(OTTS_LOG_ERR, "Pulse: cannot connect to server.");
@@ -271,6 +272,9 @@ static int pulse_close(AudioID * id)
 		pa_simple_free(pulse_id->pa_simple);
 		pulse_id->pa_simple = NULL;
 	}
+
+	g_free(pulse_id->pa_server);
+	pulse_id->pa_server = NULL;
 
 	g_free(pulse_id);
 	id = NULL;
