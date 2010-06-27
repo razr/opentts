@@ -63,15 +63,30 @@ AC_ARG_WITH([pulse],
 	[],
 	[with_pulse=check])
 
+AC_ARG_WITH([cicero],
+	[AS_HELP_STRING([--with-cicero], [include cicero support])],
+	[],
+	[with_cicero=no])
+
 AC_ARG_WITH([espeak],
 	[AS_HELP_STRING([--with-espeak], [include espeak support])],
 	[],
 	[with_espeak=check])
 
+AC_ARG_WITH([festival],
+	[AS_HELP_STRING([--with-festival], [include festival support])],
+	[],
+	[with_festival=no])
+
 AC_ARG_WITH([flite],
 	[AS_HELP_STRING([--with-flite], [include Festival Lite (Flite) support])],
 	[],
 	[with_flite=check])
+
+AC_ARG_WITH([generic],
+	[AS_HELP_STRING([--without-generic], [do not include generic synthesizer support])],
+	[],
+	[with_generic=yes])
 
 AC_ARG_WITH([ibmtts],
 	[AS_HELP_STRING([--with-ibmtts], [include IBM TTS support])],
@@ -221,11 +236,15 @@ AS_IF([test "$AUDIO_DLOPEN_MODULES" = "-dlopen force"],
 	[AC_MSG_WARN([openttsd is being built without audio support])])
 
 # speech synthesizers
+
+# check for cicero support
+AM_CONDITIONAL(cicero_support, test $with_cicero = "yes")
+
+# check for espeak support
 #
 # Additional library check added by Willie Walker to account
 # for how the SunStudio CC compiler works.
 #
-# check for espeak support
 if test "$GCC" != yes; then
 	EXTRA_ESPEAK_LIBS="-lCstd -lCrun"
 fi
@@ -240,6 +259,9 @@ AS_IF([test $with_espeak != "no"],
 		[$EXTRA_ESPEAK_LIBS])])
 
 AM_CONDITIONAL(espeak_support, test $with_espeak = "yes")
+
+# check for festival support
+AM_CONDITIONAL(festival_support, test $with_festival = "yes")
 
 AS_IF([test $with_flite != "no"],
 	[AC_CHECK_LIB([flite],
@@ -276,6 +298,9 @@ AS_IF([test $with_flite != "no"],
 AC_SUBST(flite_basic)
 AC_SUBST(flite_kal)
 AM_CONDITIONAL(flite_support, test $with_flite = "yes")
+
+# check for generic support
+AM_CONDITIONAL(generic_support, test $with_generic = "yes")
 
 # Check for IBM TTS
 AS_IF([test $with_ibmtts != "no"],
