@@ -37,6 +37,9 @@
 #include "openttsd.h"
 #include "output.h"
 
+static int send_initial_commands(OutputModule * module);
+static void start_module(OutputModule * module);
+
 void destroy_module(OutputModule * module)
 {
 	g_free(module->name);
@@ -50,10 +53,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 {
 	OutputModule *module;
 	int ret, fr;
-	char s, *rep_line = NULL, *module_conf_dir;
-	FILE *f;
-	size_t n = 0;
-	GString *reply;
+	char *module_conf_dir;
 
 	if (mod_name == NULL)
 		return NULL;
@@ -116,29 +116,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	}
 
 	if (fr == 0) {
-		ret = dup2(module->pipe_in[0], 0);
-		close(module->pipe_in[0]);
-		close(module->pipe_in[1]);
-
-		ret = dup2(module->pipe_out[1], 1);
-		close(module->pipe_out[1]);
-		close(module->pipe_out[0]);
-
-		/* Redirrect stderr to the appropriate logfile */
-		if (module->stderr_redirect >= 0) {
-			ret = dup2(module->stderr_redirect, 2);
-		}
-
-		if(module->configfilename) {
-			execlp(module->filename, "", module->configfilename,
-			       (char *)0);
-		} else {
-			execlp(module->filename, "", (char *)0);
-		}
-
-		log_msg(OTTS_LOG_CRIT, "failed to exec module %s!",
-		        module->filename);
-		exit(1);
+		start_module(module);
 	}
 
 	module->pid = fr;
@@ -170,13 +148,31 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	if (ret)
 		FATAL("Can't set line buffering, setvbuf failed.");
 
+	if (0 != send_initial_commands(module)) {
+		module->working = 0;
+		kill(module->pid, SIGKILL);
+		waitpid(module->pid, NULL, WNOHANG);
+		destroy_module(module);
+		return NULL;
+	}
+
+	return module;
+}
+
+int send_initial_commands(OutputModule * module)
+{
+	FILE *f;
+	size_t n = 0;
+	GString *reply;
+	char s, *rep_line = NULL;
+	int ret;
+
 	log_msg(OTTS_LOG_INFO, "Trying to initialize %s.", module->name);
 	if (output_send_data("INIT\n", module, 0) != 0) {
 		log_msg(OTTS_LOG_ERR,
 			"ERROR: Something wrong with %s, can't initialize",
 			module->name);
-		output_close(module);
-		return NULL;
+		return -1;
 	}
 
 	reply = g_string_new("\n---------------\n");
@@ -189,7 +185,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				module->name);
 			if (rep_line != NULL)
 				free(rep_line);
-			return NULL;
+			return -1;
 		}
 
 		assert(rep_line != NULL);
@@ -200,7 +196,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				"ERROR: Bad syntax from output module %s 2",
 				module->name);
 			free(rep_line);
-			return NULL;
+			return -1;
 		}
 
 		if (rep_line[3] == '-')
@@ -222,11 +218,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 		log_msg(OTTS_LOG_ERR,
 			"ERROR: Module %s failed to initialize. Reason: %s",
 			module->name, reply->str);
-		module->working = 0;
-		kill(module->pid, 9);
-		waitpid(module->pid, NULL, WNOHANG);
-		destroy_module(module);
-		return NULL;
+		return -1;
 	}
 	g_string_free(reply, 1);
 
@@ -242,11 +234,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	if (ret != 0) {
 		log_msg(OTTS_LOG_ERR,
 			"ERROR: Can't initialize audio in output module, see reason above.");
-		module->working = 0;
-		kill(module->pid, 9);
-		waitpid(module->pid, NULL, WNOHANG);
-		destroy_module(module);
-		return NULL;
+		return -1;
 	}
 
 	/* Send log level configuration setting */
@@ -254,18 +242,40 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	if (ret != 0) {
 		log_msg(OTTS_LOG_ERR,
 			"ERROR: Can't set the log level inin the output module.");
-		module->working = 0;
-		kill(module->pid, 9);
-		waitpid(module->pid, NULL, WNOHANG);
-		destroy_module(module);
-		return NULL;
+		return -1;
 	}
 
 	/* Get a list of supported voices */
 	_output_get_voices(module);
 	fclose(f);
+	return 0;
+}
 
-	return module;
+static void start_module(OutputModule * module)
+{
+	int ret;
+
+	ret = dup2(module->pipe_in[0], 0);
+	close(module->pipe_in[0]);
+	close(module->pipe_in[1]);
+
+	ret = dup2(module->pipe_out[1], 1);
+	close(module->pipe_out[1]);
+	close(module->pipe_out[0]);
+
+	/* Redirrect stderr to the appropriate logfile */
+	if (module->stderr_redirect >= 0) {
+		ret = dup2(module->stderr_redirect, 2);
+	}
+
+	if (module->configfilename) {
+		execlp(module->filename, "", module->configfilename, (char *)0);
+	} else {
+		execlp(module->filename, "", (char *)0);
+	}
+
+	log_msg(OTTS_LOG_CRIT, "failed to exec module %s!", module->filename);
+	exit(1);
 }
 
 int unload_output_module(OutputModule * module)
