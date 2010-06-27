@@ -71,8 +71,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				 char *mod_cfgfile, char *mod_dbgfile)
 {
 	OutputModule *module;
-	int ret, fr;
-	char *module_conf_dir;
+	int ret, pid;
 
 	if (mod_name == NULL)
 		return NULL;
@@ -115,18 +114,18 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 		log_msg(OTTS_LOG_WARN,
 			"Output module is logging to standard error output (stderr)");
 
-	fr = fork();
-	if (fr == -1) {
+	pid = fork();
+	if (pid == -1) {
 		printf("Can't fork, error! Module not loaded.");
 		destroy_module(module);
 		return NULL;
 	}
 
-	if (fr == 0) {
+	if (pid == 0) {
 		start_module(module);
 	}
 
-	module->pid = fr;
+	module->pid = pid;
 	close(module->pipe_in[0]);
 	close(module->pipe_out[1]);
 
