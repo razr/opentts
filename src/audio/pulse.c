@@ -53,7 +53,7 @@ typedef struct {
 	int pa_min_audio_length;
 	volatile int pa_stop_playback;
 	int current_rate;
-	int current_bps;
+	pa_sample_format_t current_format;
 	int current_channels;
 } pulse_id_t;
 
@@ -64,11 +64,60 @@ typedef struct {
 /* Changed to define on config file. Default is the same. */
 #define DEFAULT_PA_MIN_AUDIO_LENgTH 100
 
+/*
+ * Some settings for the initial connection to PulseAudio.
+ * Mono, signed 16-bit little-endian data, at 44100 samples / second.
+ * If they are not acceptable, they will be changed by the re-connect
+ * in pulse_play.
+ */
+
+static const pa_sample_format_t INITIAL_FORMAT = PA_SAMPLE_S16LE;
+static const uint32_t INITIAL_RATE = 44100;
+static const uint8_t INITIAL_CHANNELS = 1;
+
 static logging_func audio_log;
 
 static char const *pulse_play_cmd = "paplay";
 
 static FILE *pulseDebugFile = NULL;
+
+static int pulse_open_helper(pulse_id_t * id,
+			     pa_sample_format_t format, uint32_t rate,
+			     uint32_t channels)
+{
+	int error;
+	pa_sample_spec ss;
+	pa_buffer_attr buffAttr;
+
+	ss.format = format;
+	ss.rate = rate;
+	ss.channels = channels;
+
+	/* Set prebuf to one sample so that keys are spoken as soon as typed rather than delayed until the next key pressed */
+	buffAttr.maxlength = (uint32_t) - 1;
+	//buffAttr.tlength = (uint32_t)-1; - this is the default, which causes key echo to not work properly.
+	buffAttr.tlength = id->pa_min_audio_length;
+	buffAttr.prebuf = 1;
+	buffAttr.minreq = (uint32_t) - 1;
+	buffAttr.fragsize = (uint32_t) - 1;
+
+	if (!
+	    (id->pa_simple =
+	     pa_simple_new(id->pa_server, "OpenTTS",
+			   PA_STREAM_PLAYBACK, NULL, "playback", &ss,
+			   NULL, &buffAttr, &error))) {
+		fprintf(stderr,
+			__FILE__ ": pa_simple_new() failed: %s\n",
+			pa_strerror(error));
+		return -1;
+	}
+
+	id->current_format = format;
+	id->current_rate = rate;
+	id->current_channels = channels;
+
+	return 0;
+}
 
 static AudioID *pulse_open(void **pars, logging_func log)
 {
@@ -79,11 +128,7 @@ static AudioID *pulse_open(void **pars, logging_func log)
 
 	pulse_id = (pulse_id_t *) g_malloc(sizeof(pulse_id_t));
 
-	pulse_id->pa_simple = NULL;
 	pulse_id->pa_server = (char *)pars[3];
-	pulse_id->current_rate = -1;
-	pulse_id->current_bps = -1;
-	pulse_id->current_channels = -1;
 	pulse_id->pa_min_audio_length = DEFAULT_PA_MIN_AUDIO_LENgTH;
 
 	if (!strcmp(pulse_id->pa_server, "default")) {
@@ -94,18 +139,25 @@ static AudioID *pulse_open(void **pars, logging_func log)
 		pulse_id->pa_min_audio_length = atoi(pars[4]);
 
 	pulse_id->pa_stop_playback = 0;
+
+	if (pulse_open_helper
+	    (pulse_id, INITIAL_FORMAT, INITIAL_RATE, INITIAL_CHANNELS) != 0) {
+		g_free(pulse_id);
+		pulse_id = NULL;
+		audio_log(OTTS_LOG_ERR, "Pulse: cannot connect to server.");
+	}
+
 	return (AudioID *) pulse_id;
 }
 
 static int pulse_play(AudioID * id, AudioTrack track)
 {
+	pa_sample_format_t format;
 	int bytes_per_sample;
 	int num_bytes;
 	int outcnt = 0;
 	signed short *output_samples;
 	int i;
-	pa_sample_spec ss;
-	pa_buffer_attr buffAttr;
 	int error;
 	pulse_id_t *pulse_id = (pulse_id_t *) id;
 
@@ -116,6 +168,7 @@ static int pulse_play(AudioID * id, AudioTrack track)
 		return 0;
 	}
 	audio_log(OTTS_LOG_INFO, "pulse: Starting playback\n");
+
 	/* Choose the correct format */
 	if (track.bits == 16) {
 		bytes_per_sample = 2;
@@ -127,6 +180,24 @@ static int pulse_play(AudioID * id, AudioTrack track)
 			  track.bits);
 		return -1;
 	}
+
+	if (bytes_per_sample == 2) {
+		switch (id->format) {
+		case SPD_AUDIO_LE:
+			format = PA_SAMPLE_S16LE;
+			break;
+		case SPD_AUDIO_BE:
+			format = PA_SAMPLE_S16BE;
+			break;
+		default:
+			audio_log(OTTS_LOG_WARN, "pulse:invalid format %d",
+				  id->format);
+			return -1;
+		}
+	} else {
+		format = PA_SAMPLE_U8;
+	}
+
 	output_samples = track.samples;
 	num_bytes = track.num_samples * bytes_per_sample;
 
@@ -134,35 +205,8 @@ static int pulse_play(AudioID * id, AudioTrack track)
 	 * are suitable for this track. */
 	if (pulse_id->pa_simple == NULL
 	    || pulse_id->current_rate != track.sample_rate
-	    || pulse_id->current_bps != track.bits
+	    || pulse_id->current_format != format
 	    || pulse_id->current_channels != track.num_channels) {
-		/* Choose the correct format */
-		ss.rate = track.sample_rate;
-		ss.channels = track.num_channels;
-		if (bytes_per_sample == 2) {
-			switch (id->format) {
-			case SPD_AUDIO_LE:
-				ss.format = PA_SAMPLE_S16LE;
-				break;
-			case SPD_AUDIO_BE:
-				ss.format = PA_SAMPLE_S16BE;
-				break;
-			default:
-				audio_log(OTTS_LOG_WARN, "pulse:invalid format %d",
-					  id->format);
-				return -1;
-			}
-		} else {
-			ss.format = PA_SAMPLE_U8;
-		}
-		/* Set prebuf to one sample so that keys are spoken as soon as typed rather than delayed until the next key pressed */
-		buffAttr.maxlength = (uint32_t) - 1;
-		//buffAttr.tlength = (uint32_t)-1; - this is the default, which causes key echo to not work properly.
-		buffAttr.tlength = pulse_id->pa_min_audio_length;
-		buffAttr.prebuf = 1;
-		buffAttr.minreq = (uint32_t) - 1;
-		buffAttr.fragsize = (uint32_t) - 1;
-
 		if (pulse_id->pa_simple != NULL) {
 			/* Close the old connection. */
 			pa_simple_free(pulse_id->pa_simple);
@@ -172,21 +216,14 @@ static int pulse_play(AudioID * id, AudioTrack track)
 				  track.num_channels);
 		}
 
-		if (!
-		    (pulse_id->pa_simple =
-		     pa_simple_new(pulse_id->pa_server, "OpenTTS",
-				   PA_STREAM_PLAYBACK, NULL, "playback", &ss,
-				   NULL, &buffAttr, &error))) {
-			fprintf(stderr,
-				__FILE__ ": pa_simple_new() failed: %s\n",
-				pa_strerror(error));
-			return 1;
+		if (pulse_open_helper(pulse_id, format, track.sample_rate,
+				      track.num_channels) != 0) {
+			audio_log(OTTS_LOG_ERR,
+				  "pulse: unable to reconnect to server.");
+			return -1;
 		}
-
-		pulse_id->current_rate = track.sample_rate;
-		pulse_id->current_bps = track.bits;
-		pulse_id->current_channels = track.num_channels;
 	}
+
 	audio_log(OTTS_LOG_DEBUG, "pulse: bytes to play: %d, (%f secs)\n", num_bytes,
 		  (((float)(num_bytes) / 2) / (float)track.sample_rate));
 	pulse_id->pa_stop_playback = 0;
