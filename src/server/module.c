@@ -48,6 +48,23 @@ void destroy_module(OutputModule * module)
 	g_free(module);
 }
 
+static OutputModule *create_module(char *name, char *prog, char *cfg_file,
+				   char *dbg_file)
+{
+	OutputModule *module;
+	char *module_conf_dir;
+
+	module = g_malloc(sizeof(OutputModule));
+	module->name = g_strdup(name);
+	module->filename = get_path(prog, MODULEBINDIR);
+	module->debugfilename = g_strdup(dbg_file);
+	module_conf_dir = g_strdup_printf("%s/modules/", options.conf_dir);
+	module->configfilename = get_path(cfg_file, module_conf_dir);
+	g_free(module_conf_dir);
+
+	return module;
+}
+
 OutputModule *load_output_module(char *mod_name, char *mod_prog,
 				 char *mod_cfgfile, char *mod_dbgfile)
 {
@@ -58,20 +75,7 @@ OutputModule *load_output_module(char *mod_name, char *mod_prog,
 	if (mod_name == NULL)
 		return NULL;
 
-	module = (OutputModule *) g_malloc(sizeof(OutputModule));
-
-	module->name = (char *)g_strdup(mod_name);
-	module->filename = get_path(mod_prog, MODULEBINDIR);
-
-	module_conf_dir = g_strdup_printf("%s/modules/", options.conf_dir);
-
-	module->configfilename = (char *)get_path(mod_cfgfile, module_conf_dir);
-	g_free(module_conf_dir);
-
-	if (mod_dbgfile != NULL)
-		module->debugfilename = g_strdup(mod_dbgfile);
-	else
-		module->debugfilename = NULL;
+	module = create_module(mod_name, mod_prog, mod_cfgfile, mod_dbgfile);
 
 	if (!strcmp(mod_name, "testing")) {
 		module->pipe_in[1] = 1;	/* redirect to stdin */
