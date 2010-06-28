@@ -68,6 +68,11 @@ AC_ARG_WITH([cicero],
 	[],
 	[with_cicero=no])
 
+AC_ARG_WITH([dummy],
+	[AS_HELP_STRING([--without-dummy], [do not include dummy synthesizer support])],
+	[],
+	[with_dummy=yes])
+
 AC_ARG_WITH([espeak],
 	[AS_HELP_STRING([--with-espeak], [include espeak support])],
 	[],
@@ -239,6 +244,9 @@ AS_IF([test "$AUDIO_DLOPEN_MODULES" = "-dlopen force"],
 
 # check for cicero support
 AM_CONDITIONAL(cicero_support, test $with_cicero = "yes")
+
+# check for dummy support
+AM_CONDITIONAL(dummy_support, test $with_dummy = "yes")
 
 # check for espeak support
 #
