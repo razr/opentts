@@ -30,6 +30,8 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include<unistd.h>
+#include<fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -123,6 +125,8 @@ static FILE *open_log_file(char *name)
 		} else {
 			if (chmod(name, S_IRUSR | S_IWUSR))
 				perror("can't change permission of log file");
+/* there is no reason for log files to stay open accross exec so set FD_CLOEXEC */
+fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
 		}
 	}
 	return fp;
