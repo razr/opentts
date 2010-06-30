@@ -29,6 +29,9 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/types.h>
+#include <grp.h>
+#include <pwd.h>
 #include <glib/gstdio.h>
 
 #include <i18n.h>
@@ -51,6 +54,9 @@
 /* Private constants. */
 static const int OTTS_MAX_QUEUE_LEN = 50;
 static const int PIPE_MSG_LEN = 1;
+
+static 	uid_t opentts_uid;
+static 	gid_t opentts_gid;
 
 /* Manipulating pid files */
 int create_pid_file();
@@ -144,6 +150,34 @@ void fatal_error(void)
 {
 	int i = 0;
 	i++;
+}
+
+/* Set the user ID of a process to the OpenTTS user ID. */
+int openttsd_set_uid(void)
+{
+	int ret = 0;
+	if (mode == SYSTEM) {
+
+		/* $HOME points to root's home directory, so clear it. */
+		ret = unsetenv("HOME");
+		if (ret != 0)
+			return ret;
+
+		/*
+		 * If our effective uid was changed, we need to reset
+		 * it to 0 before calling setuid.
+		 */
+
+		ret = seteuid(0);
+		if (ret == 0) {
+			ret = initgroups(OPENTTS_USER, opentts_gid);
+			if (ret != 0)
+				return ret;
+			ret =  setuid(opentts_uid);
+		}
+	}
+
+	return ret;
 }
 
 /* --- CLIENTS / CONNECTIONS MANAGING --- */
@@ -449,9 +483,12 @@ static void init()
 		DIE("Mutex initialization failed");
 
 	if (options.log_dir == NULL) {
-		options.log_dir =
-		    g_strdup_printf("%s/log/", options.opentts_dir);
-		mkdir(options.log_dir, S_IRWXU);
+		if (mode != SYSTEM) {
+			options.log_dir = g_strdup_printf("%s/log/", options.opentts_dir);
+			mkdir(options.log_dir, S_IRWXU);
+		} else {
+			options.log_dir = g_strdup_printf("%s/", SYSTEM_LOG_PATH);
+		}
 	}
 
 	if (!options.debug_destination) {
@@ -670,6 +707,16 @@ int make_local_socket(const char *filename)
 	struct sockaddr_un name;
 	int sock;
 	size_t size;
+	mode_t socket_permissions = S_IRUSR | S_IWUSR;
+
+	/*
+	 * By default, the socket is readable and writeable by its
+	 * owner.  If we are running in system service mode, it is also
+	 * readable and writable by the group.
+	 */
+
+	if (mode == SYSTEM)
+		socket_permissions |= (S_IRGRP | S_IWGRP);
 
 	/* Create the socket. */
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -687,7 +734,7 @@ int make_local_socket(const char *filename)
 		FATAL("Can't bind local socket");
 	}
 
-	if (chmod(filename, S_IRUSR | S_IWUSR) == -1) {
+	if (chmod(filename, socket_permissions) == -1) {
 		log_msg(OTTS_LOG_WARN, "ERRNO:%s", strerror(errno));
 		FATAL("Unable to set permissions on local socket.");
 	}
@@ -782,6 +829,9 @@ void stop_main_thread(void)
 
 int main(int argc, char *argv[])
 {
+	struct passwd *pwd;
+	struct group *grp;
+	const char *user_home_dir;
 	char buf[PIPE_MSG_LEN];
 	fd_set testfds;
 	int fd;
@@ -804,16 +854,39 @@ int main(int argc, char *argv[])
 
 	options_parse(argc, argv);
 
+	if (mode == SYSTEM) {
+		if (getuid() != 0)
+			FATAL("a system service must run as root");
+		pwd = getpwnam(OPENTTS_USER);
+		if (pwd == NULL) {
+			log_msg(OTTS_LOG_CRIT, "Unable to find OpenTTS user \"%s\"", OPENTTS_USER);
+			exit(1);
+		}
+
+		opentts_uid = pwd->pw_uid;
+		grp = getgrnam(OPENTTS_GROUP);
+		if (grp == NULL) {
+			log_msg(OTTS_LOG_CRIT, "Unable to find OpenTTS group \"%s\"", OPENTTS_GROUP);
+			exit(1);
+		}
+
+		opentts_gid = grp->gr_gid;
+
+		ret = setgid(opentts_gid);
+		if (ret != 0) {
+			log_msg(OTTS_LOG_CRIT, "Unable to change to the %s group: %s.  Cannot continue.", OPENTTS_GROUP, strerror(errno));
+			exit(1);
+		}
+
+	}
+
 	log_msg(OTTS_LOG_ERR, "openttsd " VERSION " starting");
 
 	/* By default, search for configuration options and put everything
 	 * in a .opentts directory  in user's home directory. */
-	{
-		const char *user_home_dir;
-
-		/* Get users home dir */
+	if (mode != SYSTEM) {
 		user_home_dir = g_getenv("HOME");
-		if (!user_home_dir)
+		if (user_home_dir == NULL)
 			user_home_dir = g_get_home_dir();
 
 		if (user_home_dir) {
@@ -862,9 +935,17 @@ int main(int argc, char *argv[])
 				FATAL
 				    ("Paths to pid file or conf dir not specified and the current user has no HOME directory!");
 		}
-		options.conf_file =
-		    g_strdup_printf("%s/openttsd.conf", options.conf_dir);
+	} else {
+		if (options.pid_file == NULL)
+			options.pid_file = g_strdup_printf("%s/openttsd.pid", SYSTEM_PID_PATH);
+		if (options.conf_dir == NULL) {
+			if (strcmp(SYS_CONF, ""))
+				options.conf_dir = g_strdup(SYS_CONF);
+			else
+				options.conf_dir = g_strdup("/etc/opentts/");
+		}
 	}
+	options.conf_file = g_strdup_printf("%s/openttsd.conf", options.conf_dir);
 
 	/*
 	 * If no PID file exists, create it and proceed.  Otherwise,
@@ -872,6 +953,20 @@ int main(int argc, char *argv[])
 	 */
 	if (create_pid_file() != 0)
 		exit(1);
+
+	if (mode == SYSTEM) {
+		/*
+		 * Now, we're going to set our effective user ID, so that log
+		 * files will have the proper ownership.
+		 * We'll set our real user ID later.
+		 */
+
+		ret = seteuid(opentts_uid);
+		if (ret != 0) {
+			log_msg(OTTS_LOG_CRIT, "Unable to switch to the user %s: %s", OPENTTS_USER, strerror(errno));
+			exit(1);
+		}
+	}
 
 	ret = pthread_mutex_init(&thread_controller, NULL);
 	if (ret != 0) {
@@ -899,10 +994,10 @@ int main(int argc, char *argv[])
 			 * we need to also consider the DotConf configuration,
 			 * which is read in init() */
 			socket_filename = g_string_new("");
-			if (options.opentts_dir) {
-				g_string_printf(socket_filename,
-						"%s/openttsd.sock",
-						options.opentts_dir);
+			if (options.opentts_dir && mode != SYSTEM) {
+				g_string_printf(socket_filename, "%s/openttsd.sock", options.opentts_dir);
+			} else if (mode == SYSTEM) {
+				g_string_printf(socket_filename, "%s/openttsd.sock", SYSTEM_SOCKET_PATH);
 			} else {
 				FATAL
 				    ("Socket file name not set and user has no home directory");
@@ -928,12 +1023,33 @@ int main(int argc, char *argv[])
 	}
 
 	/* Fork, set uid, chdir, etc. */
-	if (mode == DAEMON) {
+	if (mode == DAEMON || mode == SYSTEM) {
 		daemon(0, 0);
+
 		/* Re-create the pid file under this process */
+
+		if (mode == SYSTEM) {
+		/*
+			 * Set effective UID to root, so we can work
+			 * with the blessed PID file.
+			 */
+			ret = seteuid(0);
+			if (ret != 0) {
+				/* Not expected to fail... */
+				log_msg(OTTS_LOG_CRIT, "Unable to reset our effective UID to root: %s", strerror(errno));
+				exit(1);
+			}
+		}
+
 		unlink(options.pid_file);
 		if (create_pid_file() == -1)
 			return -1;
+
+		ret = openttsd_set_uid();
+		if (ret != 0) {
+			log_msg(OTTS_LOG_CRIT, "Unable to drop privileges.  Cannot continue.");
+			exit(1);
+			}
 	}
 
 	pthread_mutex_lock(&thread_controller);

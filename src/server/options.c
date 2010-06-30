@@ -44,13 +44,14 @@ static struct option long_options[] = {
 	{"port", 1, 0, 'p'},
 	{"pid-file", 1, 0, 'P'},
 	{"config-file", 1, 0, 'C'},
+	{"system-service", no_argument, NULL, 'y'},
 	{"version", 0, 0, 'v'},
 	{"debug", 0, 0, 'D'},
 	{"help", 0, 0, 'h'},
 	{0, 0, 0, 0}
 };
 
-static char *short_options = "dsl:c:S:p:P:C:vDh";
+static char *short_options = "dsl:c:S:p:P:C:vDhy";
 
 void options_print_help(char *argv[])
 {
@@ -58,7 +59,7 @@ void options_print_help(char *argv[])
 	assert(argv[0]);
 
 	printf(_
-	       ("Usage: %s [-{d|s}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n"),
+	       ("Usage: %s [-{d|s|y}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n"),
 	       argv[0]);
 	printf(_
 	       ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n"));
@@ -66,6 +67,8 @@ void options_print_help(char *argv[])
 	printf(_("Run as a daemon\n"));
 	printf("-s, --run-single\t");
 	printf(_("Run as single application\n"));
+	printf("-y, --system-service\t");
+	printf(_("Run as system wide service\n"));
 	printf("-l, --log-level\t");
 	printf(_("Set log level (1..5)\n"));
 	printf("-c, --communication-method\t");
@@ -145,6 +148,9 @@ void options_parse(int argc, char *argv[])
 			break;
 		case 's':
 			mode = SESSION;
+			break;
+		case 'y':
+			mode = SYSTEM;
 			break;
 		case 'l':
 			OPTION_SET_INT(log_level);

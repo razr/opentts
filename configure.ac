@@ -103,6 +103,36 @@ AC_ARG_WITH([ivona],
 	[],
 	[with_ivona=check])
 
+AC_ARG_WITH([opentts-user],
+	[AS_HELP_STRING([--with-opentts-user], [user for OpenTTS system service (opentts)])],
+	[opentts_user="$withval"],
+	[opentts_user=opentts])
+AC_SUBST(opentts_user)
+
+AC_ARG_WITH([opentts-group],
+	[AS_HELP_STRING([--with-opentts-group], [group for OpenTTS system service (opentts)])],
+	[opentts_group="$withval"],
+	[opentts_group=opentts])
+AC_SUBST(opentts_group)
+
+AC_ARG_WITH([system-log-path],
+	[AS_HELP_STRING([--with-system-log-path],[path for logs when running as system service (/var/log/opentts)])],
+	[system_log_path="$withval"],
+	[system_log_path=/var/log/opentts])
+AC_SUBST(system_log_path)
+
+AC_ARG_WITH([system-pid-path],
+	[AS_HELP_STRING([--with-system-pid-path],[path of pid file for system service (/var/run)])],
+	[system_pid_path="$withval"],
+	[system_pid_path=/var/run])
+AC_SUBST(system_pid_path)
+
+AC_ARG_WITH([system-socket-path],
+	[AS_HELP_STRING([--with-system-socket-path],[path to socket for system service (/var/run/openttsd)])],
+	[system_socket_path="$withval"],
+	[system_socket_path=/var/run/openttsd])
+AC_SUBST(system_socket_path)
+
 #
 # Setup GETTEXT
 #

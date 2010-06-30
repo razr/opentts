@@ -261,6 +261,19 @@ static void start_module(OutputModule * module)
 {
 	int ret;
 
+	/*
+	 * If we aren't running as a system service, the openttsd_set_uid
+	 * call is a no-op which always returns 0.  Otherwise, it sets
+	 * the user ID of the process to the user ID that the system
+	 * service should use, returning -1 on failure.
+	 */
+	ret = openttsd_set_uid();
+	if (ret != 0) {
+		log_msg(OTTS_LOG_CRIT,
+			"Unable to drop privileges.  Cannot continue.");
+		exit(1);
+	}
+
 	ret = dup2(module->pipe_in[0], 0);
 	close(module->pipe_in[0]);
 	close(module->pipe_in[1]);

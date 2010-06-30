@@ -8,6 +8,12 @@ openttsd_LDFLAGS = $(RDYNAMIC)
 openttsd_CFLAGS = $(ERROR_CFLAGS)
 openttsd_CPPFLAGS = "-I$(top_srcdir)/include" \
 $(DOTCONF_CFLAGS) $(GLIB_CFLAGS) $(GMODULE_CFLAGS) \
-$(GTHREAD_CFLAGS) -DSYS_CONF=\"$(spdconfdir)\" -DSND_DATA=\"$(snddatadir)\" \
--DMODULEBINDIR=\"$(modulebindir)\" -DOPENTTS_INTERNAL
+$(GTHREAD_CFLAGS) -DOPENTTS_INTERNAL \
+-DSYS_CONF=\"$(spdconfdir)\" -DSND_DATA=\"$(snddatadir)\" \
+-DMODULEBINDIR=\"$(modulebindir)\" \
+-DOPENTTS_USER=\"$(opentts_user)\" \
+-DOPENTTS_GROUP=\"$(opentts_group)\" \
+-DSYSTEM_LOG_PATH=\"$(system_log_path)\" \
+-DSYSTEM_PID_PATH=\"$(system_pid_path)\" \
+-DSYSTEM_SOCKET_PATH=\"$(system_socket_path)\"
 

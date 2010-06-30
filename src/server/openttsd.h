@@ -78,7 +78,8 @@ union semun {
 /* Mode of openttsd execution */
 typedef enum {
 	DAEMON,			/* Run as daemon (background, ...) */
-	SESSION			/*  */
+	SESSION,			/*  */
+	SYSTEM
 } openttsd_mode;
 
 openttsd_mode mode;
@@ -220,6 +221,15 @@ gboolean start_speak_thread(void);
 
 /* Tell the main thread to stop. */
 void stop_main_thread(void);
+
+/*
+ * If not running as a system service, openttsd_set_uid is a no-op, and
+ * it always returns 0.  Otherwise, it sets the user ID of a process to
+ * the user ID under which the system service should run.
+ * It returns 0 on success, and -1 on failure.
+ */
+
+int openttsd_set_uid(void);
 
 /* Functions used in openttsd.c only */
 int connection_new(int server_socket);
