@@ -7,6 +7,7 @@ You will need these components to compile OpenTTS:
  - libdotconf 1.0 (http://www.azzit.de/dotconf/)
  - pthreads
  - gcc and GNU make (http://www.gnu.org)
+ - GNU Gettext (http://www.gnu.org/software/gettext/)
 
 Only if you are building from Git, you also need these:
  - automake 1.7+, autoconf, pkg-config and libtool
@@ -17,8 +18,8 @@ We recommend to also install these packages:
  - Espeak (http://espeak.sourceforge.net/)
  - festival-freebsoft-utils 0.3+
 	(http://www.freebsoft.org/festival-freebsoft-utils)
-    - Python 2.4+ (http://www.python.org)
-
+ - Python 2.4+ (http://www.python.org)
+ - Intltool 0.40.0+ (http://freedesktop.org/wiki/Software/intltool)
 
 These packages are known to work with OpenTTS:
  Software synthesizers:
