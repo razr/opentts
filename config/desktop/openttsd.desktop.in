@@ -3,8 +3,8 @@
 Type=Application
 Encoding=UTF-8
 Version=1.0
-Name=OpenTTS
-Comment=Interface to Text to Speech services
+_Name=OpenTTS
+_Comment=Interface to Text to Speech services
 TryExec=openttsd
 Exec=openttsd
 X-GNOME-Autostart-enabled=true

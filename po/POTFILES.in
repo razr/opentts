@@ -1,3 +1,4 @@
+config/desktop/openttsd.desktop.in
 src/clients/say/options.c
 src/clients/say/say.c
 src/server/options.c
