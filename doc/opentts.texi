@@ -568,16 +568,17 @@ otts-say -o espeak-mbrola-generic -l cs Testing
 The name of the OpenTTS server program is openttsd, and we shall use that
 name to refer to the server in the rest of this documentation.
 openttsd is normally started by an ordinary user, within his session.
-It can be started as a system service at boot time, but that is not the
-recommended way to start it.  This method will not be described further.
+It can also be started as a system service, at boot time.
+Both strategies are documented in the rest of this section.
 
 @menu
 * Running Under Ordinary Users::  
-* Running in a Custom Setup::   
+* Running as a System Service::
+* Running in a Custom Setup::
 * Setting the Communication Method::
 @end menu
 
-@node Running Under Ordinary Users, Running in a Custom Setup, Running, Running
+@node Running Under Ordinary Users, Running as a System Service, Running, Running
 @subsection Running Under Ordinary Users
 
 No special provisions need to be done to run openttsd under
@@ -624,7 +625,49 @@ you can achieve the same result manually as described below:
 # cp -r /usr/share/opentts/conf/* ~/.opentts/conf/
 @end example
 
-@node Running in a Custom Setup, Setting the Communication Method, Running Under Ordinary Users, Running
+@node Running as a System Service, Running in a Custom Setup, Running Under Ordinary Users, Running
+@subsection Running as a System Service
+
+It is also possible to run openttsd as a system-wide service.  In this
+configuration, all of the users on a computer use one common instance
+of the server.  In order to make this possible, it must be enabled by
+the system administrator.  The remainder of this subsection describes
+the steps which the administrator must take, so that openttsd can be used
+as a system service.
+
+First, add openttsd to the list of services which start at boot-time.
+This step is heavily platform-dependent, so we cannot describe it in a
+generic way.  Nevertheless, the person who packaged OpenTTS for your
+platform should have provided a startup script named @file{opentts} or
+@file{openttsd}, residing in a directory such as
+@file{/etc/init.d}.  Do whatever is necessary to insure that the
+script is executed during the startup sequence.
+
+Next, add all users who are allowed to access the system-wide openttsd
+to the @code{opentts} group.  Note that the packager may have
+specified a different group name for your platform, though this is not
+recommended.  If she did so, the correct group name should be
+specified in platform-specific documentation which comes with the
+package.  If a user is not a member of the group, she may still start
+openttsd within her session.  Leaving her out of the group simply
+prevents her from using the system-wide server, but she may still use
+the facilities of OpenTTS.
+
+Here is an example command which will add
+the user jane to the @code{opentts} group.  Replace jane with the name
+of the user whom you wish to add.  The command only accepts a single
+username, so you must add it for each new member of the group.
+
+@example
+usermod -a -G opentts jane
+@end example
+
+Having completed the above steps, you are now ready to use openttsd as
+a system-wide service.  The server should start at boot, and client
+programs will use it, assuming that they are executed by members of the
+@code{opentts} group.
+
+@node Running in a Custom Setup, Setting the Communication Method, Running as a System Service, Running
 @subsection Running in a Custom Setup
 
 openttsd can be run in any other setup of executing users, port

@@ -7,3 +7,40 @@ Notes for packagers of OpenTTS.
 * OpenTTS includes an output module for IBM TTS.
 IBM TTS is comercial proprietary software, but it is possible
 to build the module using a BSD licensed SDK. See INSTALL.
+
+* Certain additional steps must be performed at install-time, because
+of the system-service mode of the OpenTTS daemon.
+
+** Create a user named opentts and a group named opentts.
+The user name and group name can be changed at build-time, but we suggest
+that everyone use the name opentts for both the user and the group.
+The opentts user should be a member of the audio group, so that the account
+can access the audio hardware.
+
+** Create a directory named /var/run/openttsd, to hold the Unix socket
+which the daemon uses.  Also, create a directory named /var/log/opentts,
+to hold log files.  These are the default pathnames, though they may also
+be changed at build-time, via the configure script.
+Both directories should be owned by the opentts user and the opentts group.
+
+** Create a startup script, so that openttsd may be started at boot-time,
+as a system service.
+At minimum, it should contain the command
+openttsd --system-service
+
+** Install a shell script into /etc/profile.d, so that users in the
+opentts group can use the system-wide server, if it is running.  We
+suggest the following:
+
+--- BEGIN /etc/profile.d/opentts ---
+
+OPENTTSD_SOCKET=/var/run/openttsd/openttsd.sock
+OPENTTSD_PID=/var/run/openttsd.pid
+if test -f $OPENTTSD_PID -a -r $OPENTTSD_SOCKET -a -w $OPENTTSD_SOCKET; then
+  # The system service is running, and the user is allowed to access it.
+  # Place OPENTTSD_SOCKET in the environment, so that client programs will
+  # use the system service.
+  export OPENTTSD_SOCKET
+fi
+
+--- END /etc/profile.d/opentts ---
