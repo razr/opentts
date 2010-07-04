@@ -26,17 +26,26 @@
 #include <config.h>
 #endif
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 #include <ctype.h>
 
-#include<logging.h>
-#include "openttsd.h"
+#include <pthread.h>
 
-#include "set.h"
+#include "opentts/opentts_types.h"
+#include <def.h>
+#include <logging.h>
 #include "history.h"
 #include "msg.h"
-#include "server.h"
+#include "set.h"
 #include "sem_functions.h"
 #include "output.h"
+#include "openttsd.h"
+#include "server.h"
+#include "speaking.h"
+#include "parse.h"
 
 /*
   Parse() receives input data and parses them. It can
@@ -62,6 +71,10 @@
         return g_strdup(ERR_NOT_ALLOWED_INSIDE_BLOCK);
 
 #define ALLOWED_INSIDE_BLOCK() ;
+
+/* Other internal functions */
+static char *parse_general_event(const char *buf, const int bytes, const int fd,
+			  SPDMessageType type);
 
 char *parse(const char *buf, const int bytes, const int fd)
 {

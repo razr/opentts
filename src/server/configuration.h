@@ -21,10 +21,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
 
-#include <stdlib.h>
 #include <dotconf.h>
 
 configoption_t *load_config_options(int *num_options);

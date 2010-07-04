@@ -24,9 +24,6 @@
 #ifndef FDSETCONV_H
 #define FDSETCONV_H
 
-#include <stdio.h>
-#include <string.h>
-
 #include "opentts/opentts_types.h"
 
 char *voice2str(SPDVoiceType voice);

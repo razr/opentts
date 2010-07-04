@@ -28,7 +28,13 @@
 #include <config.h>
 #endif
 
-#include<logging.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#include <glib.h>
+
+#include <logging.h>
 #include "index_marking.h"
 
 void insert_index_marks(openttsd_message * msg, SPDDataMode ssml_mode)

@@ -27,11 +27,18 @@
 #include <config.h>
 #endif
 
-#include<logging.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <glib.h>
+
+#include "alloc.h"
+#include "logging.h"
 #include "openttsd.h"
 #include "msg.h"
 #include "set.h"
 #include "server.h"
+#include "fdset.h"
 
 #include "history.h"
 

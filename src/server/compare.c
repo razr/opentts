@@ -27,6 +27,9 @@
 #include <config.h>
 #endif
 
+#include <stdio.h>
+#include <assert.h>
+
 #include <glib.h>
 #include "openttsd.h"
 #include "compare.h"

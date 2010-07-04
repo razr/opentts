@@ -29,7 +29,8 @@
 #include <glib.h>
 
 #include "opentts/opentts_types.h"
-#include <fdset.h>
+#include "openttsd.h"
+#include "module.h"
 
 OutputModule *speaking_module;
 int speaking_uid;

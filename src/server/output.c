@@ -26,12 +26,24 @@
 #include <config.h>
 #endif
 
-#include "output.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <assert.h>
 
+#include <glib.h>
+#include <pthread.h>
+
+#include "opentts/opentts_types.h"
 #include <fdsetconv.h>
 #include <getline.h>
-#include<logging.h>
+#include <logging.h>
+#include "speaking.h"
+#include <getline.h>
 #include "parse.h"
+#include "output.h"
 
 #ifdef TEMP_FAILURE_RETRY	/* GNU libc */
 #define safe_write(fd, buf, count) TEMP_FAILURE_RETRY(write(fd, buf, count))

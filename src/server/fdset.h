@@ -26,6 +26,7 @@
 #define FDSET_H
 
 #include "opentts/opentts_types.h"
+#include "def.h"
 
 typedef enum {
 	SORT_BY_TIME = 0,

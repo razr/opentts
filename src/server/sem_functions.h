@@ -21,4 +21,7 @@
  * $Id: sem_functions.h,v 1.6 2006-07-11 16:12:27 hanke Exp $
  */
 
+#ifndef SEM_FUNCTIONS_H
+#define SEM_FUNCTIONS_H
 void speaking_semaphore_post(void);
+#endif

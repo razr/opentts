@@ -25,24 +25,35 @@
 #include <config.h>
 #endif
 
-#include <gmodule.h>
-#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <limits.h>
+#include <signal.h>
+#include <assert.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
+#include <sys/un.h>
+#include <sys/wait.h>
 #include <grp.h>
 #include <pwd.h>
+
+#include <pthread.h>
+
+#include <gmodule.h>
 #include <glib/gstdio.h>
 
 #include <i18n.h>
-#include<logging.h>
-#include "openttsd.h"
-
-/* Declare dotconf functions and data structures*/
+#include <logging.h>
 #include "configuration.h"
-
-/* Declare functions to allocate and create important data
- * structures */
 #include "alloc.h"
 #include "sem_functions.h"
 #include "sighandler.h"
@@ -50,6 +61,7 @@
 #include "set.h"
 #include "options.h"
 #include "server.h"
+#include "openttsd.h"
 
 /* Loading options from DotConf */
 static configoption_t *configoptions;

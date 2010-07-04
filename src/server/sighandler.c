@@ -22,12 +22,17 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
+#include <sys/wait.h>
+
+#include <pthread.h>
 #include <glib.h>
 
 #include <logging.h>
 #include "openttsd.h"
 #include "server.h"
+#include "speaking.h"
 #include "sighandler.h"
 
 static sigset_t blocked_signals;

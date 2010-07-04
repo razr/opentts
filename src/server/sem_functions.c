@@ -27,6 +27,8 @@
 #include <config.h>
 #endif
 
+#include <unistd.h>
+
 #include "openttsd.h"
 #include "sem_functions.h"
 

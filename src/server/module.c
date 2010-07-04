@@ -29,11 +29,17 @@
 
 #define _GNU_SOURCE
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <assert.h>
+
 #include <getline.h>
-#include<logging.h>
+#include <logging.h>
 #include "openttsd.h"
 #include "output.h"
 

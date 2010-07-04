@@ -25,13 +25,18 @@
 #include <config.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+
 #include <dotconf.h>
 
 #include "openttsd.h"
 #include "opentts/opentts_types.h"
-#include "configuration.h"
 #include <fdsetconv.h>
-#include<logging.h>
+#include <logging.h>
+#include "configuration.h"
 
 static TFDSetClientSpecific *cl_spec_section;
 

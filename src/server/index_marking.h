@@ -22,10 +22,11 @@
  * $Id: index_marking.h,v 1.5 2006-07-11 16:12:27 hanke Exp $
  */
 
-#include "openttsd.h"
-
 #ifndef INDEX_MARKING_H
 #define INDEX_MARKING_H
+
+#include "opentts/opentts_types.h"
+#include "openttsd.h"
 
 #define SD_MARK_BODY_LEN 6
 #define SD_MARK_BODY "__spd_"

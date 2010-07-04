@@ -27,14 +27,23 @@
 #include <config.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <errno.h>
+
+#include <pthread.h>
 #include <glib.h>
 
-#include<logging.h>
+#include "def.h"
+#include "alloc.h"
+#include <logging.h>
 #include "openttsd.h"
-#include "server.h"
 #include "set.h"
 #include "speaking.h"
 #include "sem_functions.h"
+#include "server.h"
 
 int last_message_id = 0;
 

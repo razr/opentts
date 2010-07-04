@@ -27,8 +27,15 @@
 #include <config.h>
 #endif
 
-#include <glib.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <errno.h>
 #include <poll.h>
+
+#include <pthread.h>
+#include <glib.h>
+
 #include <logging.h>
 #include "openttsd.h"
 #include "server.h"
@@ -39,8 +46,8 @@
 #include "compare.h"
 #include "msg.h"
 #include "output.h"
-#include "speaking.h"
 #include "sem_functions.h"
+#include "speaking.h"
 
 static openttsd_message *current_message = NULL;
 static SPDPriority current_priority = SPD_TEXT;

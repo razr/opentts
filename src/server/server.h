@@ -25,6 +25,9 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "openttsd.h"
+#include "def.h"
+
 /* serve() reads data from clients and sends it to parse() */
 int serve(int fd);
 

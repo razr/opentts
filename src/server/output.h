@@ -18,11 +18,16 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: output.h,v 1.9 2008-06-27 12:28:50 hanke Exp $
  */
 
+#ifndef OUTPUT_H
+#define OUTPUT_H
+#include <glib.h>
+
+#include "opentts/opentts_types.h"
 #include "openttsd.h"
 #include "speaking.h"
+#include "module.h"
 
 OutputModule *get_output_module(const openttsd_message * message);
 
@@ -48,3 +53,4 @@ int waitpid_with_timeout(pid_t pid, int *status_ptr, int options,
 int output_close(OutputModule * module);
 SPDVoice **output_list_voices(char *module_name);
 int _output_get_voices(OutputModule * module);
+#endif

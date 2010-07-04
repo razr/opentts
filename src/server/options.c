@@ -25,12 +25,17 @@
 #include <config.h>
 #endif
 
-#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <assert.h>
+#include <errno.h>
+
+#include <getopt.h>
 
 #include <i18n.h>
-#include<logging.h>
-
+#include <logging.h>
 #include "openttsd.h"
 
 #include "options.h"

@@ -25,30 +25,15 @@
 
 #define _GNU_SOURCE
 
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <limits.h>
-#include <signal.h>
-#include <assert.h>
-
 #include <pthread.h>
-
 #include <glib.h>
 
-#include <semaphore.h>
-#include <sys/ipc.h>
 #include <sys/sem.h>
+
+#include "def.h"
+#include "fdset.h"
+#include "module.h"
+#include "parse.h"
 
 /* Definition of semun needed for semaphore manipulation */
 /* TODO: This fixes compilation for Mac OS X but might not be a correct
@@ -65,12 +50,6 @@ union semun {
 	struct seminfo *__buf;	/* buffer for IPC_INFO */
 };
 #endif
-
-#include <def.h>
-#include <fdset.h>
-#include "module.h"
-#include "parse.h"
-#include "compare.h"
 
 /* Size of the buffer for socket communication */
 #define BUF_SIZE 128
@@ -101,9 +80,6 @@ typedef struct {
 	int bytes;		/* number of bytes in buf */
 	TFDSetElement settings;	/* settings of the client when queueing this message */
 } openttsd_message;
-
-#include "alloc.h"
-#include "speaking.h"
 
 struct {
 	char *communication_method;

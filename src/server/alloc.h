@@ -1,8 +1,8 @@
-
-#include "openttsd.h"
-
 #ifndef ALLOC_H
 #define ALLOC_H
+
+#include "fdset.h"
+#include "openttsd.h"
 
 /* Copy a message */
 openttsd_message *copy_message(openttsd_message * old);

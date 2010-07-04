@@ -25,6 +25,7 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
+#include "glib.h"
 #include "openttsd.h"
 
 char *history_get_client_list();

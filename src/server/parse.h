@@ -24,9 +24,6 @@ char *deescape_dot(const char *orig_text, size_t orig_len);
 char *get_param(const char *buf, const int n, const int bytes,
 		const int lower_case);
 
-/* Other internal functions */
-char *parse_general_event(const char *buf, const int bytes, const int fd,
-			  SPDMessageType type);
 int read_utf8_char(char *pointer, char *character);
 
 #endif

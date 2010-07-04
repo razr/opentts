@@ -27,13 +27,15 @@
 #include <config.h>
 #endif
 
+#include <string.h>
+#include <assert.h>
 #include <fnmatch.h>
-#include<logging.h>
 
 #include "opentts/opentts_types.h"
-#include "set.h"
+#include <logging.h>
 #include "alloc.h"
 #include "msg.h"
+#include "set.h"
 
 int set_priority_self(int fd, SPDPriority priority)
 {

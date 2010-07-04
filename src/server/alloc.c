@@ -25,7 +25,14 @@
 #include <config.h>
 #endif
 
+#include <stdio.h>
+#include <string.h>
+
+#include <glib.h>
+
+#include "fdset.h"
 #include "alloc.h"
+
 
 openttsd_message *copy_message(openttsd_message * old)
 {

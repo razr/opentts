@@ -24,6 +24,8 @@
 #ifndef COMPARE_H
 #define COMPARE_H
 
+#include <glib.h>
+
 gint compare_message_fd(gconstpointer element, gconstpointer value, gpointer x);
 gint compare_message_uid(gconstpointer element, gconstpointer value);
 

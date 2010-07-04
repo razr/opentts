@@ -25,8 +25,10 @@
 #ifndef MODULE_H
 #define MODULE_H
 
-#include <stdlib.h>
-#include <glib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include "opentts/opentts_types.h"
 
 typedef struct {
 	char *name;
