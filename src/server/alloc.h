@@ -4,8 +4,6 @@
 #ifndef ALLOC_H
 #define ALLOC_H
 
-queue_t *queue_alloc();
-
 /* Copy a message */
 openttsd_message *copy_message(openttsd_message * old);
 

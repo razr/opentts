@@ -422,7 +422,7 @@ static void init()
 	}
 
 	/* Initialize the OpenTTS daemon's priority queue */
-	MessageQueue = (queue_t *) queue_alloc();
+	MessageQueue = g_malloc0(sizeof(queue_t));
 	if (MessageQueue == NULL)
 		FATAL("Couldn't alocate memmory for MessageQueue.");
 
