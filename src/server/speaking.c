@@ -29,13 +29,14 @@
 
 #include <glib.h>
 #include <poll.h>
-#include<logging.h>
+#include <logging.h>
 #include "openttsd.h"
 #include "server.h"
 #include "index_marking.h"
 #include "module.h"
 #include "set.h"
 #include "alloc.h"
+#include "compare.h"
 #include "msg.h"
 #include "output.h"
 #include "speaking.h"
@@ -868,7 +869,7 @@ GList *stop_priority_from_uid(GList * queue, const int uid)
 	GList *ret = queue;
 	GList *gl;
 
-	while ((gl = g_list_find_custom(ret, &uid, p_msg_uid_lc)))
+	while ((gl = g_list_find_custom(ret, &uid, compare_message_uid)))
 		ret = queue_remove_message(ret, gl);
 
 	return ret;

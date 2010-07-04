@@ -1,8 +1,8 @@
-
 /*
  * compare.h - Auxiliary functions for comparing elements in lists
  * 
  * Copyright (C) 2001, 2002, 2003 Brailcom, o.p.s.
+ * Copyright (C) 2010 OpenTTS Developers
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -19,18 +19,12 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $Id: compare.h,v 1.3 2006-07-11 16:12:27 hanke Exp $
  */
 
 #ifndef COMPARE_H
 #define COMPARE_H
 
 gint compare_message_fd(gconstpointer element, gconstpointer value, gpointer x);
-gint compare_message_uid(gconstpointer element, gconstpointer value,
-			 gpointer x);
-
-/* Pointers to functions compare_message_fd and compare_message_uid */
-gint(*p_msg_lc) ();
-gint(*p_msg_uid_lc) ();
+gint compare_message_uid(gconstpointer element, gconstpointer value);
 
 #endif /* COMPARE_H */
