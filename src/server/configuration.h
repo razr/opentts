@@ -27,10 +27,6 @@
 #include <stdlib.h>
 #include <dotconf.h>
 
-/* Loading options from DotConf */
-extern configoption_t *configoptions;
-extern int num_options;
-
 configoption_t *load_config_options(int *num_options);
 void free_config_options(configoption_t * opts, int *num);
 configoption_t *add_config_option(configoption_t * options,

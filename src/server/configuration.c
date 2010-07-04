@@ -43,9 +43,6 @@ static void cfg_fatal(const char *errmsg)
 	exit(EXIT_FAILURE);
 }
 
-int num_options;
-configoption_t *configoptions;
-
 /* == CONFIGURATION MANAGEMENT FUNCTIONS */
 
 /* Add dotconf configuration option */

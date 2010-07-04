@@ -51,6 +51,10 @@
 #include "options.h"
 #include "server.h"
 
+/* Loading options from DotConf */
+static configoption_t *configoptions;
+static int num_options;
+
 /* Private constants. */
 static const int OTTS_MAX_QUEUE_LEN = 50;
 static const int PIPE_MSG_LEN = 1;
