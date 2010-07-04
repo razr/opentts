@@ -37,14 +37,12 @@
 
 /* Compares openttsd_message data structure elements
    with given ID */
-int message_compare_id(gconstpointer element, gconstpointer value, gpointer n)
+static int message_compare_id(gconstpointer element, gconstpointer value)
 {
 	int ret;
 	ret = ((openttsd_message *) element)->id - (int)value;
 	return ret;
 }
-
-gint(*p_msg_comp_id) () = message_compare_id;
 
 char *history_get_client_list()
 {
@@ -301,7 +299,7 @@ char *history_say_id(int fd, int id)
 	openttsd_message *msg, *new;
 	GList *gl;
 
-	gl = g_list_find_custom(message_history, &id, p_msg_comp_id);
+	gl = g_list_find_custom(message_history, &id, message_compare_id);
 	if (gl == NULL)
 		return g_strdup(ERR_ID_NOT_EXIST);
 	msg = gl->data;
