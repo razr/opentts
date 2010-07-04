@@ -160,7 +160,7 @@ void fatal_error(void)
 int openttsd_set_uid(void)
 {
 	int ret = 0;
-	if (mode == SYSTEM) {
+	if (options.mode == SYSTEM) {
 
 		/* $HOME points to root's home directory, so clear it. */
 		ret = unsetenv("HOME");
@@ -400,7 +400,7 @@ static void options_init(void)
 	options.log_dir = NULL;
 	options.debug = 0;
 	options.debug_destination = NULL;
-	mode = DAEMON;
+	options.mode = DAEMON;
 }
 
 static void init()
@@ -487,7 +487,7 @@ static void init()
 		DIE("Mutex initialization failed");
 
 	if (options.log_dir == NULL) {
-		if (mode != SYSTEM) {
+		if (options.mode != SYSTEM) {
 			options.log_dir = g_strdup_printf("%s/log/", options.opentts_dir);
 			mkdir(options.log_dir, S_IRWXU);
 		} else {
@@ -719,7 +719,7 @@ int make_local_socket(const char *filename)
 	 * readable and writable by the group.
 	 */
 
-	if (mode == SYSTEM)
+	if (options.mode == SYSTEM)
 		socket_permissions |= (S_IRGRP | S_IWGRP);
 
 	/* Create the socket. */
@@ -858,7 +858,7 @@ int main(int argc, char *argv[])
 
 	options_parse(argc, argv);
 
-	if (mode == SYSTEM) {
+	if (options.mode == SYSTEM) {
 		if (getuid() != 0)
 			FATAL("a system service must run as root");
 		pwd = getpwnam(OPENTTS_USER);
@@ -888,7 +888,7 @@ int main(int argc, char *argv[])
 
 	/* By default, search for configuration options and put everything
 	 * in a .opentts directory  in user's home directory. */
-	if (mode != SYSTEM) {
+	if (options.mode != SYSTEM) {
 		user_home_dir = g_getenv("HOME");
 		if (user_home_dir == NULL)
 			user_home_dir = g_get_home_dir();
@@ -958,7 +958,7 @@ int main(int argc, char *argv[])
 	if (create_pid_file() != 0)
 		exit(1);
 
-	if (mode == SYSTEM) {
+	if (options.mode == SYSTEM) {
 		/*
 		 * Now, we're going to set our effective user ID, so that log
 		 * files will have the proper ownership.
@@ -998,9 +998,9 @@ int main(int argc, char *argv[])
 			 * we need to also consider the DotConf configuration,
 			 * which is read in init() */
 			socket_filename = g_string_new("");
-			if (options.opentts_dir && mode != SYSTEM) {
+			if (options.opentts_dir && options.mode != SYSTEM) {
 				g_string_printf(socket_filename, "%s/openttsd.sock", options.opentts_dir);
-			} else if (mode == SYSTEM) {
+			} else if (options.mode == SYSTEM) {
 				g_string_printf(socket_filename, "%s/openttsd.sock", SYSTEM_SOCKET_PATH);
 			} else {
 				FATAL
@@ -1027,12 +1027,12 @@ int main(int argc, char *argv[])
 	}
 
 	/* Fork, set uid, chdir, etc. */
-	if (mode == DAEMON || mode == SYSTEM) {
+	if (options.mode == DAEMON || options.mode == SYSTEM) {
 		daemon(0, 0);
 
 		/* Re-create the pid file under this process */
 
-		if (mode == SYSTEM) {
+		if (options.mode == SYSTEM) {
 		/*
 			 * Set effective UID to root, so we can work
 			 * with the blessed PID file.

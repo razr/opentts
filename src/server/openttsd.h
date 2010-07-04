@@ -82,8 +82,6 @@ typedef enum {
 	SYSTEM
 } openttsd_mode;
 
-openttsd_mode mode;
-
 /*  message_queue is a queue for messages. */
 typedef struct {
 	GList *p1;		/* important */
@@ -125,6 +123,7 @@ struct {
 	char *debug_logfile;
 	char *custom_log_kind;
 	char *custom_log_filename;
+	openttsd_mode mode;
 	int max_history_messages;	/* Maximum of messages in history before they expire */
 } options;
 

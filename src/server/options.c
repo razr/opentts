@@ -144,13 +144,13 @@ void options_parse(int argc, char *argv[])
 			break;
 		switch (c_opt) {
 		case 'd':
-			mode = DAEMON;
+			options.mode = DAEMON;
 			break;
 		case 's':
-			mode = SESSION;
+			options.mode = SESSION;
 			break;
 		case 'y':
-			mode = SYSTEM;
+			options.mode = SYSTEM;
 			break;
 		case 'l':
 			OPTION_SET_INT(log_level);
