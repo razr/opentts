@@ -400,7 +400,7 @@ static void options_init(void)
 	options.log_dir = NULL;
 	options.debug = 0;
 	options.debug_destination = NULL;
-	options.mode = DAEMON;
+	options.mode = OPENTTSD_DEFAULT_MODE;
 }
 
 static void init()

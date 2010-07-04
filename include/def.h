@@ -21,10 +21,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SPEECHD_DEF_I
-#define SPEECHD_DEF_I
+#ifndef DEF_H
+#define DEF_H
 
-#define OPENTTSD_DEFAULT_PORT 6560
+#define OPENTTSD_DEFAULT_PORT		6560
+#define OPENTTSD_DEFAULT_MODE		DAEMON
 
 #include "opentts/opentts_types.h"
 
