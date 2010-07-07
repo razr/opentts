@@ -172,7 +172,7 @@ void fatal_error(void)
 int openttsd_set_uid(void)
 {
 	int ret = 0;
-	if (options.mode == SYSTEM) {
+	if ((options.mode == SYSTEM) && (getuid() == 0)) {
 
 		/* $HOME points to root's home directory, so clear it. */
 		ret = unsetenv("HOME");
