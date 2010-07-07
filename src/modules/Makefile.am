@@ -1,6 +1,6 @@
 
 common_sources = module_main.c module_utils.c module_utils.h  audio.c audio.h
-common_libs = $(AUDIO_DLOPEN_MODULES) -L$(top_builddir)/src/common -lcommon
+common_libs = $(AUDIO_DLOPEN_MODULES) $(top_builddir)/src/libs/common/libcommon.la
 
 AM_CFLAGS = $(ERROR_CFLAGS)
 AM_CPPFLAGS = "-I$(top_srcdir)/include" \

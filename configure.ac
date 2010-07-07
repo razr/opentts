@@ -447,7 +447,8 @@ AC_CONFIG_FILES([Makefile
                  src/clients/Makefile
                  src/clients/say/Makefile
                  src/clients/send/Makefile
-                 src/common/Makefile
+                 src/libs/Makefile
+                 src/libs/common/Makefile
                  src/modules/Makefile
                  src/server/Makefile
                  src/tests/Makefile])

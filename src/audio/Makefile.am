@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-local_libs = -L$(top_builddir)/src/common -lcommon
+local_libs = $(top_builddir)/src/libs/common/libcommon.la
 common_libs = $(local_libs) $(GLIB_LIBS)
 AM_CPPFLAGS = $(GLIB_CFLAGS) "-I$(top_srcdir)/include"
 
