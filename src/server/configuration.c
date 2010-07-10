@@ -525,6 +525,7 @@ void load_default_global_set_options()
 	GlobalFDSet.pause_context = 0;
 	GlobalFDSet.ssml_mode = SPD_DATA_TEXT;
 	GlobalFDSet.notification = SPD_NOTHING;
+	GlobalFDSet.log_level = options.log_level;
 
 #ifdef __SUNPRO_C
 /* Added by Willie Walker - default to OSS for Solaris */
