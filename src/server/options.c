@@ -48,7 +48,7 @@ static struct option long_options[] = {
 	{"socket-name", 1, 0, 'S'},
 	{"port", 1, 0, 'p'},
 	{"pid-file", 1, 0, 'P'},
-	{"config-file", 1, 0, 'C'},
+	{"config-dir", 1, 0, 'C'},
 	{"system-service", no_argument, NULL, 'y'},
 	{"version", 0, 0, 'v'},
 	{"debug", 0, 0, 'D'},
@@ -64,7 +64,7 @@ void options_print_help(char *argv[])
 	assert(argv[0]);
 
 	printf(_
-	       ("Usage: %s [-{d|s|y}] [-l {1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n"),
+	       ("Usage: %s [-{d|s|y}] [-l {0|1|2|3|4|5}] [-c com_method] [-S socket_name] [-p port] | [-v] | [-h]\n"),
 	       argv[0]);
 	printf(_
 	       ("OpenTTS -- Common interface for Speech Synthesis (GNU GPL)\n\n"));
@@ -74,24 +74,25 @@ void options_print_help(char *argv[])
 	printf(_("Run as single application\n"));
 	printf("-y, --system-service\t");
 	printf(_("Run as system wide service\n"));
-	printf("-l, --log-level\t");
-	printf(_("Set log level (1..5)\n"));
+	printf("-l, --log-level\t\t");
+	printf(_("Set log level (0..5)\n"));
 	printf("-c, --communication-method\t");
 	printf(_("Communication method to use (unix_socket or inet_socket)\n"));
 	printf("-S, --socket-name\t");
 	printf(_
 	       ("Socket name to use for 'unix_socket' method (path or 'default')\n"));
-	printf("-p, --port\t");
+	printf("-p, --port\t\t");
 	printf(_("Specify a port number for 'inet_socket' method\n"));
-	printf("-P, --pid-file\t");
+	printf("-P, --pid-file\t\t");
 	printf(_("Set path to pid file\n"));
 	printf("-C, --config-dir\t");
 	printf(_("Set path to configuration\n"));
-	printf("-v, --version\t");
+	printf("-v, --version\t\t");
 	printf(_("Report version of this program\n"));
-	printf("-D, --debug\t");
-	printf(_("Output debugging information into /tmp/openttsd-debug\n"));
-	printf("-h, --help\t");
+	printf("-D, --debug\t\t");
+	printf(_("Output debugging information into \${TMPDIR}/openttsd-debug\n"
+		 "\t\t\tif \${TMPDIR} does not exists it uses /tmp/openttsd-debug\n"));
+	printf("-h, --help\t\t");
 	printf(_("Print this information\n\n"));
 	printf(_("Copyright (C) 2003,2006 Brailcom, o.p.s.\n"
 		 "Copyright (C) 2010 OpenTTS Developers\n"
