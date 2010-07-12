@@ -53,6 +53,7 @@ the Ivona output module.
 
 Thanks to Gilles Casse <gcasse at oralux point org> for contributing
 the original PulseAudio output module.
+Two of our IBMTTS-related patches were imported from his Voxin distribution.
 
 Thanks to Marco Skambraks <marco at openblinux point de> for contributing
 the libao audio backend.
@@ -62,12 +63,16 @@ PulseAudio backend.
 
 Thanks to Andrei Kholodnyi <andrei.kholodnyi at gmail point com>
 for his cleanup of the audio subsystem, output modules, and server.
+Andrei also added several new features to the otts-say utility, such as
+the ability to list output modules and synthesis voices.
 
-Thanks to Rui Batista for updating the INSTALL document
-and for work on the PulseAudio backend.
+Thanks to Rui Batista for updating the INSTALL document,
+work on the PulseAudio backend, and cleanup of the Python code.
+Rui added internationalization to OpenTTS.
 
 Thanks to Trevor Saunders <trev.saunders at gmail point com> for renaming,
-code cleanup, and testing on Solaris.
+code cleanup,  testing on Solaris,
+and refactoring of the logging code.
 
 Thanks to Jose Vilmar Estacio de Souza <vilmar at informal point com point br>
 for fixing memory leaks.
@@ -80,5 +85,10 @@ fixes.
 
 Thanks to William Hubbs <w.d.hubbs at gmail point com> for many
 improvements, especially related to the build system.
+William added system-service functionality to OpenTTS, and he also helped
+with the refactoring of the logging code.
+
+Thanks to Mesar Hameed for adding "select SSML mode" functionality to
+the Python API.
 
 ...and to many others.
