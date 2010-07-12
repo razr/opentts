@@ -1,0 +1,9 @@
+This is the dummy output module.
+The Open T T S server is running, but none of the other output modules
+could be loaded.
+Please check the log file in
+tilda slash dot open t t s slash log slash open t t s d dot log
+for further details.
+If you are running Open T T S as a system service,
+look in slash var slash log slash open t t s slash open t t s d dot log
+for the log file.

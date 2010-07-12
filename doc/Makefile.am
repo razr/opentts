@@ -7,4 +7,4 @@ opentts_TEXINFOS = gpl.texi fdl.texi
 speech_dispatcher_cs_TEXINFOS = gpl.texi fdl.texi
 ssip_TEXINFOS = gpl.texi fdl.texi
 
-EXTRA_DIST = figures
+EXTRA_DIST = figures dummy-message.txt
