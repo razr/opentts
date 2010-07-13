@@ -187,6 +187,13 @@ void options_parse(int argc, char *argv[])
 			}
 			break;
 		case 'c':
+			if (strcmp(optarg,"unix_socket")
+			    || strcmp(optarg,"inet_socket")) {
+				log_msg(OTTS_LOG_ERR,
+					"-c %s option error, communication method shall be unix_socket or inet_socket",
+					optarg);
+				exit(1);
+			}
 			OPTION_SET_STR(communication_method);
 			options.communication_method_set = 1;
 			break;
