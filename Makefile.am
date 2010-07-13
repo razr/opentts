@@ -6,3 +6,5 @@ pkgconfig_DATA = opentts.pc
 SUBDIRS= src include config doc po
 
 MAINTAINERCLEANFILES=configure
+
+EXTRA_DIST=README.translators
