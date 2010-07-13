@@ -4,3 +4,9 @@ A list of known bugs:
 as there is not any support for that in those modules.
 
 * Espeak generic module doesn't support punctuation.
+
+This file is mainly present for historical reasons, and its purpose
+is better served by our dedicated bug tracker.
+If you find a bug, please report it on the issues page, linked from
+<http://opentts.org/>.  This should also be directly reachable via the
+URL <http://opentts.org/project/issues>.
