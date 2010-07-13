@@ -7,4 +7,4 @@ SUBDIRS= src include config doc po
 
 MAINTAINERCLEANFILES=configure
 
-EXTRA_DIST=README.translators
+EXTRA_DIST= BUGS FAQ README.packagers README.translators
