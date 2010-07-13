@@ -179,6 +179,12 @@ void options_parse(int argc, char *argv[])
 			break;
 		case 'l':
 			OPTION_SET_INT(log_level);
+			if (val >= OTTS_LOG_DEBUG || OTTS_LOG_CRIT <= val) {
+				log_msg(OTTS_LOG_ERR,
+					"-l %d option error, log level shall be in a range %d...%d",
+					val, OTTS_LOG_CRIT, OTTS_LOG_DEBUG);
+				exit(1);
+			}
 			break;
 		case 'c':
 			OPTION_SET_STR(communication_method);
