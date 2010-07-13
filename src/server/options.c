@@ -133,6 +133,7 @@ void options_parse(int argc, char *argv[])
 	int option_index;
 	int val;
 	int ret;
+	int mode_set = 0;
 
 	char *tmpdir;
 	char *debug_logfile_path;
@@ -150,13 +151,31 @@ void options_parse(int argc, char *argv[])
 			break;
 		switch (c_opt) {
 		case 'd':
+			if (mode_set) {
+				log_msg(OTTS_LOG_ERR,
+					"-%c option error, options {d|s|y} are mutual exclusive", c_opt);
+				exit(1);
+			}
 			options.mode = DAEMON;
+			mode_set = 1;
 			break;
 		case 's':
+			if (mode_set) {
+				log_msg(OTTS_LOG_ERR,
+					"-%c option error, options {d|s|y} are mutual exclusive", c_opt);
+				exit(1);
+			}
 			options.mode = SESSION;
+			mode_set = 1;
 			break;
 		case 'y':
+			if (mode_set) {
+				log_msg(OTTS_LOG_ERR,
+					"-%c option error, options {d|s|y} are mutual exclusive", c_opt);
+				exit(1);
+			}
 			options.mode = SYSTEM;
+			mode_set = 1;
 			break;
 		case 'l':
 			OPTION_SET_INT(log_level);
