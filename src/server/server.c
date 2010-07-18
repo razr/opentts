@@ -38,6 +38,7 @@
 
 #include "def.h"
 #include "alloc.h"
+#include "history.h"
 #include <logging.h>
 #include "openttsd.h"
 #include "set.h"
@@ -142,33 +143,8 @@ queue_message(openttsd_message * new, int fd, int history_flag,
 	   the message before we woud copy it) */
 	//    if (history_flag){
 	if (0) {
-		/* We will make an exact copy of the message for inclusion into history. */
-		hist_msg = copy_message(new);
-
 		pthread_mutex_lock(&element_free_mutex);
-		if (hist_msg != NULL) {
-			/* Do the necessary expiration of old messages */
-			if (g_list_length(message_history) >=
-			    options.max_history_messages) {
-				GList *gl;
-				log_msg(OTTS_LOG_DEBUG,
-					"Discarding older history message, limit reached");
-				gl = g_list_first(message_history);
-				if (gl != NULL) {
-					message_history =
-					    g_list_remove_link(message_history,
-							       gl);
-					if (gl->data != NULL)
-						mem_free_message(gl->data);
-				}
-			}
-			/* Save the message into history */
-			message_history =
-			    g_list_append(message_history, hist_msg);
-		} else {
-			if (OPENTTSD_DEBUG)
-				FATAL("Can't include message into history\n");
-		}
+		history_add_message(new);
 		pthread_mutex_unlock(&element_free_mutex);
 	}
 

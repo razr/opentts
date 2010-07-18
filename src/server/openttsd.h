@@ -140,10 +140,6 @@ GHashTable *fd_uid;
 queue_t *MessageQueue;
 /* List of messages from paused clients waiting for resume */
 GList *MessagePausedList;
-/* List of settings related to history */
-GList *history_settings;
-/* List of messages in history */
-GList *message_history;
 
 /* List of different entries of client-specific configuration */
 GList *client_specific_settings;
