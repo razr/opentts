@@ -37,3 +37,8 @@ if ivona_support
 dist_moduleconf_DATA += ivona.conf
 dist_moduleconforig_DATA += ivona.conf
 endif
+
+if pico_support
+dist_moduleconf_DATA += pico.conf
+dist_moduleconforig_DATA += pico.conf
+endif

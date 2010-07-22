@@ -103,6 +103,11 @@ AC_ARG_WITH([ivona],
 	[],
 	[with_ivona=check])
 
+AC_ARG_WITH([pico],
+	[AS_HELP_STRING([--with-pico], [include pico SVOX support])],
+	[],
+	[with_pico=check])
+
 AC_ARG_WITH([opentts-user],
 	[AS_HELP_STRING([--with-opentts-user], [user for OpenTTS system service (opentts)])],
 	[opentts_user="$withval"],
@@ -361,6 +366,16 @@ AS_IF([test $with_ivona != "no"],
 			[AC_MSG_FAILURE([ivona is not available])])])])
 
 AM_CONDITIONAL(ivona_support, test $with_ivona = "yes")
+
+# check for pico SVOX support
+AS_IF([test $with_pico != "no"],
+	[AC_CHECK_LIB([ttspico],
+		[pico_initialize],
+		[with_pico=yes],
+		[AS_IF([test $with_pico = "yes"],
+			[AC_MSG_FAILURE([pico SVOX is not available])])])])
+
+AM_CONDITIONAL(pico_support, test $with_pico = "yes")
 
 AC_SUBST(datadir)
 

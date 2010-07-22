@@ -59,3 +59,9 @@ modulebin_PROGRAMS += ivona
 ivona_SOURCES = ivona.c ivona_client.c ivona_client.h $(common_sources)
 ivona_LDADD = $(common_libs) -ldumbtts $(DOTCONF_LIBS) $(GLIB_LIBS) $(SNDFILE_LIBS) $(GTHREAD_LIBS)
 endif
+
+if pico_support
+modulebin_PROGRAMS += pico
+pico_SOURCES = pico.c $(common_sources)
+pico_LDADD = $(common_libs) -lttspico $(DOTCONF_LIBS) $(GLIB_LIBS) $(SNDFILE_LIBS) $(GTHREAD_LIBS)
+endif
