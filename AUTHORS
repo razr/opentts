@@ -2,9 +2,8 @@
 AUTHORS
 =======
 
-Luke Yelavich <themuso at opentts point org>
-* Luke is the lead developer of OpenTTS.
-* He has also contributed fixes for the audio subsystem.
+Andrei Kholodnyi <andrei.kholodnyi at gmail point com>
+    * the current maintainer of OpenTTS.
 
 Jan Buchal <buchal at freebsoft point org>
     * ideas
@@ -29,6 +28,9 @@ Milan Zamazal <pdm at brailcom point org>
 
 THANKS
 ======
+Thanks Luke Yelavich <themuso at opentts point org>
+for being the lead developer of OpenTTS.
+He has also contributed fixes for the audio subsystem.
 
 Thanks to Jacob Schmude <jschmude at adelphia point net> for contributing
 the generic output module configuration file for DecTalk software
