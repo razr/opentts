@@ -21,7 +21,7 @@ if dummy_support
 modulebin_PROGRAMS += dummy
 dummy_SOURCES = dummy.c $(common_sources) module_utils_addvoice.c
 dummy_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(SNDFILE_LIBS) $(GTHREAD_LIBS)
-dist_snddata_DATA = dummy-message.wav
+dist_snddata_DATA = en-dummy-message.wav
 endif
 
 if espeak_support

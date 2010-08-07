@@ -243,7 +243,7 @@ void _dummy_child()
 	sigset_t some_signals;
 
 	int ret;
-	char *try1, *try2, *try3;
+	char *dummy_fname, *try1, *try2, *try3;
 
 	sigfillset(&some_signals);
 	module_sigunblockusr(&some_signals);
@@ -251,15 +251,20 @@ void _dummy_child()
 	log_msg(OTTS_LOG_INFO, "Entering child loop\n");
 	/* Read the waiting data */
 
+	dummy_fname = g_strdup_printf(DATADIR"/%s-dummy-message.wav",
+	                              msg_settings.voice.language);
+	if (!g_file_test(dummy_fname, G_FILE_TEST_EXISTS)) {
+		g_free (dummy_fname);
+		dummy_fname = g_strdup(DATADIR"/"OPENTTSD_DEFAULT_LANGUAGE
+		                       "-dummy-message.wav");
+	}
+
 	try1 =
-	    g_strdup("play " DATADIR
-		     "/dummy-message.wav > /dev/null 2> /dev/null");
+	    g_strdup_printf("play %s > /dev/null 2> /dev/null", dummy_fname);
 	try2 =
-	    g_strdup("aplay  " DATADIR
-		     "/dummy-message.wav > /dev/null 2> /dev/null");
+	    g_strdup_printf("aplay %s > /dev/null 2> /dev/null", dummy_fname);
 	try3 =
-	    g_strdup("paplay " DATADIR
-		     "/dummy-message.wav > /dev/null 2> /dev/null");
+	    g_strdup_printf("paplay %s > /dev/null 2> /dev/null", dummy_fname);
 
 	log_msg(OTTS_LOG_DEBUG, "child: synth commands = |%s|%s|%s|", try1,
 		try2, try3);
@@ -291,6 +296,7 @@ void _dummy_child()
 
 	module_sigunblockusr(&some_signals);
 
+	g_free (dummy_fname);
 	g_free(try1);
 	g_free(try2);
 	g_free(try3);
