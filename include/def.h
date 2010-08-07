@@ -24,10 +24,11 @@
 #ifndef DEF_H
 #define DEF_H
 
+#include "opentts/opentts_types.h"
+
 #define OPENTTSD_DEFAULT_PORT		6560
 #define OPENTTSD_DEFAULT_MODE		DAEMON
-
-#include "opentts/opentts_types.h"
+#define OPENTTSD_DEFAULT_LANGUAGE	"en"
 
 typedef enum {
 	SPD_MSGTYPE_TEXT = 0,

@@ -517,7 +517,7 @@ void load_default_global_set_options()
 	GlobalFDSet.msg_settings.pitch = OTTS_VOICE_PITCH_DEFAULT;
 	GlobalFDSet.msg_settings.volume = OTTS_VOICE_VOLUME_DEFAULT;
 	GlobalFDSet.client_name = g_strdup("unknown:unknown:unknown");
-	GlobalFDSet.msg_settings.voice.language = g_strdup("en");
+	GlobalFDSet.msg_settings.voice.language = g_strdup(OPENTTSD_DEFAULT_LANGUAGE);
 	GlobalFDSet.output_module = NULL;
 	GlobalFDSet.msg_settings.voice_type = SPD_MALE1;
 	GlobalFDSet.msg_settings.cap_let_recogn = SPD_CAP_NONE;
