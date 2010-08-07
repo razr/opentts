@@ -3,7 +3,7 @@
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = opentts.pc
 
-SUBDIRS= src include config doc po
+SUBDIRS= src include config data doc po
 
 MAINTAINERCLEANFILES=configure
 

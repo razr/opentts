@@ -432,6 +432,8 @@ AC_CONFIG_FILES([Makefile
                  config/clients/Makefile
                  config/desktop/Makefile
                  config/modules/Makefile
+                 data/Makefile
+                 data/modules/Makefile
                  doc/Makefile
                  include/Makefile
                  po/Makefile.in
