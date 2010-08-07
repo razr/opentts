@@ -1,0 +1,4 @@
+To jest zastępczy moduł wyjściowy.
+Serwer Open T T S jest uruchomiony, ale żaden z modułów wyjściowych nie mógł zostać załadowany.
+Sprawdź plik logów: tylda slesz kropka open T T S slesz open T T S D kropka log, aby uzyskać więcej szczegółów.
+Jeśli uruchamiasz Open T T S jako usługę systemową, sprawdź plik logów: slesz var slesz log slesz open T T S slesz open T T S D kropka log.
