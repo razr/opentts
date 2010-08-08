@@ -452,7 +452,7 @@ static void init()
 	    g_hash_table_new_full(g_int_hash, g_int_equal, g_free, NULL);
 	assert(fd_settings != NULL);
 
-	fd_uid = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+	fd_uid = g_hash_table_new_full(g_int_hash, g_int_equal, g_free, g_free);
 	assert(fd_uid != NULL);
 
 	language_default_modules = g_hash_table_new(g_str_hash, g_str_equal);
