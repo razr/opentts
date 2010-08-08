@@ -1,0 +1,5 @@
+Hier spricht das dammi Ausgabe Modul.
+Der Open t t s Dämon läuft, konnte jedoch kein anderes funktionierendes Ausgabemodul laden.
+Bitte lesen Sie die log Datei in tilde Schrägstrich punkt open t t s Schrägstrich  log Schrägstrich open t t s d punkt log für weitere Informationen.
+Wenn sie open t t s d als Systemdienst nutzen, befindet sich die Log-Datei in Schrägstrich var Schrägstrich log Schrägstrich open t t s Schrägstrich open t t s d punkt log.
+
