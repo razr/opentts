@@ -67,7 +67,7 @@ static int _oss_open(oss_id_t * id)
 	pthread_mutex_lock(&id->fd_mutex);
 
 	id->fd = open(id->device_name, O_WRONLY, 0);
-	if (id->fd == -1) {
+	if (id->fd < 0) {
 		perror(id->device_name);
 		pthread_mutex_unlock(&id->fd_mutex);
 		id = NULL;
@@ -82,14 +82,12 @@ static int _oss_open(oss_id_t * id)
 static int _oss_close(oss_id_t * id)
 {
 	audio_log(OTTS_LOG_ERR, "_oss_close()");
-	if (id == NULL)
-		return 0;
-	if (id->fd == 0)
+	if (id == NULL || id->fd < 0)
 		return 0;
 
 	pthread_mutex_lock(&id->fd_mutex);
 	close(id->fd);
-	id->fd = 0;
+	id->fd = -1;
 	pthread_mutex_unlock(&id->fd_mutex);
 	return 0;
 }
@@ -414,15 +412,14 @@ static int oss_stop(AudioID * id)
 	int ret;
 	oss_id_t *oss_id = (oss_id_t *) id;
 
-	if (oss_id == NULL)
+	if (oss_id == NULL || oss_id->fd < 0)
 		return 0;
 
 	audio_log(OTTS_LOG_INFO, "oss: stop() called");
 
 	/* Stop the playback on /dev/dsp */
 	pthread_mutex_lock(&oss_id->fd_mutex);
-	if (oss_id->fd != 0)
-		ret = ioctl(oss_id->fd, SNDCTL_DSP_RESET, 0);
+	ret = ioctl(oss_id->fd, SNDCTL_DSP_RESET, 0);
 	pthread_mutex_unlock(&oss_id->fd_mutex);
 	if (ret == -1) {
 		perror("reset");
