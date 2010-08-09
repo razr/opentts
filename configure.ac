@@ -430,9 +430,9 @@ AC_CONFIG_FILES([Makefile
                  opentts.pc
                  config/Makefile
                  config/clients/Makefile
-                 config/desktop/Makefile
                  config/modules/Makefile
                  data/Makefile
+                 data/desktop/Makefile
                  data/modules/Makefile
                  doc/Makefile
                  include/Makefile

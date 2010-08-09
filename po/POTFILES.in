@@ -1,4 +1,4 @@
-config/desktop/openttsd.desktop.in
+data/desktop/openttsd.desktop.in
 src/api/python/opentts_config/config.py
 src/clients/say/options.c
 src/clients/say/say.c
