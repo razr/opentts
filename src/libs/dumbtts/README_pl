@@ -1,0 +1,269 @@
+LIBDUMBTTS
+
+Libdumbtts to biblioteka, rozszerzająca możliwości tzw. "głupich syntezatorów",
+które potrafią jedynie wypowiedzieć podany na wejściu napis zawierający
+wyłącznie znaki z alfabetu języka, którym operuje syntezator. Wzbogaca
+możliwości syntezatora o:
+
+1) tłumaczone nazwy klawiszy.
+
+2) Wymawianie pojedynczych znaków. Rozpoznaje wszystkie znaki
+   z zakresu 0x20-0x17f.
+
+   W przypadku liter możliwe jest rozpoznawanie
+   wielkich liter zarówno poprzez poprzedzenie litery prefiksem 'wielka',
+   jak i zasygnalizowanie funkcji wywołującej że wymawiana jest wielka
+   litera (przydatne przede wszystkim, gdy poprzedzamy wielkie litery
+   ikona dźwiękową).
+
+   Akcentowane litery są wymawiane poprzez złożenie litery i nazwy akcentu
+   (np. 'č' dla języka polskiego może być wymawiane jak 'ce z haczkiem').
+
+3) Konwersja wprowadzonego tekstu w kodowaniu UTF-8 do jednobajtowego
+   kodowania syntezatora. Wymowa wszystkich liter jest konfigurowalna
+   (np "maček" w języku polskim będzie wymawiane jako "maczek").
+   Zaimplementowane jest również prosta metoda transliteracji cyrylicy
+   (dla znaków z zakresu 0x400 - 0x47f).
+
+Biblioteka zaprojektowana została do obsługi syntezatora Ivona i współpracy
+ze speech-dispatcherem, jednak powinna być na tyle uniwersalna, aby
+możliwe było generowanie tekstów dla dowolnego syntezatora.
+
+FUNKCJE:
+
+struct dumbtts_conf *dumbtts_TTSInit(char *lang);
+
+	Inicjalizuje strukturę dumbtts_conf oraz wczytuje plik
+	danych.	Pliki danych znajduje się w /usr/share/dumbtts/xx.conf.
+	gdzie "xx" to dwuliterowy kod języka. Po wczytaniu tego pliku
+	funkcja próbuje znaleźć kolejno pliki /etc/dumbtts/xx.conf oraz
+	~/.dumbtts_xx.conf i koryguje wczytane uprzednio elementy.
+	Zwraca nowo przydzielony obszar pamięci, który nie może być
+	zwalniany przez free()!
+
+void dumbtts_TTSFree(struct dumbtts_conf *conf);
+
+	Zwalnia pamięć przydzieloną przez dumbtts_TTSInit.
+
+int dumbtts_WCharString(
+	struct dumbtts_conf *conf,
+	wchar_t wc,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+int dumbtts_CharString(
+	struct dumbtts_conf *conf,
+	char *ch,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+	Literuje znak (w przypadku CharString pierwszy znak napisu).
+	Wynikowy napis umieszczany jest w obszarze wskazanym przez
+	parametr outbuf o wielkości co naajmniej len znaków.
+	Parametr capMode oznacza sposób oznaczania wielkich liter.
+	Może przyjmować jedną z trzech wartości:
+
+		0 - brak oznaczania wielkich liter
+		1 - oznaczenie wielkiej litery przez aplikację
+		2 - poprzedzenie wielkiej litery słowem "capital"
+		    (lub odpowiednikiem dla konkretnego języka).
+
+	Aktualnie wartość 1 i 0 mają identyczne działanie.
+
+	Parametr isCap powinien zawierać wskaźnik do zmiennej typu int
+	lub NULL. Jeśli nie jest NULL, wartość zmiennej zostanie
+	ustawiona na 1 w przypadku wielkiej litery lub na 0 w przypadku
+	innego znaku.
+
+Wartość zwracana:
+
+	Jeśli konwersja się powiodła, zwracane jest 0. Jeśli parametr
+	outbuf był NULL lub podana wielkość wskazanego obszaru jest zbyt
+	mała aby pomieścić skonwertowany napis, zwracana jest minimalna
+	potrzebna wielkość obszaru. W przypadku błędu zwracana jest
+	wartość ujemna.
+
+
+int dumbtts_KeyString(
+	struct dumbtts_conf *conf,
+	char  *str,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+	Konwertuje nazwę klawisza (np "space", "underscore") zawarty w str
+	na wymawialny przez syntezator napis. Znaczenie parametrów i
+	wartość zwracana jak dla CharString.
+
+int dumbtts_GetString(
+	struct dumbtts_conf *conf,
+	char *str,
+	char *outbuf,
+	int len,
+	int punctMode,
+	char *punctChars,
+	char *punctLeave);
+
+	Konwertuje podany w str napis na postać wymawialną przez syntezator.
+	Parametr punctMode może przyjąć jedną z trzech wartości:
+
+		0 - znaki interpunkcyjne są pomijane;
+		1 - czytane są wyłącznie znaki interpunkcyjne podane
+		    w parametrze punctChars;
+		2 - czytane są wszystkie znaki interpunkcyjne.
+
+	Parametr punctLeave to napis składający się ze znaków, które
+	muszą być pozostawione w wynikowym napisie bez względu na
+	wartość punctMode - są to podstawowe znaki interpunkcyjne
+	sterujące wymową. Dla Ivony wartością napisu powinno być ".,!?;:"
+
+	Znaczenie parametrów outbuf i len oraz wartość zwracana
+	jak dla CharString.
+
+PLIKI DANYCH
+
+Plik podzielony jest na sekcje. Nazwa każdej sekcji ujęta jest w
+nawiasy kwadratowe. Przy wczytywaniu rozpoznawane są pierwsze cztery litery
+nazwy. Puste linie są pomijane. Komentarze rozpoczynają się od ciągu "//".
+Pliki muszą być w kodowaniu UTF-8.
+
+Pliki znajdujące się w /usr/share/dumbtts nie powinny być edytowane,
+zamiast tego należy skopiować je do katalogu /etc/dumbtts i tam
+nanieść konieczne poprawki.
+
+Znaczenie sekcji:
+
+SEKCJA [clist]
+
+Zawiera deklarację wszystkich liter rozpoznawanych przez syntezator
+w postaci:
+
+#numer znak
+
+gdzie "numer" jest reprezentacją danego znaku w kodowaniu używanym
+przez syntezator, "znak" jest pojedynczą małą literą.
+
+Przykładowo dla języka polskiego sekcja będzie miała postać:
+
+[clist]
+xB1 ą
+xEA ę
+xB6 ś
+xE6 ć
+xF1 ń
+xF3 ó
+xBC ź
+xBF ż
+xB3 ł
+
+SEKCJA [spell]
+
+Zawiera pary znak - nazwa używane przy wymawianiu pojedynczych znaków.
+Znak może być zakodowany w notacji #numer (dziesiętnie) lub
+#xnumer (szesnastkowo). Odczytany numer odpowiada kodowi znaku w UNICODE.
+
+Przykład:
+
+y igrek
+
+Sekcja [pronunciation]
+
+Zawiera tabele wymowy poszczególnych znaków przy czytaniu tekstów.
+
+Przykłady:
+
+ń ń
+č cz
+
+SEKCJA [diacritics]
+
+Zawiera nazwy modyfikatorów oraz kilka słów zastrzeżonych.
+
+ill nielegalny // nielegalny symbol itp.
+let litera  // przed literą czytaną numerycznie
+cap wielkie // przed pojedynczą wielką literą
+caplet wielka litera // przed wielką literą czytaną numerycznie
+lig ligatura // przed ligaturą
+caplig wielka ligatura // przed wielką ligaturą
+sym znak // przed pozostałymi znakami czytanymi numerycznie
+
+ced cedilla	// cedilla
+bre brewis	// breve
+dot z kropką	// dot above
+dia umlałt	// diaeresis, umlaut
+acu ostre	// acute
+gra ciężkie	// grave
+ac2 hungarumlałt	// double acute
+cir z daszkiem	// circumflex
+mac nadkreślone	// macron
+rin z kółkiem	// ring above
+str skreślone	// stroke
+ogo z ogonkiem	// ogonek
+til z tyldą	// tilde
+car z haczkiem	// caron, hacek
+
+SEKCJA [keys]
+
+Zawiera pary nazwa - tłumaczenie przy odczytywaniu klawiszy.
+
+Przykład:
+
+space	spacja
+underscore podkreślenie
+double-quotes cudzysłów
+
+SEKCJA [cyrillic]
+
+Zawiera pary znaki - transliteracja przy czytaniu cyrylicy.
+"Znaki" to jedna lub dwie małe litery w cyrylicy, transliteracja
+może być pusta.
+
+SEKCJA [roman]
+
+Zawiera konfigurację konwersji liczb rzymskich:
+
+minlen <n>
+	minimalna długość liczby rzymskiej
+
+maxval <n>
+	największa liczba interpretowana jako rzymska
+
+ignore <zakresy>
+	te liczby nie będą interpretowane jako rzymskie.
+	<zakresy> to ciąg zapisów typu:
+		n1-n2	(wartości od n1 do n2 nie będą interpretowane
+			jako rzymskie)
+		nn	(ta wartośc nie będzie interpretowana jako rzymska)
+
+	Liczby mogą być podawane w notacji rzymskiej lub arabskiej
+
+	Przykład:
+
+	ignore 100-200 300-1900 XL LX
+
+ignore reset
+	niweluje działanie poprzednich linii "ignore" (przydatne we własnych
+	plikach konfiguracyjnych)
+
+SEKCJA [dictionary]
+
+Zawiera linie zawierające ścieżki do plików słownika:
+
+path	/ścieżka/do/słownika
+
+(opisy słownika - todo)
+
+SEKCJA [formats]
+
+Zawiera formatowania czytania dat, godzin oraz liczb mianowanych
+
+(todo)
+
+Wszelkie sugestie i poprawki mile widziane.
+
+Bohdan R. Rau <ethanak@polip.com>

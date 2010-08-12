@@ -1,0 +1,198 @@
+LIBDUMBTTS
+
+Libdumbtts is library extending capabilities of "dumb synthesizers",
+which can say only input text including characters of language alphabet.
+This library enriches:
+
+1) translated key names
+2) saying single characters; it recognizes all characters
+   between 0x20 and 0x17f.
+
+   In case of letters, it is possible to recognize capital letters
+   by adding prefix 'capital' or by using function returning information
+   if said letter is capital (helpful when you're using sound icon
+   prefix or pitch change).
+
+   Accented letters are pronounced by connecting character and name of accent
+   (ie. "o acute" for 'ó')
+
+3) converting input unicode text to one-byte synthesizer encoding.
+   Pronunciation of  all letters is configurable. This library implements
+   also simple transliteration method of cyryllic (for characters range:
+   0x400 - 0x47f).
+
+Library is projected to be used by Ivona synthesizer and
+speech-dispatcher. On the other side, it should be as flexible
+as it can be to generate output texts for every other synthesizer.
+
+METHODS:
+
+struct dumbtts_conf *dumbtts_TTSInit(char *lang);
+
+	Initializes dumbtts_conf structure and reads config file.
+	Configuration files should be placed in /usr/share/dumbtts/xx.conf,
+	where xx is two-character code of language. After reading this file,
+	function is trying to search /etc/dumbtts/xx.conf and then
+	~/.dumbtts_xx.conf file and corrects elements read before.
+	It returns allocated memory, which cannot be freed by free() function!
+
+void dumbtts_TTSFree(struct dumbtts_conf *conf);
+
+	It frees memory allocated by dumbtts_TTSConf.
+
+int dumbtts_WCharString(
+	struct dumbtts_conf *conf,
+	wchar_t wc,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+int dumbtts_CharString(
+	struct dumbtts_conf *conf,
+	char *ch,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+	It pronounces character (in case of CharString, first character
+	of input). Output text is allocated in area pointed by parameter
+	'outbuf', sized at least 'len' of bytes. 'capMode' parameter
+	indicates way of announcing capital letters. It can be:
+
+		0 - no capital letters announcing
+		1 - announcing capital letter by application
+		2 - preceding capital letter by word 'capital'
+		    (or language-specific equivalent)
+
+	At this moment, values 1 and 0 works in the same way.
+
+	isCap parameter should include pointer to integer variable or NULL.
+	If not NULL, value of variable will be set to 1 in case of capital
+	letter and to 0 in case of other character.
+
+Returns:
+
+	If conversion succeeds, function returns 0. If outbuf parameter
+	was NULL or given size of pointed area is to small to fit
+	converted text,	it returns minimal size of area. In case of error,
+	it returns negative value.
+
+int dumbtts_KeyString(
+	struct dumbtts_conf *conf,
+	char  *str,
+	char *outbuf,
+	int len,
+	int capMode,
+	int *isCap);
+
+	Converts name of key (eg. "space", "underscore") included in 'str'
+	to text translated to local language and pronouncable by synthesizer.
+	Meaning of parameters and returning value - the same as for CharString.
+
+int dumbtts_GetString(
+	struct dumbtts_conf *conf,
+	char *str,
+	char *outbuf,
+	int len,
+	int punctMode,
+	char *punctChars,
+	char *punctLeave);
+
+	Converts given input to form pronouncable by synthesizer.
+	punctMode parameter can be set by three possible values :
+
+		0 - punctuation characters are ignored
+		1 - punctuation is limited to characters given
+		    in punctChars parameter
+		2 - all punctuation characters are spoken.
+
+	punctLeave parameter is input containing characters, which
+	have to be left unchanged in output, regardless the punctMode
+	value -	they are basic punctuation characters controlling
+	pronounciation. For Ivona, value of input should be ".,!?;:".
+
+	Meaning of rest parameters and returning value - the same as
+	for CharString.
+
+CONFIGURATION FILES
+
+File is divided into sections. Name of each is enclosed in square brackets.
+During parsing, first four letters of name are read. Empty lines are ignored.
+Comments are preceded by "//" string. Files have to be in UTF-8.
+
+For examples - see pl.conf file.
+
+Meaning of sections:
+
+SECTION [clist]
+
+Includes declaration of all letters recognized by synthesizer by :
+
+number character
+
+where "number" jest representation of character in encoding used by
+synthesizer and "character" is single small letter.
+
+
+SECTION [spell]
+
+Contains pairs character-name, used when pronouncing single characters.
+Character can be encoded in #number notation (decimal) or in #xnumber
+(hexadecimal). Read number is adequate to character code in UNICODE.
+
+Example :
+
+y igrek
+
+SECTION [pronunciation]
+
+Contains pronounciation tables for each characters used when reading texts.
+
+
+SECTION [diacritics]
+
+Contains names of diacriticts and some reserved words.
+
+ill illegal // illegal symbol etc.
+let letter
+cap capital
+caplet capital letter // if not same as 'cap' 'let'
+lig ligature
+caplig capital ligature // if not same as 'cap' 'lig'
+sym symbol
+
+ced cedilla
+bre breve
+dot dot above
+dia diaeresis // umlaut
+acu acute
+gra grave
+ac2 double acute // hungarumlaut
+cir circumflex
+mac macron
+rin ring // above
+str stroke
+ogo ogonek
+til tilde
+car caron // hacek
+
+SECTION [keys]
+
+Includes pairs name - translation used when reading keys.
+
+SECTION [cyrillic]
+
+Contains pairs characters - transliteration used when reading cyryllic.
+"Characters" are single single letter or two small letters in cyryllic,
+transliteration can be empty.
+
+SECTION [abbreviations]
+
+Contains pairs abbreviation - pronunciation. Abbreviation may be
+followed by dot (to prevent pass dot to synthesizer).
+
+Please send every suggestion and bugfix requests to:
+
+Bohdan R. Rau <ethanak@polip.com>

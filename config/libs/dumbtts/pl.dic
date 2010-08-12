@@ -1,0 +1,320 @@
+// libdumbtts dictionary
+
+I(.|)+wojna pierwsza wojna
+II(.|)+wojna druga wojna
+III(.|)+wojna trzecia wojna
+I(.|)+wojn(y|ie) pierwszej wojn%2
+II(.|)+wojn(y|ie) drugiej wojn%2
+III(.|)+wojn(y|ie) trzeciej wojn%2
+I(.|)+wojn(ą|ę) pierwszą wojn%2
+II(.|)+wojn(ą|ę) drugą wojn%2
+III(.|)+wojn(ą|ę) trzecią wojn%2
+
+XX-wieczn(ego|emu|a|ej|ą|e|i|ych|ymi|ym|y) dwudziestowieczn%
+XIX-wieczn(ego|emu|a|ej|ą|e|i|ych|ymi|ym|y) dziewiętnastowieczn%
+XVIII-wieczn(ego|emu|a|ej|ą|e|i|ych|ymi|ym|y) osiemnastowieczn%
+XVII-wieczn(ego|emu|a|ej|ą|e|i|ych|ymi|ym|y) siedemnastowieczn%
+XVI-wieczn(ego|emu|a|ej|ą|e|i|ych|ymi|ym|y) szesnastowieczn%
+
+// screenreadery
+
+nvda enfałde~!a
+orca orka
+jaws dżełs
+
+// komputery, komputery
+
+home	hołm
+page_up 	pejdż~!ap
+page_down	pejdżd~!ałn
+caps_lock	kapslok
+num_lock	numlok
+escape		esk~!ejp
+backspace	bekspejs
+evolution	ewoluszyn
+load		lołd
+office		ofis
+play		plej
+scane		skan
+screen_reader 	skrinrider
+
+thunderbird	fenderberd
+thunderbird(em|ami|ach|a|owi|zie|om)	fenderberd%
+
+view		wiu
+e-mail(ami|ach|em|e|u|owym|owych|owymi|owy|owego|owe|) imejl%
+e_mail(ami|ach|em|e|u|owym|owych|owymi|owy|owego|owe|) imejl%
+delete		dil~!ejt
+eject		iż~!ekt
+forward		forłerd
+backward	bekłerd
+device		diw~!ajs
+devices		diwajsjs
+usb		ułesb~!e
+url		ułer~!el
+drive		drajw
+scsi		skazj
+hda		chade~!a
+sda		esde~!a
+dvd		diwid~!i
+sh		esh~!a
+ascii		askej
+
+// polityki i artysty
+
+berlusconi(ego|emu|m|) berluskoni%
+
+copeland(a|owi|zie|em|) kołplend%
+
+einstejn(ami|ach|a|owi|om|ów|em|ie|) ajnsztajn%
+eisenstein ~!ajzensztain
+eisenstein(ami|ach|a|owi|om|ów|em|ie) ajzensztajn%
+
+graves(ami|ach|a|owie|owi|em|ie|) grejws%
+
+javier(a|owi|em|ze|) hawier%
+
+ratzinger r~!ac~'inger
+ratzinger(owie|owi|om|ami|ach|ów|a|em|ze) rac~'inger%
+
+summer(a|owi|rze|) samer%
+
+the+police zepolis
+// english
+
+city sjty
+mountain małnten
+rocky raki
+
+// Imiona żeńskie
+alison	~!alison
+agatha	agata
+amy	emy
+alice	elis
+
+jane	dżejn
+janet	dżanet
+circe	kirke
+margaret margret
+maureen	mor~!in
+jackie	dżeki
+jacqueline żakl~!in
+janice	dżenis
+jeanette	żan~!et
+
+// Imiona angielskie męskie
+
+alistair	~!alister
+alistair(a|em|owi|rze)	alister%
+
+chuck(ami|ach|a|owi|om|u|) czak%
+
+jonathan dż~!onatan
+jonathan(a|owi|em|ie) dżonatan%
+keith(a|em|owie|ie|owi|ów|om|) kicz%
+
+john(a|owi|em|ie|) dżon%
+george`(a|em|owi|u) dżordż%
+george dżordż
+sean(a|owi|em|)	szon%
+
+connery(m|)	k~!onery
+connery`e(go|mu) konerie%
+
+johnson(a|owie|em|ie|owi|ami|om|) dżonson%
+smith(a|em|owie|ie|owi|ów|om|) smis%
+bush(a|owi|em|u|) busz%
+o`neil ołn~!il
+o`neil(a|owie|em|u|ach|ami|om|owie) ołnil%
+russel(a|owie|em|u|ach|ami|om|owie|) rasel%
+challenger(owi|em|ze|ami|ach|om|a)	czelendżer%
+challenger	cz~!elendżer
+chippendale	cz~!ipendejl
+chippendale`(ami|ach|om|a|owi|u) czipendejl%
+steward(ach|a|owi|zie|om|ów|) stiuard%
+
+// Tom Clancy
+ryan(a|em|ie|owi|ch|om|ów|) rajen%
+chavez(ami|a|em|ie|owi|ch|om|ów|) czawez%
+clark(ami|a|owi|iem|ów|ami|owie|om|) klerk%
+
+// Verne
+cyrus(a|owi|em|ie|) sajrus%
+pencroff(a|owi|em|ie|) penkrof%
+
+// Christie
+
+poirot	pułar~!o
+poiro(ta|towi|tem|cie) płaro%
+marple	merpyl
+
+// różne takie
+ad+hoc adh~!ok
+adieu	adj~!e
+ad+oculos ad~!okulos
+
+airbus(ami|ach|a|em|y|om|owi|ów|u|) erbas%
+air+force+one	erfors łan
+air+force+two	erfors tu
+
+buick(ach|ami|a|iem|i|om|owi|ów|u|) błik%
+boeing(ach|ami|a|iem|i|om|owi|ów|u) bełing%
+
+bungalow	bangloł
+
+
+calendas	kalendas
+carte+blanche kartbl~!ansz
+challenge	czelendż
+chanson		szans~!ą
+charg[ée] d`affaires szarżdaf~!er
+charmant	szarm~!an
+charme		szarm
+charmeur	szarm~!er
+charmeuse	szarm~!ez
+chip(ami|ach|a|u|ów|em|ie|) czip%
+
+chow+chow	czałcz~!ał
+ciao	ciał
+cicer+cum+caule	cjcerkumkałle
+ci+devant	sjdew~!an
+cinquecento	czinkeczento
+circa		cjrka
+cis+dur		cjsdur
+cis+moll	cjsmol
+cito		cjto
+clich[ée]	klisz
+clou	klu
+collage		kol~!aż
+college		koledż		//en
+collège		kol~!eż	//fr
+comte	kąt
+comtesse	kąt~!es
+con	kon
+concierge	konsj~!erż
+cool		kul
+copyright	k~!opyrajt
+cosa+nostra	koza nostra
+cottage		kotydż
+coup[ée]		kup~!e
+country		kantry
+cubiculum	kub~!ikulum
+culpa		kulpa
+curriculum	kur~!ikulum
+
+d,amour		dam~!ur
+de+facto	defakto
+de+iure		dejure
+d[ée]j[àa]+vu(e|)	deżaw~!i
+dell`arte	del~!ar
+del`arte	del~!ar
+dies+irae 	dijes ire
+dinghy		dingi
+
+faciendi	fasjendi
+foyer		fułaj~!e
+
+gentleman 	dż~!entelmen
+geographic	dżij~!ogrefik
+graecas		grekas
+
+
+monsieur mesj~!e
+madame	mad~!am
+mademoiselle madmłaz~!el
+maitr[ée]+d`hotel	metredot~!el
+mlle	madmłazel
+mme	mad~!am
+mon+ami	monam~!i
+mon+cher	mąsz~!er
+music	mjuzjk
+musical	mi~!uzjkal
+musical(ami|ach|em|e|owi|a|u|ów)	miuzjkal%
+
+national	n~!ejszynel
+nacional	nasjonal
+
+new	niu
+
+out	awt
+
+
+qui+pro+quo kwiprokw~!o
+rock		rok
+
+sir	ser
+sire	sjir
+street		strit
+
+va+banque	vab~!ank
+vari[eé]t[eé]s	warjet~!e
+vis+[àa]+vis	wizaw~!i
+voil[aà]	włal~!a
+vivace		wiwacze
+von		fon
+voodoo		wudu
+
+// kuchnia, kuchnia, jeść nam się chce!
+ragout	rag~!u
+fondue	fąd~!i
+beaujolais	bożol~!e
+boeuf	bef
+cabernet	kabern~!e
+caberne(tami|ta|tem|cie|tom|tu)	kaberne%
+camembert	kamemb~!er
+camember(tami|ta|tem|cie|tom|tu)	kamember%
+
+caf[eé]		kaf~!e
+chablis		szabl~!i
+chantilly	szantil~!i
+chianti		kjanti
+chili		czili
+chilli		czili
+chili+con+carne	czilikonkarne
+chop+suey	czopsu~!i
+coca		koka
+cola		kola
+coleslaw	kolsloł
+croissant	krłaz~!an
+cumberland	k~!amberlend
+cura_[çc]ao	kirasao
+curry		kary
+de+la+maison	delamez~!ą
+de+volaille	dewol~!aj
+[aá]+la		al~!a
+
+muesli		musli
+müsli		musli
+quiche		kisz
+ratatouille	ratat~!uj
+sp[ée]cialit[ée]	spesjalit~!e
+
+vinaigrette 	winegr~!et
+winegret	winegr~!et
+
+// USA
+pittsburgh(u|owi|iem|) pitsberg%
+illinois ~!ilinoj
+paducah p~!adjuka
+chattanooga czetanuga
+new+york niujork
+richmond(u|em|zie|) riczmond%
+wilderness ł~!yldernes
+massachusetts masaczusets
+new+jersey niudżer~'zy
+utah juta
+iowa ajoła
+delaware d~!elałor
+colorado kolorado
+chicago(wskim|wskiemu|wski|wskich|wskimi|wskie|wskiej|) czikago%
+californi(a|ę|i|o|) kaliforni%
+kentucky	kentaki
+
+columbi(a|ą|ę|i|o) kolambi%
+georgi(a|ą|ę|i|o) dżordż j%
+
+// geografia różne
+cruz kruz
+zimbabwe zjmbabwe
+lesotho lesoto
+
