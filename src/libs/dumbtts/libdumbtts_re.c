@@ -19,6 +19,12 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <wchar.h>
+
+#include "local.h"
+
 static int is_good_recog(char *c)
 {
 	wchar_t wc;
@@ -106,7 +112,7 @@ static struct dumbtts_expr *alloc_expr(struct dumbtts_conf *conf)
 	return allocMemBlock(conf,sizeof(struct dumbtts_expr),1);
 }
 
-static void read_format_line(struct dumbtts_conf *conf,char *line)
+void read_format_line(struct dumbtts_conf *conf,char *line)
 {
 	char *c;
 	c=line;
@@ -533,7 +539,8 @@ static int do_recognize_item(struct dumbtts_conf *conf,char *patr,int wnc,char *
 	return 1;
 
 }
-static char *do_recognize(struct dumbtts_conf *conf,wchar_t wc,char **str,struct recog_param *rp,int *rcount)
+
+char *do_recognize(struct dumbtts_conf *conf,wchar_t wc,char **str,struct recog_param *rp,int *rcount)
 {
 	struct dumbtts_abbr *rc;
 	for (rc=conf->recog;rc;rc=rc->next) {
@@ -858,7 +865,7 @@ static int compute_form_imode(struct dumbtts_conf *conf,int ival)
 	return conf->defforms[0];
 }
 
-static int do_units(struct dumbtts_conf *conf,wchar_t wc,char **str,char *outbuf)
+int do_units(struct dumbtts_conf *conf,wchar_t wc,char **str,char *outbuf)
 {
 	char *c,*d,*eos;int ival,i,forma,typ;
 	struct dumbtts_unit *u;

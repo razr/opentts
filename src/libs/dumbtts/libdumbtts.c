@@ -30,12 +30,7 @@
 #define addbuf(chr) do {if (outbuf && pos < len-1) outbuf[pos]=chr;pos++;} while(0)
 #define endbuf do {if (outbuf && pos < len) {outbuf[pos]=0;return 0;};return pos+1;} while(0)
 
-struct recog_param {
-	char name;
-	int value;
-};
-
-static int roman(int wc,wchar_t *oc,char *str,char **ostr,struct dumbtts_conf *conf);
+int roman(int wc,wchar_t *oc,char *str,char **ostr,struct dumbtts_conf *conf);
 
 static struct {
 	unsigned short flags;
@@ -616,31 +611,31 @@ static unsigned short letter_lower[0x1000]={
 4064,4065,4066,4067,4068,4069,4070,4071,4072,4073,4074,4075,4076,4077,4078,4079,
 4080,4081,4082,4083,4084,4085,4086,4087,4088,4089,4090,4091,4092,4093,4094,4095};
 
-static int isfalnum(wc)
+int isfalnum(wc)
 {
 	if (wc < 0x1000) return letter_flags[wc] & (U_DIGIT | U_LETTER);
 	return 0;
 }
 
-static int isfdigit(wc)
+int isfdigit(wc)
 {
 	if (wc < 0x1000) return letter_flags[wc] & U_DIGIT;
 	return 0;
 }
 
-static int isfalpha(wc)
+int isfalpha(wc)
 {
 	if (wc < 0x1000) return letter_flags[wc] & U_LETTER;
 	return 0;
 }
 
-static int isfupper(wc)
+int isfupper(wc)
 {
 	if (wc < 0x1000) return letter_flags[wc] & U_UPPER;
 	return 0;
 }
 
-static int isflower(wc)
+int isflower(wc)
 {
 	if (wc < 0x1000) {
 		if (letter_flags[wc] & U_UPPER) return 0;
@@ -648,7 +643,8 @@ static int isflower(wc)
 	}
 	return 0;
 }
-static int isfspace(wc)
+
+int isfspace(wc)
 {
 	if (wc < 0x1000) {
 		if (!letter_flags[wc]) return U_SPACE;
@@ -657,7 +653,7 @@ static int isfspace(wc)
 	return 0;
 }
 
-static int toflower(wc)
+int toflower(wc)
 {
 	if (wc<0x1000) {
 		int i=letter_lower[wc];
@@ -667,7 +663,7 @@ static int toflower(wc)
 }
 
 
-static int get_unichar(char  *str,char **ptr,int hMode)
+int get_unichar(char  *str,char **ptr,int hMode)
 {
 	wchar_t wc;int n;
 	if (hMode) {
@@ -740,7 +736,7 @@ static int ustrlen(char  *c)
 	for (i=0;;i++) if (!get_unichar(c,&c,1)) return i;
 }
 
-static void *allocMemBlock(struct dumbtts_conf *conf,int size,int flags)
+void *allocMemBlock(struct dumbtts_conf *conf,int size,int flags)
 {
 	char *mb;
 	if (!conf->memo || conf->memo->lastfree - conf->memo->firstfree < size) {
@@ -764,7 +760,7 @@ static void *allocMemBlock(struct dumbtts_conf *conf,int size,int flags)
 	return mb;
 }
 
-static char *strdupMemBlock(struct dumbtts_conf *conf,char *str)
+char *strdupMemBlock(struct dumbtts_conf *conf,char *str)
 {
 	char *dst=allocMemBlock(conf,strlen(str)+1,0);
 	if (dst) strcpy(dst,str);
@@ -856,7 +852,7 @@ static void add_abbr(struct dumbtts_conf *conf,char *abbr,char *res)
 	conf->abbrev=da;
 }
 
-static char *local_conv(char *line,struct dumbtts_conf *conf)
+char *local_conv(char *line,struct dumbtts_conf *conf)
 {
 	int i;
 	char *dst,*s;
@@ -877,7 +873,7 @@ static char *local_conv(char *line,struct dumbtts_conf *conf)
 	return dst;
 }
 
-static char *line_trim(char *str)
+char *line_trim(char *str)
 {
 	char *c,*d;
 	while (*str && isspace(*str)) str++;
@@ -959,10 +955,6 @@ static void read_roman_line(struct dumbtts_conf *conf,char *line)
 		return;
 	}
 }
-
-
-#include "libdumbtts_dic.c"
-#include "libdumbtts_re.c"
 
 static int read_line(struct dumbtts_conf *conf,FILE *f)
 {
@@ -1497,7 +1489,8 @@ static int legal_roman(struct dumbtts_conf *conf,int len,int v)
 	}
 	return 1;
 }
-static int roman(int wc,wchar_t *oc,char *str,char **ostr,struct dumbtts_conf *conf)
+
+int roman(int wc,wchar_t *oc,char *str,char **ostr,struct dumbtts_conf *conf)
 {
 	int goc=0;
 	int val=0;

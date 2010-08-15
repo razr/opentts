@@ -24,6 +24,8 @@
 
 #include <wchar.h>
 
+#include "local.h"
+
 struct dumbtts_conf *dumbtts_TTSInit(char *lang);
 struct dumbtts_conf *dumbtts_TTSInitWithFlags(char *lang,int flags);
 void dumbtts_TTSFree(struct dumbtts_conf *conf);

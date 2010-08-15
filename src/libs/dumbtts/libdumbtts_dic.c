@@ -1,5 +1,29 @@
+/*
+ * libdumbtts_dic.c - configuration reader
+ * Copyright (C) Bohdan R. Rau 2008 <ethanak@polip.com>
+ *
+ * libdumbtts.c is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * libdumbtts.c is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with libdumbtts.c.  If not, write to:
+ * 	The Free Software Foundation, Inc.,
+ * 	51 Franklin Street, Fifth Floor
+ * 	Boston, MA  02110-1301, USA.
+ */
 
-/* configuration reader */
+#include <stdio.h>
+#include <string.h>
+#include <wchar.h>
+
+#include "local.h"
 
 static void get_diction(struct dumbtts_conf *conf,char *str,char *repl)
 {
@@ -281,7 +305,7 @@ static struct dumbtts_diction_letter *findmat_dic(struct dumbtts_diction_letter 
 }
 
 
-static int get_dict(struct dumbtts_conf *conf,char **str,wchar_t wc,char *dictbuf)
+int get_dict(struct dumbtts_conf *conf,char **str,wchar_t wc,char *dictbuf)
 {
 	struct dumbtts_abbr *da;
 	char *c;

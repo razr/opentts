@@ -21,7 +21,15 @@
 
 #ifndef DUMBTTS_LOCAL_H
 #define DUMBTTS_LOCAL_H
+
+#include <wchar.h>
+
 #define MEMO_BLOCK_SIZE 8160
+
+struct recog_param {
+	char name;
+	int value;
+};
 
 struct dumbtts_char {
 	char *name;
@@ -164,5 +172,4 @@ struct dumbtts_conf {
 	struct dumbtts_diction_letter *dics[32];
 };
 
-#include "libdumbtts.h"
 #endif

@@ -138,6 +138,11 @@ AC_ARG_WITH([system-socket-path],
 	[system_socket_path=/var/run/openttsd])
 AC_SUBST(system_socket_path)
 
+AC_ARG_WITH([libdumbtts],
+	[AS_HELP_STRING([--with-libdumbtts],[extends capabilities of "dumb synthesizers"])],
+	[with_libdumbtts="$withval"],
+	[with_libdumbtts="yes"])
+
 #
 # Setup GETTEXT
 #
@@ -377,6 +382,9 @@ AS_IF([test $with_pico != "no"],
 
 AM_CONDITIONAL(pico_support, test $with_pico = "yes")
 
+# check for libdumbtts support
+AM_CONDITIONAL(libdumbtts_support, test $with_libdumbtts = "yes")
+
 AC_SUBST(datadir)
 
 spdconfdir='${sysconfdir}/opentts'
@@ -431,6 +439,8 @@ AC_CONFIG_FILES([Makefile
                  config/Makefile
                  config/clients/Makefile
                  config/modules/Makefile
+                 config/libs/Makefile
+                 config/libs/dumbtts/Makefile
                  data/Makefile
                  data/desktop/Makefile
                  data/modules/Makefile
@@ -449,6 +459,7 @@ AC_CONFIG_FILES([Makefile
                  src/clients/send/Makefile
                  src/libs/Makefile
                  src/libs/common/Makefile
+                 src/libs/dumbtts/Makefile
                  src/modules/Makefile
                  src/server/Makefile
                  src/tests/Makefile])
