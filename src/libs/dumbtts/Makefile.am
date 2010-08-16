@@ -2,4 +2,5 @@
 
 lib_LTLIBRARIES = libdumbtts.la
 libdumbtts_la_SOURCES =  libdumbtts.c libdumbtts.h \
-			 libdumbtts_dic.c libdumbtts_re.c local.h
+			 libdumbtts_dic.c libdumbtts_re.c \
+			 local.h fctype.c fctype.h
