@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-dist_moduleconf_DATA =
-dist_moduleconforig_DATA =
+dist_moduleconf_DATA = milena.conf mbrpipe.conf mbrola.conf
+dist_moduleconforig_DATA = milena.conf mbrpipe.conf mbrola.conf
 
 if cicero_support
 dist_moduleconf_DATA += cicero.conf

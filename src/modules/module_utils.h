@@ -278,6 +278,39 @@ configoption_t *module_add_config_option(configoption_t * options,
         return NULL; \
     }
 
+#define MOD_OPTION_4_HT(name, arg1, arg2, arg3, arg4) \
+    typedef struct{ \
+        char* arg1; \
+        char* arg2; \
+        char *arg3; \
+	char *arg4; \
+    }T ## name; \
+    GHashTable *name; \
+    \
+    DOTCONF_CB(name ## _cb) \
+    { \
+        T ## name *new_item; \
+        char* new_key; \
+        new_item = (T ## name *) g_malloc(sizeof(T ## name)); \
+        if (cmd->data.list[0] == NULL) return NULL; \
+        new_item->arg1 = g_strdup(cmd->data.list[0]); \
+        new_key = g_strdup(cmd->data.list[0]); \
+        if (cmd->data.list[1] != NULL) \
+           new_item->arg2 = g_strdup(cmd->data.list[1]); \
+        else \
+            new_item->arg2 = NULL; \
+        if (cmd->data.list[2] != NULL) \
+           new_item->arg3 = g_strdup(cmd->data.list[2]); \
+        else \
+            new_item->arg3 = NULL; \
+        if (cmd->data.list[3] != NULL) \
+           new_item->arg4 = g_strdup(cmd->data.list[3]); \
+        else \
+            new_item->arg4 = NULL; \
+        g_hash_table_insert(name, new_key, new_item); \
+        return NULL; \
+    }
+
 #define MOD_OPTION_1_STR_REG(name, default) \
     if (default != NULL) name = g_strdup(default); \
     else name = NULL; \
@@ -342,5 +375,9 @@ char *module_getvoice(char *language, SPDVoiceType voice);
 
 /* exit on fatal error with a message */
 void fatal(char *msg);
+
+/* replace for stupid asserts */
+
+int ensure(int v,int m1,int m2);
 
 #endif /* #ifndef __MODULE_UTILS_H */

@@ -1195,3 +1195,10 @@ void inline fatal(char *msg)
 	log_msg(OTTS_LOG_CRIT, msg);
 	exit(1);
 }
+
+int ensure(int v,int m1,int m2)
+{
+	if (v<m1) return m1;
+	if (v>m2) return m2;
+	return v;
+}

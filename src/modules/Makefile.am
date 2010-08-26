@@ -1,5 +1,5 @@
 
-common_sources = module_main.c module_utils.c module_utils.h  audio.c audio.h
+common_sources = module_main.c module_utils.c module_utils.h audio.c audio.h mbrola.c mbrola.h
 common_libs = $(AUDIO_DLOPEN_MODULES) $(top_builddir)/src/libs/common/libcommon.la
 
 AM_CFLAGS = $(ERROR_CFLAGS)
@@ -9,13 +9,20 @@ AM_CPPFLAGS = "-I$(top_srcdir)/include" \
 	-DDATADIR=\"$(snddatadir)\" -DPLUGIN_DIR="\"$(audiodir)\"" \
 	-D_GNU_SOURCE -DOPENTTS_INTERNAL
 
-modulebin_PROGRAMS =
+modulebin_PROGRAMS = mbrpipe milena
 
 if cicero_support
 modulebin_PROGRAMS += cicero
 cicero_SOURCES = cicero.c $(common_sources)
 cicero_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS)
 endif
+
+mbrpipe_SOURCES = mbrpipe.c $(common_sources)
+mbrpipe_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS) $(SNDFILE_LIBS) -ldl
+
+milena_SOURCES = milena.c $(common_sources)
+milena_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS) $(SNDFILE_LIBS) -ldl
+milena_LDFLAGS = -rdynamic
 
 if dummy_support
 modulebin_PROGRAMS += dummy
