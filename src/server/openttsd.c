@@ -95,6 +95,8 @@ pthread_t sighandler_thread;
 /* This is set when the speaking thread is started. */
 gboolean speak_thread_started = FALSE;
 
+static TFDSetElement *default_fd_set(void);
+
 /* A helper function. */
 static int max(int a, int b)
 {
@@ -1176,4 +1178,44 @@ void check_locked(pthread_mutex_t * lock)
 		fflush(stderr);
 		exit(0);
 	}
+}
+
+static TFDSetElement *default_fd_set(void)
+{
+	TFDSetElement *new;
+
+	new = (TFDSetElement *) g_malloc(sizeof(TFDSetElement));
+
+	new->paused = 0;
+
+	/* Fill with the global settings values */
+	new->priority = GlobalFDSet.priority;
+	new->msg_settings.punctuation_mode =
+	    GlobalFDSet.msg_settings.punctuation_mode;
+	new->msg_settings.rate = GlobalFDSet.msg_settings.rate;
+	new->msg_settings.pitch = GlobalFDSet.msg_settings.pitch;
+	new->msg_settings.volume = GlobalFDSet.msg_settings.volume;
+	new->msg_settings.voice.language =
+	    g_strdup(GlobalFDSet.msg_settings.voice.language);
+	new->output_module = g_strdup(GlobalFDSet.output_module);
+	new->client_name = g_strdup(GlobalFDSet.client_name);
+	new->msg_settings.voice_type = GlobalFDSet.msg_settings.voice_type;
+	new->msg_settings.voice.name = NULL;
+	new->msg_settings.spelling_mode =
+	    GlobalFDSet.msg_settings.spelling_mode;
+	new->msg_settings.cap_let_recogn =
+	    GlobalFDSet.msg_settings.cap_let_recogn;
+
+	new->pause_context = GlobalFDSet.pause_context;
+	new->ssml_mode = GlobalFDSet.ssml_mode;
+	new->notification = GlobalFDSet.notification;
+
+	new->active = 1;
+	new->hist_cur_uid = -1;
+	new->hist_cur_pos = -1;
+	new->hist_sorted = 0;
+	new->index_mark = NULL;
+	new->paused_while_speaking = 0;
+
+	return (new);
 }
