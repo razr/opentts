@@ -343,10 +343,6 @@ int set_output_module_uid(int uid, char *output_module)
 
 	log_msg(OTTS_LOG_DEBUG, "Setting output module to %s", output_module);
 
-	log_msg(OTTS_LOG_DEBUG,
-		"In set_output_module the desired output module is x%s",
-		output_module);
-
 	settings->output_module = set_param_str(settings->output_module,
 						output_module);
 

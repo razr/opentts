@@ -74,11 +74,12 @@ void output_set_speaking_monitor(openttsd_message * msg, OutputModule * output)
 OutputModule *get_output_module_by_name(char *name)
 {
 	OutputModule *output;
-	output = g_hash_table_lookup(output_modules, name);
-	if (output == NULL || !output->working)
-		output = NULL;
 
-	return output;
+	output = g_hash_table_lookup(output_modules, name);
+	if (output != NULL && output->working)
+		return output;
+
+	return NULL;
 }
 
 /* get_output_module tries to return a pointer to the
@@ -91,69 +92,70 @@ OutputModule *get_output_module_by_name(char *name)
    Only if not even dummy output module is working
    (serious issues), it will log an error message and return
    a NULL pointer.
-
 */
 
 OutputModule *get_output_module(const openttsd_message * message)
 {
-	OutputModule *output = NULL;
+	OutputModule *output;
 	GList *gl;
 	int i;
 
-	if (message->settings.output_module != NULL) {
-		log_msg(OTTS_LOG_DEBUG, "Desired output module is %s",
-			message->settings.output_module);
-		output =
-		    get_output_module_by_name(message->settings.output_module);
-		if ((output == NULL) || !output->working) {
-			// If the requested module was not found or is not working,
-			// first try to use the default output module
-			if (GlobalFDSet.output_module != NULL) {
-				log_msg(OTTS_LOG_NOTICE,
-					"Warning: Didn't find prefered output module, using default");
-				output =
-				    get_output_module_by_name
-				    (GlobalFDSet.output_module);
-			}
-			if (output == NULL || !output->working) {
-				log_msg(OTTS_LOG_NOTICE,
-					"Couldn't load default output module, trying other modules");
-			}
-			// Try all other output modules now to see if some of them
-			// is working
-			log_msg(OTTS_LOG_NOTICE, "Trying other output modules");
-			for (i = 0; i <= g_list_length(output_modules_list) - 1;
-			     i++) {
-				gl = g_list_nth(output_modules_list, i);
-				if (!gl || !gl->data)
-					break;
-				if (strcmp(gl->data, "dummy"))
-					output =
-					    get_output_module_by_name(gl->data);
-				if ((output != NULL) && (output->working)) {
-					log_msg(OTTS_LOG_NOTICE,
-						"Output module %s seems to be working, using it",
-						gl->data);
-					break;
-				}
-			}
+	if (message->settings.output_module == NULL)
+		return NULL;
 
-			// Did we get something working? If not, use dummy (it will just play
-			// a pre-synthesized error message with some hints over and over).
-			if (output == NULL || !output->working) {
-				log_msg(OTTS_LOG_ERR,
-					"Error: No output module seems to be working, using the dummy output module");
-				output = get_output_module_by_name("dummy");
-			}
-			// Give up....
-			if (output == NULL) {
-				log_msg(OTTS_LOG_ERR,
-					"Error: No output module working, not even dummy, no sound produced!\n");
-				return NULL;
-			}
+	log_msg(OTTS_LOG_DEBUG, "Desired output module is %s",
+		message->settings.output_module);
+
+	output = get_output_module_by_name(message->settings.output_module);
+	if (output != NULL)
+		return output;
+
+	log_msg(OTTS_LOG_WARN,
+	        "Didn't find prefered output module, try using default");
+
+	/*
+	 * If the requested module was not found or is not working,
+	 * first try to use the default output module
+	 */
+	if (GlobalFDSet.output_module != NULL)
+		output = get_output_module_by_name (GlobalFDSet.output_module);
+	if (output != NULL)
+		return output;
+
+	log_msg(OTTS_LOG_NOTICE,
+	        "Couldn't load default output module, trying other modules");
+
+	/* Try all other output modules other than dummy */
+	gl = g_hash_table_get_values(output_modules);
+	for (i = 0; i < g_list_length(gl); i++) {
+		output = g_list_nth_data(gl, i);
+		if (0 == strcmp(output->name, "dummy"))
+			continue;
+
+		if (output->working) {
+			log_msg(OTTS_LOG_NOTICE,
+			        "Output module %s seems to be working, using it",
+			        gl->data);
+			return output;
 		}
 	}
-	return output;
+
+	/*
+	 * Did we get something working? If not, use dummy (it will just play
+	 * a pre-synthesized error message with some hints over and over).
+	 */
+	log_msg(OTTS_LOG_ERR,
+	        "No output module seems to be working, using the dummy");
+
+	output = get_output_module_by_name("dummy");
+	if (output != NULL)
+		return output;
+
+	/* Give up... */
+	log_msg(OTTS_LOG_ERR,
+	        "No output module working, not even dummy, no sound produced!\n");
+
+	return NULL;
 }
 
 void

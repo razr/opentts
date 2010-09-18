@@ -446,7 +446,6 @@ static void init()
 
 	/* Initialize lists */
 	MessagePausedList = NULL;
-	output_modules_list = NULL;
 
 	/* Initialize hash tables */
 	fd_settings =
@@ -532,8 +531,8 @@ void configure(void)
 {
 	char *log_file;
 	configfile_t *configfile = NULL;
-	char *output_module;
-	GList *list;
+	char *module_name;
+	OutputModule *module;
 
 	/* Clean previous configuration */
 	assert(output_modules != NULL);
@@ -589,16 +588,20 @@ void configure(void)
 		g_hash_table_size(output_modules) > 1 ? "s" : "");
 
 	/* If the default module isn't available, pick the first one. */
-	list =
-	    g_list_find_custom(output_modules_list, GlobalFDSet.output_module,
-			       strcmp);
-	if (list == NULL) {
-		output_module = g_list_nth_data(output_modules_list, 0);
+	module = g_hash_table_lookup(output_modules, GlobalFDSet.output_module);
+	if (module == NULL) {
+		GList *name_list = g_hash_table_get_keys(output_modules);
+		module_name = g_list_nth_data(name_list, 0);
+		if (0 == strcmp(module_name, "dummy") &&
+		    g_list_length(name_list) > 1) {
+			module_name = g_list_nth_data(name_list, 1);
+		}
+		g_list_free (name_list);
 		log_msg(OTTS_LOG_WARN,
 			"default module (%s) not found, %s set to default",
-			GlobalFDSet.output_module, output_module);
+			GlobalFDSet.output_module, module_name);
 		g_free(GlobalFDSet.output_module);
-		GlobalFDSet.output_module = g_strdup(output_module);
+		GlobalFDSet.output_module = g_strdup(module_name);
 	}
 
 }

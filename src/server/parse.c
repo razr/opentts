@@ -881,19 +881,15 @@ char *parse_list(const char *buf, const int bytes, const int fd)
 	} else if (TEST_CMD(list_type, "output_modules")) {
 		GString *result;
 		char *helper;
-		GList *gl;
-		int i;
-		int len;
+		GList *gl = g_hash_table_get_keys(output_modules);
+		int i, len;
+
 		result = g_string_new("");
-		len = g_list_length(output_modules_list);
-		log_msg(OTTS_LOG_ERR, "G LIST LENGHT IS %d", len);
-		for (i = 0; i <= len - 1; i++) {
-			gl = g_list_nth(output_modules_list, i);
-			assert(gl != NULL);
-			if (gl->data == NULL)
-				continue;
+		len = g_list_length(gl);
+		log_msg(OTTS_LOG_DEBUG, "G LIST LENGHT IS %d", len);
+		for (i = 0; i < len; i++) {
 			g_string_append_printf(result, C_OK_MODULES "-%s\r\n",
-					       (char *)gl->data);
+			                       (char *)g_list_nth_data(gl, i));
 		}
 		g_string_append(result, OK_MODULES_LIST_SENT);
 		helper = result->str;
