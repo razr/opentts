@@ -329,19 +329,12 @@ int module_speak(char *data, size_t bytes, SPDMessageType msgtype)
 
 	log_msg(OTTS_LOG_NOTICE, "module_speak()\n");
 
-	if (data == NULL)
-		return -1;
-
 	if (festival_speaking) {
 		log_msg(OTTS_LOG_ERR, "Speaking when requested to write\n");
 		return -1;
 	}
 
 	festival_stop_request = 0;
-
-	/* Check the parameters */
-	if (module_write_data_ok(data) != 0)
-		return -1;
 
 	festival_message_type = msgtype;
 	if ((msgtype == SPD_MSGTYPE_TEXT)

@@ -354,10 +354,6 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 		return FALSE;
 	}
 
-	if (0 != module_write_data_ok(data)) {
-		pthread_mutex_unlock(&espeak_state_mutex);
-		return FATAL_ERROR;
-	}
 	log_msg(OTTS_LOG_DEBUG, "Espeak: Requested data: |%s| %d %ld", data,
 		msgtype, bytes);
 

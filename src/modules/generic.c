@@ -193,9 +193,6 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 		return 0;
 	}
 
-	if (module_write_data_ok(data) != 0)
-		return -1;
-
 	UPDATE_STRING_PARAMETER(voice.language, generic_set_language);
 	UPDATE_PARAMETER(voice_type, generic_set_voice);
 	UPDATE_PARAMETER(punctuation_mode, generic_set_punct);
