@@ -211,7 +211,11 @@ static int pico_process_tts(void)
 				log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 				        ": Sending %i samples to audio.", track.num_samples);
 
-				opentts_audio_set_volume(module_audio_id, 85);
+				if (opentts_audio_set_volume(module_audio_id, 85) < 0) {
+					log_msg(OTTS_LOG_ERR, MODULE_NAME
+						"Can't set volume. audio not initialized?");
+					continue;
+				}
 				if (opentts_audio_play(module_audio_id, track,
 				                       module_audio_id->format) < 0) {
 					log_msg(OTTS_LOG_ERR, MODULE_NAME

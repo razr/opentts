@@ -275,6 +275,9 @@ Comments:
 */
 int opentts_audio_set_volume(AudioID * id, int volume)
 {
+	if (id == NULL)
+		return -1;
+
 	if (volume > OTTS_VOICE_VOLUME_MAX || volume < OTTS_VOICE_VOLUME_MIN) {
 		fprintf(stderr, "Requested volume out of range");
 		return -1;

@@ -284,7 +284,11 @@ void *_flite_speak(void *nothing)
 		flite_stop = 0;
 		flite_speaking = 1;
 
-		opentts_audio_set_volume(module_audio_id, flite_volume);
+		if (opentts_audio_set_volume(module_audio_id, flite_volume) < 0) {
+			log_msg(OTTS_LOG_ERR,
+			        "Can't set volume. audio not initialized?\n");
+			continue;
+		}
 
 		/* TODO: free(buf) */
 		buf =
