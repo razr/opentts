@@ -415,9 +415,9 @@ int module_init(char **status_info)
 	/* load resource for all language, probably need only one */
 	for (i = 0; i < sizeof(pico_voices)/sizeof(SPDVoice); i++) {
 		if (0 != pico_init_voice(i)) {
-			g_free(pmem);
 			*status_info = g_strdup_printf(MODULE_NAME
 				": fail init voice (%s)\n", pico_voices[i].name);
+			g_free(pmem);
 			return -1;
 		}
 	}
@@ -427,9 +427,10 @@ int module_init(char **status_info)
 	                         (const pico_Char *)pico_voices[0].name,
 	                         &picoEngine))) {
 		pico_getSystemStatusMessage(picoSystem, ret, outMessage);
-		log_msg(OTTS_LOG_ERR, MODULE_NAME
-		        "Cannot create a new pico engine (%i): %s\n", ret,
-		        outMessage);
+		*status_info = g_strdup_printf(MODULE_NAME
+			": Cannot create a new pico engine (%i): %s\n",
+			ret, outMessage);
+		g_free(pmem);
 		return -1;
 	}
 
