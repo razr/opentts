@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 	size_t n;
 	char *configfilename;
 	configfile_t *configfile;
-	char *status_info;
+	char *status_info = NULL;
 
 	g_thread_init(NULL);
 	init_logging();
@@ -166,6 +166,10 @@ int main(int argc, char *argv[])
 	}
 
 	ret_init = module_init(&status_info);
+
+	if (status_info == NULL) {
+		status_info = g_strdup("unknown, was not set by module");
+	}
 
 	cmd_buf = NULL;
 	n = 0;
