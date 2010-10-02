@@ -60,6 +60,7 @@
 #include "opentts/opentts_types.h"
 #include<logging.h>
 #include "audio.h"
+#include "fdsetconv.h"
 #include "module_utils.h"
 
 #if HAVE_SNDFILE
@@ -249,7 +250,6 @@ static int *ibmtts_voice_index = NULL;
 /* Internal function prototypes for main thread. */
 static void ibmtts_set_language(char *lang);
 static void ibmtts_set_voice(SPDVoiceType voice);
-static char *ibmtts_voice_enum_to_str(SPDVoiceType voice);
 static void ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice,
 					  char *dialect);
 static void ibmtts_set_synthesis_voice(char *);
@@ -1200,51 +1200,12 @@ static void ibmtts_set_punctuation_mode(SPDPunctuation punct_mode)
 	g_free(msg);
 }
 
-static char *ibmtts_voice_enum_to_str(SPDVoiceType voice)
-{
-	/* TODO: Would be better to move this to module_utils.c. */
-	char *voicename;
-	switch (voice) {
-	case SPD_NO_VOICE:
-		voicename = g_strdup("no voice");
-		break;
-	case SPD_MALE1:
-		voicename = g_strdup("male1");
-		break;
-	case SPD_MALE2:
-		voicename = g_strdup("male2");
-		break;
-	case SPD_MALE3:
-		voicename = g_strdup("male3");
-		break;
-	case SPD_FEMALE1:
-		voicename = g_strdup("female1");
-		break;
-	case SPD_FEMALE2:
-		voicename = g_strdup("female2");
-		break;
-	case SPD_FEMALE3:
-		voicename = g_strdup("female3");
-		break;
-	case SPD_CHILD_MALE:
-		voicename = g_strdup("child_male");
-		break;
-	case SPD_CHILD_FEMALE:
-		voicename = g_strdup("child_female");
-		break;
-	default:
-		voicename = g_strdup("no voice");
-		break;
-	}
-	return voicename;
-}
-
 /* Given a language, dialect and SD voice codes sets the IBM voice */
 static void
 ibmtts_set_language_and_voice(char *lang, SPDVoiceType voice, char *dialect)
 {
 	char *dialect_name = dialect;
-	char *voicename = ibmtts_voice_enum_to_str(voice);
+	char *voicename = voice2str(voice);
 	int eciVoice;
 	int ret = -1;
 	int i = 0;
