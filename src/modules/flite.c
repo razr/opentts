@@ -57,7 +57,6 @@ signed int flite_volume = 0;
 static void flite_set_rate(signed int rate);
 static void flite_set_pitch(signed int pitch);
 static void flite_set_volume(signed int pitch);
-static void flite_set_voice(SPDVoiceType voice);
 
 static void flite_strip_silence(AudioTrack *);
 static void *_flite_speak(void *);
@@ -175,7 +174,6 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	flite_message_type = SPD_MSGTYPE_TEXT;
 
 	/* Setting voice */
-	UPDATE_PARAMETER(voice_type, flite_set_voice);
 	UPDATE_PARAMETER(rate, flite_set_rate);
 	UPDATE_PARAMETER(volume, flite_set_volume);
 	UPDATE_PARAMETER(pitch, flite_set_pitch);
@@ -459,12 +457,4 @@ static void flite_set_pitch(signed int pitch)
 	assert(pitch >= OTTS_VOICE_PITCH_MIN && pitch <= OTTS_VOICE_PITCH_MAX);
 	f0 = (((float)pitch) * 0.8) + 100.0;
 	feat_set_float(flite_voice->features, "int_f0_target_mean", f0);
-}
-
-/*
- * This function is a no-op, because we only support one flite voice.
- */
-static void flite_set_voice(SPDVoiceType voice)
-{
-	return;
 }
