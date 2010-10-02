@@ -181,15 +181,15 @@ int main(int argc, char *argv[])
 	}
 
 	if (!strcmp(cmd_buf, "INIT\n")) {
-		if (ret_init == 0) {
-			printf("299-%s\n", status_info);
-			ret = printf("%s\n", "299 OK LOADED SUCCESSFULLY");
-		} else {
+		if (ret_init != 0) {
 			printf("399-%s\n", status_info);
 			ret = printf("%s\n", "399 ERR CANT INIT MODULE");
+			g_free(status_info);
 			return -1;
 		}
-		g_free(status_info);
+
+		printf("299-%s\n", status_info);
+		ret = printf("%s\n", "299 OK LOADED SUCCESSFULLY");
 
 		if (ret < 0) {
 			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting...\n");
@@ -201,6 +201,8 @@ int main(int argc, char *argv[])
 			"ERROR: Wrong communication from module client: didn't call INIT\n");
 		module_close(3);
 	}
+
+	g_free(status_info);
 	xfree(cmd_buf);
 
 	while (1) {
