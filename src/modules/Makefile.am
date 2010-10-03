@@ -1,5 +1,5 @@
 
-common_sources = module_main.c module_utils.c module_utils.h audio.c audio.h mbrola.c mbrola.h
+common_sources = module_main.c module_utils.c module_utils.h audio.c audio.h
 common_libs = $(AUDIO_DLOPEN_MODULES) $(top_builddir)/src/libs/common/libcommon.la
 
 AM_CFLAGS = $(ERROR_CFLAGS)
@@ -17,10 +17,10 @@ cicero_SOURCES = cicero.c $(common_sources)
 cicero_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS)
 endif
 
-mbrpipe_SOURCES = mbrpipe.c $(common_sources)
+mbrpipe_SOURCES = mbrpipe.c mbrola.c mbrola.h $(common_sources)
 mbrpipe_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS) $(SNDFILE_LIBS) -ldl
 
-milena_SOURCES = milena.c $(common_sources)
+milena_SOURCES = milena.c mbrola.c mbrola.h $(common_sources)
 milena_LDADD = $(common_libs) $(DOTCONF_LIBS) $(GLIB_LIBS) $(GTHREAD_LIBS) $(SNDFILE_LIBS) -ldl
 milena_LDFLAGS = -rdynamic
 
