@@ -29,6 +29,7 @@
 #include <glib.h>
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include<logging.h>
 #include "module_utils.h"
 
@@ -94,8 +95,8 @@ static char *generic_msg_voice_str = NULL;
 static TGenericLanguage *generic_msg_language = NULL;
 static char *generic_msg_punct_str;
 
-/* Public functions */
-int module_load(void)
+/* plugin functions */
+static int generic_load(void)
 {
 
 	init_settings_tables();
@@ -133,7 +134,7 @@ int module_load(void)
 	return 0;
 }
 
-int module_init(char **status_info)
+static int generic_init(char **status_info)
 {
 	int ret;
 
@@ -171,18 +172,18 @@ int module_init(char **status_info)
 	return 0;
 }
 
-int module_audio_init(char **status_info)
+static int generic_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_INFO, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **generic_list_voices(void)
 {
 	return NULL;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int generic_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	char *tmp;
 
@@ -244,7 +245,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int generic_stop(void)
 {
 	log_msg(OTTS_LOG_INFO, "generic: stop()\n");
 
@@ -257,7 +258,7 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t generic_pause(void)
 {
 	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (generic_speaking) {
@@ -276,12 +277,12 @@ char *module_is_speaking(void)
 	return NULL;
 }
 
-void module_close(int status)
+static void generic_close(int status)
 {
 	log_msg(OTTS_LOG_DEBUG, "generic: close()\n");
 
 	if (generic_speaking) {
-		module_stop();
+		generic_stop();
 	}
 
 	if (module_terminate_thread(generic_speak_thread) != 0)
@@ -675,3 +676,24 @@ void generic_set_punct(SPDPunctuation punct)
 			"ERROR: Unknown punctuation setting, ignored");
 	}
 }
+
+static otts_synth_plugin_t generic_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	generic_load,
+	generic_init,
+	generic_audio_init,
+	generic_speak,
+	generic_stop,
+	generic_list_voices,
+	generic_pause,
+	generic_close
+};
+
+otts_synth_plugin_t * generic_plugin_get (void)
+{
+	return &generic_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("generic_plugin_get")));

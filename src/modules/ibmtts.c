@@ -58,6 +58,7 @@
 
 /* OpenTTS includes. */
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include<logging.h>
 #include "audio.h"
 #include "fdsetconv.h"
@@ -374,9 +375,9 @@ static eciLocale eciLocales[] = {
 
 #define MAX_NB_OF_LANGUAGES (sizeof(eciLocales)/sizeof(eciLocales[0]) - 1)
 
-/* Public functions */
+/* plugin functions */
 
-int module_load(void)
+static int ibmtts_load(void)
 {
 	init_settings_tables();
 
@@ -412,7 +413,7 @@ int module_load(void)
         g_string_free(info, 0); \
         return FATAL_ERROR;
 
-int module_init(char **status_info)
+static int ibmtts_init(char **status_info)
 {
 	int ret;
 	GString *info;
@@ -566,19 +567,19 @@ int module_init(char **status_info)
 
 #undef ABORT
 
-int module_audio_init(char **status_info)
+static int ibmtts_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_NOTICE, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **ibmtts_list_voices(void)
 {
 	log_msg(OTTS_LOG_DEBUG, "Ibmtts: sending voice list");
 	return ibmtts_voice_list;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int ibmtts_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_NOTICE, "Ibmtts: module_speak().");
 
@@ -652,7 +653,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return TRUE;
 }
 
-int module_stop(void)
+static int ibmtts_stop(void)
 {
 	log_msg(OTTS_LOG_INFO, "Ibmtts: module_stop().");
 
@@ -672,7 +673,7 @@ int module_stop(void)
 	return OK;
 }
 
-size_t module_pause(void)
+static size_t ibmtts_pause(void)
 {
 	/* The semantics of module_pause() is the same as module_stop()
 	   except that processing should continue until the next index mark is
@@ -693,7 +694,7 @@ size_t module_pause(void)
 	return OK;
 }
 
-void module_close(int status)
+static void ibmtts_close(int status)
 {
 
 	log_msg(OTTS_LOG_NOTICE, "Ibmtts: close().");
@@ -701,7 +702,7 @@ void module_close(int status)
 	if (is_thread_busy(&ibmtts_synth_suspended_mutex) ||
 	    is_thread_busy(&ibmtts_play_suspended_mutex)) {
 		log_msg(OTTS_LOG_INFO, "Ibmtts: Stopping speech");
-		module_stop();
+		ibmtts_stop();
 	}
 
 	log_msg(OTTS_LOG_INFO, "Ibmtts: De-registering ECI callback.");
@@ -1907,3 +1908,24 @@ static void free_voice_list()
 	g_free(ibmtts_voice_list);
 	ibmtts_voice_list = NULL;
 }
+
+static otts_synth_plugin_t ibmtts_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	ibmtts_load,
+	ibmtts_init,
+	ibmtts_audio_init,
+	ibmtts_speak,
+	ibmtts_stop,
+	ibmtts_list_voices,
+	ibmtts_pause,
+	ibmtts_close
+};
+
+otts_synth_plugin_t * ibmtts_plugin_get (void)
+{
+	return &ibmtts_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("ibmtts_plugin_get")));

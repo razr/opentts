@@ -39,7 +39,7 @@ void xfree(void *data)
 		free(data);
 }
 
-gchar *do_message(SPDMessageType msgtype)
+gchar *do_message(otts_synth_plugin_t *synth, SPDMessageType msgtype)
 {
 	int ret;
 	char *cur_line;
@@ -89,7 +89,7 @@ gchar *do_message(SPDMessageType msgtype)
 		return g_strdup("301 ERROR CANT SPEAK");
 	}
 
-	ret = module_speak(msg->str, strlen(msg->str), msgtype);
+	ret = synth->speak(msg->str, strlen(msg->str), msgtype);
 
 	g_string_free(msg, 1);
 	if (ret <= 0)
@@ -98,37 +98,37 @@ gchar *do_message(SPDMessageType msgtype)
 	return g_strdup("200 OK SPEAKING");
 }
 
-gchar *do_speak(void)
+gchar *do_speak(otts_synth_plugin_t *synth)
 {
-	return do_message(SPD_MSGTYPE_TEXT);
+	return do_message(synth, SPD_MSGTYPE_TEXT);
 }
 
-gchar *do_sound_icon(void)
+gchar *do_sound_icon(otts_synth_plugin_t *synth)
 {
-	return do_message(SPD_MSGTYPE_SOUND_ICON);
+	return do_message(synth, SPD_MSGTYPE_SOUND_ICON);
 }
 
-gchar *do_char(void)
+gchar *do_char(otts_synth_plugin_t *synth)
 {
-	return do_message(SPD_MSGTYPE_CHAR);
+	return do_message(synth, SPD_MSGTYPE_CHAR);
 }
 
-gchar *do_key(void)
+gchar *do_key(otts_synth_plugin_t *synth)
 {
-	return do_message(SPD_MSGTYPE_KEY);
+	return do_message(synth, SPD_MSGTYPE_KEY);
 }
 
-void do_stop(void)
+void do_stop(otts_synth_plugin_t *synth)
 {
-	module_stop();
+	synth->stop();
 	return;
 }
 
-void do_pause(void)
+void do_pause(otts_synth_plugin_t *synth)
 {
 	int ret;
 
-	ret = module_pause();
+	ret = synth->pause();
 	if (ret) {
 		log_msg(OTTS_LOG_WARN, "WARNING: Can't pause");
 		return;
@@ -165,7 +165,7 @@ static int set_numeric_parameter(char *num_text, int *target,
 	return err;
 }
 
-gchar *do_set(void)
+gchar *do_set(otts_synth_plugin_t *synth)
 {
 	char *cur_item = NULL;
 	char *cur_value = NULL;
@@ -286,7 +286,7 @@ static void set_audio_parameter(char *cur_value, int parameter_index)
 		module_audio_pars[parameter_index] = g_strdup(cur_value);
 }
 
-gchar *do_audio(void)
+gchar *do_audio(otts_synth_plugin_t *synth)
 {
 	char *cur_item = NULL;
 	char *cur_value = NULL;
@@ -349,7 +349,7 @@ gchar *do_audio(void)
 	if (err == 2)
 		return g_strdup("303 ERROR INVALID PARAMETER OR VALUE");
 
-	err = module_audio_init(&status);
+	err = synth->audio_init(&status);
 
 	if (err == 0)
 		msg = g_strdup_printf("203 OK AUDIO INITIALIZED");
@@ -359,7 +359,7 @@ gchar *do_audio(void)
 	return msg;
 }
 
-gchar *do_loglevel(void)
+gchar *do_loglevel(otts_synth_plugin_t *synth)
 {
 	char *cur_item = NULL;
 	char *cur_value = NULL;
@@ -424,7 +424,7 @@ gchar *do_loglevel(void)
 	return msg;
 }
 
-gchar *do_debug(char *cmd_buf)
+gchar *do_debug(otts_synth_plugin_t *synth, char *cmd_buf)
 {
 	char **cmd;
 	char *filename;
@@ -460,7 +460,7 @@ gchar *do_debug(char *cmd_buf)
 	return g_strdup("200 OK DEBUGGING ON");
 }
 
-gchar *do_list_voices(void)
+gchar *do_list_voices(otts_synth_plugin_t *synth)
 {
 	SPDVoice **voices;
 	int i;
@@ -468,7 +468,7 @@ gchar *do_list_voices(void)
 	const char *dialect;
 	GString *voice_list;
 
-	voices = module_list_voices();
+	voices = synth->list_voices();
 	if (voices == NULL) {
 		return g_strdup("304 CANT LIST VOICES");
 	}
@@ -498,11 +498,11 @@ gchar *do_list_voices(void)
 /* This has to return int (although it doesn't return at all) so that we could
  * call it from PROCESS_CMD() macro like the other commands that return
  * something */
-void do_quit(void)
+void do_quit(otts_synth_plugin_t *synth)
 {
 	printf("210 OK QUIT\n");
 	fflush(stdout);
-	module_close(0);
+	synth->close(0);
 	return;
 }
 

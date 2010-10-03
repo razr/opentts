@@ -35,6 +35,7 @@
 
 #include <logging.h>
 #include <getline.h>
+#include "opentts/opentts_synth_plugin.h"
 #include "module_utils.h"
 
 AudioID *module_audio_id;
@@ -50,7 +51,7 @@ pthread_mutex_t module_stdout_mutex;
 configoption_t *module_dc_options;
 int module_num_dc_options;
 
-int dispatch_cmd(char *cmd_line)
+int dispatch_cmd(otts_synth_plugin_t *synth, char *cmd_line)
 {
 	char *cmd = NULL;
 	size_t cmd_len;
@@ -61,29 +62,29 @@ int dispatch_cmd(char *cmd_line)
 	pthread_mutex_lock(&module_stdout_mutex);
 
 	if (!strcasecmp("audio", cmd)) {
-		msg = do_audio();
+		msg = do_audio(synth);
 	} else if (!strcasecmp("set", cmd)) {
-		msg = do_set();
+		msg = do_set(synth);
 	} else if (!strcasecmp("speak", cmd)) {
-		msg = do_speak();
+		msg = do_speak(synth);
 	} else if (!strcasecmp("key", cmd)) {
-		msg = do_key();
+		msg = do_key(synth);
 	} else if (!strcasecmp("sound_icon", cmd)) {
-		msg = do_sound_icon();
+		msg = do_sound_icon(synth);
 	} else if (!strcasecmp("char", cmd)) {
-		msg = do_char();
+		msg = do_char(synth);
 	} else if (!strcasecmp("pause", cmd)) {
-		do_pause();
+		do_pause(synth);
 	} else if (!strcasecmp("stop", cmd)) {
-		do_stop();
+		do_stop(synth);
 	} else if (!strcasecmp("list_voices", cmd)) {
-		msg = do_list_voices();
+		msg = do_list_voices(synth);
 	} else if (!strcasecmp("loglevel", cmd)) {
-		msg = do_loglevel();
+		msg = do_loglevel(synth);
 	} else if (!strcasecmp("debug", cmd)) {
-		msg = do_debug(cmd_line);
+		msg = do_debug(synth, cmd_line);
 	} else if (!strcasecmp("quit", cmd)) {
-		do_quit();
+		do_quit(synth);
 	} else {
 /*should we log?*/
 		printf("300 ERR UNKNOWN COMMAND\n");
@@ -93,7 +94,7 @@ int dispatch_cmd(char *cmd_line)
 	if (msg != NULL) {
 		if (0 > printf("%s\n", msg)) {
 			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting...\n");
-			module_close(2);
+			synth->close(2);
 		}
 		fflush(stdout);
 		g_free(msg);
@@ -113,11 +114,14 @@ int main(int argc, char *argv[])
 	size_t n;
 	char *configfilename;
 	configfile_t *configfile;
+	otts_synth_plugin_t *synth;
 	char *status_info = NULL;
 
 	g_thread_init(NULL);
 	init_logging();
 	open_log("stderr", 3);
+
+	synth = synth_plugin_get();
 
 	/* Initialize ltdl's list of preloaded audio backends. */
 	LTDL_SET_PRELOADED_SYMBOLS();
@@ -130,9 +134,9 @@ int main(int argc, char *argv[])
 		configfilename = NULL;
 	}
 
-	ret = module_load();
+	ret = synth->load();
 	if (ret == -1)
-		module_close(1);
+		synth->close(1);
 
 	if (configfilename != NULL) {
 		/* Add the LAST option */
@@ -148,7 +152,7 @@ int main(int argc, char *argv[])
 			if (dotconf_command_loop(configfile) == 0) {
 				log_msg(OTTS_LOG_CRIT,
 					"Error reading config file\n");
-				module_close(1);
+				synth->close(1);
 			}
 			dotconf_cleanup(configfile);
 			log_msg(OTTS_LOG_NOTICE,
@@ -165,7 +169,7 @@ int main(int argc, char *argv[])
 			"No config file specified, using defaults...\n");
 	}
 
-	ret_init = module_init(&status_info);
+	ret_init = synth->init(&status_info);
 
 	if (status_info == NULL) {
 		status_info = g_strdup("unknown, was not set by module");
@@ -177,7 +181,7 @@ int main(int argc, char *argv[])
 	if (ret == -1) {
 		log_msg(OTTS_LOG_CRIT,
 			"Broken pipe when reading INIT, exiting... \n");
-		module_close(2);
+		synth->close(2);
 	}
 
 	if (!strcmp(cmd_buf, "INIT\n")) {
@@ -193,13 +197,13 @@ int main(int argc, char *argv[])
 
 		if (ret < 0) {
 			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting...\n");
-			module_close(2);
+			synth->close(2);
 		}
 		fflush(stdout);
 	} else {
 		log_msg(OTTS_LOG_ERR,
 			"ERROR: Wrong communication from module client: didn't call INIT\n");
-		module_close(3);
+		synth->close(3);
 	}
 
 	g_free(status_info);
@@ -211,12 +215,12 @@ int main(int argc, char *argv[])
 		ret = otts_getline(&cmd_buf, &n, stdin);
 		if (ret == -1) {
 			log_msg(OTTS_LOG_CRIT, "Broken pipe, exiting... \n");
-			module_close(2);
+			synth->close(2);
 		}
 
 		log_msg(OTTS_LOG_INFO, "CMD: <%s>", cmd_buf);
 
-		dispatch_cmd(cmd_buf);
+		dispatch_cmd(synth, cmd_buf);
 
 		xfree(cmd_buf);
 	}

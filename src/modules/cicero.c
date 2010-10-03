@@ -34,6 +34,8 @@
 
 #include<logging.h>
 #include "module_utils.h"
+#include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 
 #define MODULE_NAME     "cicero"
 #define MODULE_VERSION  "0.3"
@@ -61,7 +63,7 @@ static void cicero_set_voice(SPDVoiceType voice);
 
 static void *_cicero_speak(void *);
 
-int cicero_stop = 0;
+int cicero_stopped = 0;
 
 /*
 ** Config file options
@@ -128,9 +130,9 @@ static void mywrite(int fd, const void *buf, int len)
 		fprintf(stderr, "Pipe write timed out");
 }
 
-/* Public functions */
+/* Plugin functions */
 
-int module_load(void)
+static int cicero_load(void)
 {
 	init_settings_tables();
 	REGISTER_DEBUG();
@@ -140,7 +142,7 @@ int module_load(void)
 	return 0;
 }
 
-int module_init(char **status_info)
+static int cicero_init(char **status_info)
 {
 	int ret;
 	int stderr_redirect;
@@ -237,19 +239,19 @@ int module_init(char **status_info)
 	return 0;
 }
 
-int module_audio_init(char **status_info)
+static int cicero_audio_init(char **status_info)
 {
 	/* The following statement has no effect and so was commented out */
 	//status_info == NULL;
 	return 0;
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **cicero_list_voices(void)
 {
 	return NULL;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int cicero_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_NOTICE, "Module speak\n");
 
@@ -281,34 +283,34 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int cicero_stop(void)
 {
 	unsigned char c = 1;
 
 	log_msg(OTTS_LOG_NOTICE, "cicero: stop()\n");
-	cicero_stop = 1;
+	cicero_stopped = 1;
 	mywrite(fd2[1], &c, 1);
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t cicero_pause(void)
 {
 	log_msg(OTTS_LOG_NOTICE, "pause requested\n");
 	if (cicero_speaking) {
 		log_msg(OTTS_LOG_WARN, "Pause not supported by cicero\n");
 		cicero_pause_requested = 1;
-		module_stop();
+		cicero_stop();
 		return -1;
 	}
 	cicero_pause_requested = 0;
 	return 0;
 }
 
-void module_close(int status)
+static void cicero_close(int status)
 {
 	log_msg(OTTS_LOG_NOTICE, "cicero: close()\n");
 	if (cicero_speaking) {
-		module_stop();
+		cicero_stop();
 	}
 
 	if (module_terminate_thread(cicero_speaking_thread) != 0)
@@ -336,14 +338,14 @@ void *_cicero_speak(void *nothing)
 		sem_wait(cicero_semaphore);
 		log_msg(OTTS_LOG_DEBUG, "Semaphore on\n");
 		len = strlen(*cicero_message);
-		cicero_stop = 0;
+		cicero_stopped = 0;
 		cicero_speaking = 1;
 		cicero_position = 0;
 		pos = 0;
 		module_report_event_begin();
 		while (1) {
 			flag = 0;
-			if (cicero_stop) {
+			if (cicero_stopped) {
 				log_msg(OTTS_LOG_DEBUG,
 					"Stop in thread, terminating");
 				cicero_speaking = 0;
@@ -404,7 +406,7 @@ void *_cicero_speak(void *nothing)
 					}
 					if (ret > 0)
 						read(fd1[0], b, 2);
-					if (cicero_stop) {
+					if (cicero_stopped) {
 						cicero_speaking = 0;
 						module_report_event_stop();
 						flag = 1;
@@ -431,7 +433,7 @@ void *_cicero_speak(void *nothing)
 			if (flag)
 				break;
 		}
-		cicero_stop = 0;
+		cicero_stopped = 0;
 	}
 	cicero_speaking = 0;
 	log_msg(OTTS_LOG_DEBUG, "cicero: tracking thread ended.......\n");
@@ -492,3 +494,24 @@ static void cicero_set_pitch(signed int pitch)
 static void cicero_set_voice(SPDVoiceType voice)
 {
 }
+
+static otts_synth_plugin_t cicero_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	cicero_load,
+	cicero_init,
+	cicero_audio_init,
+	cicero_speak,
+	cicero_stop,
+	cicero_list_voices,
+	cicero_pause,
+	cicero_close
+};
+
+otts_synth_plugin_t *cicero_plugin_get (void)
+{
+	return &cicero_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("cicero_plugin_get")));

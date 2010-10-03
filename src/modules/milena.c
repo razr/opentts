@@ -33,6 +33,7 @@
 #include "mbrola.h"
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include "module_utils.h"
 #include "logging.h"
 
@@ -156,18 +157,19 @@ MIMTYP_UV milena_CloseModMbrola;
 static int milena_speaking = 0;
 
 static pthread_t milena_speak_thread;
+static void *milena_speak_routine(void *);
+
 static sem_t *milena_semaphore;
 
 static char **milena_message;
 static SPDMessageType milena_message_type;
 
 
-static void *milena_speak(void *);
-static int milena_init(char **);
+static int milena_initialize(char **);
 static void milena_bye(void);
 static void milena_play_icon(char *icon);
 
-int milena_stop = 0;
+int milena_stopped = 0;
 
 static int milena_get_msgpart(char **msg,char *icon,char **outbuf,int *phmode);
 
@@ -195,8 +197,8 @@ MOD_OPTION_1_STR(MilenaUserDic);
 MOD_OPTION_1_STR(MilenaMbrolaFile);
 
 
-int
-module_load(void)
+static int
+milena_load(void)
 {
 	init_settings_tables();
 
@@ -212,14 +214,14 @@ module_load(void)
 	return 0;
 }
 
-int
-module_init(char **status_info)
+static int
+milena_init(char **status_info)
 {
 	int ret;
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": module init");
 	*status_info = NULL;
 
-	if (!milena_init(status_info)) {
+	if (!milena_initialize(status_info)) {
 		log_msg(OTTS_LOG_ERR, MODULE_NAME": Couldn't init milena");
 		if (!*status_info) *status_info=g_strdup("Cannot initialize Milena");
 		milena_bye();
@@ -234,7 +236,7 @@ module_init(char **status_info)
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 	        ": creating new thread for milena_speak\n");
 	milena_speaking = 0;
-	ret = pthread_create(&milena_speak_thread, NULL, milena_speak, NULL);
+	ret = pthread_create(&milena_speak_thread, NULL, milena_speak_routine, NULL);
 	if(ret != 0){
 		log_msg(OTTS_LOG_ERR, MODULE_NAME": thread failed\n");
 		*status_info = strdup("The module couldn't initialize threads "
@@ -258,7 +260,7 @@ module_init(char **status_info)
 	return 0;
 }
 
-int module_audio_init(char **status_info)
+static int milena_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Opening audio");
 	return module_audio_init_spd(status_info);
@@ -267,7 +269,7 @@ int module_audio_init(char **status_info)
 static SPDVoice voice_demonstrator;
 static SPDVoice *voice_milena[] = { &voice_demonstrator, NULL };
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **milena_list_voices(void)
 {
 	voice_demonstrator.name = "Milena";
 	voice_demonstrator.language = "pl";
@@ -334,8 +336,8 @@ static void milena_set_punctuation_mode(SPDPunctuation punct_mode)
 	}
 }
 
-int
-module_speak(gchar *data, size_t bytes, SPDMessageType msgtype)
+static int
+milena_speak(gchar *data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": write\n");
 
@@ -383,12 +385,12 @@ module_speak(gchar *data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int milena_stop(void)
 {
 	int ret;
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": stop\n");
 
-	milena_stop = 1;
+	milena_stopped = 1;
 	if (module_audio_id) {
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Stopping audio");
 		ret = opentts_audio_stop(module_audio_id);
@@ -400,14 +402,14 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t milena_pause(void)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": pause requested\n");
 	if (milena_speaking) {
 		log_msg(OTTS_LOG_WARN, MODULE_NAME
 		        ": doesn't support pause, stopping\n");
 
-		module_stop();
+		milena_stop();
 
 		return -1;
 	} else {
@@ -416,14 +418,14 @@ size_t module_pause(void)
 }
 
 
-void module_close(int status)
+static void milena_close(int status)
 {
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": close\n");
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Stopping speech");
 	if (milena_speaking) {
-		module_stop();
+		milena_stop();
 	}
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Terminating threads");
@@ -518,7 +520,7 @@ int load_milena_libs(char **status_info)
 	return 1;
 }
 
-int milena_init(char **status_info)
+static int milena_initialize(char **status_info)
 {
         char ixbuf[256],ibuf[256],obuf[256];
 	if (!load_milena_libs(status_info)) return 0;
@@ -568,7 +570,7 @@ static void milena_bye(void)
 
 /* internal module functions */
 
-static void* milena_speak(void* nothing)
+static void* milena_speak_routine(void* nothing)
 {
 	char *buf;
 	int phmode;
@@ -581,7 +583,7 @@ static void* milena_speak(void* nothing)
 		sem_wait(milena_semaphore);
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Semaphore on\n");
 
-		milena_stop = 0;
+		milena_stopped = 0;
 		milena_speaking = 1;
 
 
@@ -589,7 +591,7 @@ static void* milena_speak(void* nothing)
 		msg=*milena_message;
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME": To say: %s\n",msg);
 		while(1) {
-			if (milena_stop){
+			if (milena_stopped){
 				log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 				        ": Stop in child, terminating");
 				milena_speaking = 0;
@@ -600,14 +602,14 @@ static void* milena_speak(void* nothing)
 			buf=NULL;
 			if (!milena_get_msgpart(&msg,icon,&buf,&phmode)) {
 				milena_speaking=0;
-				if (milena_stop) module_report_event_stop();
+				if (milena_stopped) module_report_event_stop();
 				else module_report_event_end();
 				break;
 			}
 			if (icon[0]) {
 				milena_play_icon(icon);
 				icon[0]=0;
-				if (milena_stop) {
+				if (milena_stopped) {
 					if (buf) free(buf);
 					buf=NULL;
 					milena_speaking=0;
@@ -629,13 +631,13 @@ static void* milena_speak(void* nothing)
 				}
 			}
 
-			if (milena_stop) {
+			if (milena_stopped) {
 				milena_speaking=0;
 				module_report_event_stop();
 				break;
 			}
 		}
-		milena_stop=0;
+		milena_stopped=0;
 	}
 	milena_speaking = 0;
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": speaking thread ended.......\n");
@@ -856,3 +858,23 @@ cleanup1:
 #endif
 }
 
+static otts_synth_plugin_t milena_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	milena_load,
+	milena_init,
+	milena_audio_init,
+	milena_speak,
+	milena_stop,
+	milena_list_voices,
+	milena_pause,
+	milena_close
+};
+
+otts_synth_plugin_t *milena_plugin_get (void)
+{
+	return &milena_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("milena_plugin_get")));

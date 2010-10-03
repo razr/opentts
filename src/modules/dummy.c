@@ -34,6 +34,7 @@
 #include<logging.h>
 #include "opentts/opentts_types.h"
 #include "module_utils.h"
+#include "opentts/opentts_synth_plugin.h"
 
 #define MODULE_NAME     "dummy"
 #define MODULE_VERSION  "0.1"
@@ -53,8 +54,8 @@ static void _dummy_child();
 
 /* Fill the module_info structure with pointers to this modules functions */
 
-/* Public functions */
-int module_load(void)
+/* plugin functions */
+static int dummy_load(void)
 {
 
 	init_settings_tables();
@@ -62,7 +63,7 @@ int module_load(void)
 	return 0;
 }
 
-int module_init(char **status_info)
+static int dummy_init(char **status_info)
 {
 	int ret;
 
@@ -90,18 +91,18 @@ int module_init(char **status_info)
 	return 0;
 }
 
-int module_audio_init(char **status_info)
+static int dummy_audio_init(char **status_info)
 {
 	status_info = NULL;
 	return 0;
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **dummy_list_voices(void)
 {
 	return NULL;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int dummy_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 
 	log_msg(OTTS_LOG_INFO, "speak()\n");
@@ -121,7 +122,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int dummy_stop(void)
 {
 	log_msg(OTTS_LOG_DEBUG,
 		"dummy: stop(), dummy_speaking=%d, dummy_pid=%d\n",
@@ -136,7 +137,7 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t dummy_pause(void)
 {
 	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (dummy_speaking) {
@@ -152,12 +153,12 @@ char *module_is_speaking(void)
 	return NULL;
 }
 
-void module_close(int status)
+static void dummy_close(int status)
 {
 	log_msg(OTTS_LOG_NOTICE, "dummy: close()\n");
 
 	if (dummy_speaking) {
-		module_stop();
+		dummy_stop();
 	}
 
 	if (module_terminate_thread(dummy_speak_thread) != 0)
@@ -301,3 +302,24 @@ void _dummy_child()
 	log_msg(OTTS_LOG_NOTICE, "Done, exiting from child.");
 	exit(0);
 }
+
+static otts_synth_plugin_t dummy_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	dummy_load,
+	dummy_init,
+	dummy_audio_init,
+	dummy_speak,
+	dummy_stop,
+	dummy_list_voices,
+	dummy_pause,
+	dummy_close
+};
+
+otts_synth_plugin_t *dummy_plugin_get (void)
+{
+	return &dummy_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("dummy_plugin_get")));

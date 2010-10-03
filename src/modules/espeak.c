@@ -43,6 +43,7 @@
 
 /* OpenTTS includes. */
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include "audio.h"
 #include "module_utils.h"
 #include<logging.h>
@@ -202,8 +203,8 @@ MOD_OPTION_1_INT(EspeakPitchRange)
     MOD_OPTION_1_INT(EspeakSoundIconVolume)
 
 /* > */
-/* < Public functions */
-int module_load(void)
+/* < plugin functions */
+static int espeak_load(void)
 {
 	init_settings_tables();
 
@@ -235,7 +236,7 @@ int module_load(void)
 	g_string_free(info, FALSE);					\
 	return FATAL_ERROR;
 
-int module_init(char **status_info)
+static int espeak_init(char **status_info)
 {
 	int ret;
 	const char *espeak_version;
@@ -328,18 +329,18 @@ int module_init(char **status_info)
 
 #undef ABORT
 
-int module_audio_init(char **status_info)
+static int espeak_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_NOTICE, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **espeak_list_voices(void)
 {
 	return espeak_voice_list;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int espeak_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	espeak_ERROR result = EE_INTERNAL_ERROR;
 	int flags = espeakSSML | espeakCHARS_UTF8;
@@ -451,7 +452,7 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int espeak_stop(void)
 {
 	log_msg(OTTS_LOG_INFO, "Espeak: module_stop().");
 
@@ -471,7 +472,7 @@ int module_stop(void)
 	return OK;
 }
 
-size_t module_pause(void)
+static size_t espeak_pause(void)
 {
 	log_msg(OTTS_LOG_INFO, "Espeak: module_pause().");
 	pthread_mutex_lock(&espeak_state_mutex);
@@ -483,7 +484,7 @@ size_t module_pause(void)
 	return OK;
 }
 
-void module_close(int status)
+static void espeak_close(int status)
 {
 	log_msg(OTTS_LOG_INFO, "Espeak: close().");
 
@@ -1369,6 +1370,27 @@ static TEspeakSuccess espeak_set_punctuation_list_from_utf8(const gchar * punct)
 	}
 	return result;
 }
+
+static otts_synth_plugin_t espeak_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	espeak_load,
+	espeak_init,
+	espeak_audio_init,
+	espeak_speak,
+	espeak_stop,
+	espeak_list_voices,
+	espeak_pause,
+	espeak_close
+};
+
+otts_synth_plugin_t * espeak_plugin_get (void)
+{
+	return &espeak_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("espeak_plugin_get")));
 
 /* > */
 

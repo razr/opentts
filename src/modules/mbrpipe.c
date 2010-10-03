@@ -34,6 +34,7 @@
 #include "mbrola.h"
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include "module_utils.h"
 #include "logging.h"
 
@@ -54,14 +55,14 @@ DECLARE_DEBUG();
 static int mbrpipe_speaking = 0;
 
 static pthread_t mbrpipe_speak_thread;
+static void *mbrpipe_speak_routine(void *);
+
 static sem_t *mbrpipe_semaphore;
 
 static char **mbrpipe_message;
 static SPDMessageType mbrpipe_message_type;
 
-int mbrpipe_stop = 0;
-
-static void *mbrpipe_speak(void *);
+int mbrpipe_stopped = 0;
 
 MOD_OPTION_1_STR(MbrpipeSpeakerName);
 MOD_OPTION_1_STR(MbrpipeSpeakerBase);
@@ -97,7 +98,7 @@ static int tts_fork(char **status_info);
 static void init_dumbtts(void);
 
 
-int module_load(void)
+static int mbrpipe_load(void)
 {
 	init_settings_tables();
 
@@ -129,7 +130,7 @@ int module_load(void)
 	return 0;
 }
 
-int module_init(char **status_info)
+static int mbrpipe_init(char **status_info)
 {
 	int ret,pid;
 	GString *info;
@@ -150,7 +151,7 @@ int module_init(char **status_info)
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 	        ": creating new thread for mbrpipe_speak\n");
 	mbrpipe_speaking = 0;
-	ret = pthread_create(&mbrpipe_speak_thread, NULL, mbrpipe_speak, NULL);
+	ret = pthread_create(&mbrpipe_speak_thread, NULL, mbrpipe_speak_routine, NULL);
 	if (ret != 0) {
 		log_msg(OTTS_LOG_ERR, MODULE_NAME": thread failed\n");
 		*status_info =
@@ -184,7 +185,7 @@ int module_init(char **status_info)
 }
 
 
-int module_audio_init(char **status_info)
+static int mbrpipe_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Opening audio");
 	return module_audio_init_spd(status_info);
@@ -193,7 +194,7 @@ int module_audio_init(char **status_info)
 static SPDVoice voice_demonstrator;
 static SPDVoice *voice_mbr[] = { &voice_demonstrator, NULL };
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **mbrpipe_list_voices(void)
 {
 	voice_demonstrator.name = MbrpipeSpeakerName;
 	voice_demonstrator.language = omh->voice->lang;
@@ -261,7 +262,7 @@ static void mbrpipe_set_punctuation_mode(SPDPunctuation punct_mode)
 }
 
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int mbrpipe_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": write()\n");
 
@@ -299,12 +300,12 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int mbrpipe_stop(void)
 {
 	int ret;
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": stop\n");
 
-	mbrpipe_stop = 1;
+	mbrpipe_stopped = 1;
 	if (module_audio_id) {
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Stopping audio");
 		ret = opentts_audio_stop(module_audio_id);
@@ -316,14 +317,14 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t mbrpipe_pause(void)
 {
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": pause requested\n");
 	if (mbrpipe_speaking) {
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 		        ": doesn't support pause, stopping\n");
 
-		module_stop();
+		mbrpipe_stop();
 
 		return -1;
 	} else {
@@ -331,14 +332,14 @@ size_t module_pause(void)
 	}
 }
 
-void module_close(int status)
+static void mbrpipe_close(int status)
 {
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": close\n");
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Stopping speech");
 	if (mbrpipe_speaking) {
-		module_stop();
+		mbrpipe_stop();
 	}
 
 	log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Terminating threads");
@@ -717,7 +718,7 @@ void remove_tilde_escapes(char *b)
 	*c=0;
 }
 
-static void *mbrpipe_speak(void *nothing)
+static void *mbrpipe_speak_routine(void *nothing)
 {
 
 	char *buf;
@@ -741,7 +742,7 @@ static void *mbrpipe_speak(void *nothing)
 		sem_wait(mbrpipe_semaphore);
 		log_msg(OTTS_LOG_DEBUG, MODULE_NAME": Semaphore on\n");
 
-		mbrpipe_stop = 0;
+		mbrpipe_stopped = 0;
 		mbrpipe_speaking = 1;
 
 		module_report_event_begin();
@@ -757,7 +758,7 @@ static void *mbrpipe_speak(void *nothing)
 			}
 		}
 		while (1) {
-			if (mbrpipe_stop) {
+			if (mbrpipe_stopped) {
 				log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 				        ": Stop in child, terminating");
 				mbrpipe_speaking = 0;
@@ -771,7 +772,7 @@ static void *mbrpipe_speak(void *nothing)
 				mbrpipe_punct,MbrpipePunctuationSome))
 			{
 				mbrpipe_speaking = 0;
-				if (mbrpipe_stop)
+				if (mbrpipe_stopped)
 					module_report_event_stop();
 				else
 					module_report_event_end();
@@ -838,7 +839,7 @@ static void *mbrpipe_speak(void *nothing)
 
 
 			for (;;) {
-				if (mbrpipe_stop) break;
+				if (mbrpipe_stopped) break;
 				if (MbrpipeCleanOutput) {
 					char *c=mbrpipe_cleaned_buffer(outbuf);
 					g_free(outbuf);
@@ -849,7 +850,7 @@ static void *mbrpipe_speak(void *nothing)
 				outlen=0;
 				outpos=0;
 				outbuf=NULL;
-				if (mbrpipe_stop || MbrpipeSpeakerSingleShot) break;
+				if (mbrpipe_stopped || MbrpipeSpeakerSingleShot) break;
 				n=read(from_tts[0],rdbuf,4096);
 				if (n<0) break;
 				outlen=n+1024;
@@ -868,7 +869,7 @@ static void *mbrpipe_speak(void *nothing)
 				}
 				outbuf[outpos]=0;
 			}
-			if (mbrpipe_stop) {
+			if (mbrpipe_stopped) {
 				log_msg(OTTS_LOG_DEBUG, MODULE_NAME
 				        ": Stop in child, terminating");
 				if (outbuf) g_free(outbuf);
@@ -878,7 +879,7 @@ static void *mbrpipe_speak(void *nothing)
 			}
 		}
 		mbrpipe_speaking = 0;
-		mbrpipe_stop = 0;
+		mbrpipe_stopped = 0;
 	}
 	mbrpipe_speaking = 0;
 
@@ -1004,3 +1005,23 @@ static int tts_fork(char **status_info)
 	return pid;
 }
 
+static otts_synth_plugin_t mbrpipe_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	mbrpipe_load,
+	mbrpipe_init,
+	mbrpipe_audio_init,
+	mbrpipe_speak,
+	mbrpipe_stop,
+	mbrpipe_list_voices,
+	mbrpipe_pause,
+	mbrpipe_close
+};
+
+otts_synth_plugin_t *mbrpipe_plugin_get (void)
+{
+	return &mbrpipe_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("mbrpipe_plugin_get")));

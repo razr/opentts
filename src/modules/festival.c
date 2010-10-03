@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include <fdsetconv.h>
 #include<logging.h>
 #include "festival_client.h"
@@ -49,7 +50,7 @@ static SPDMessageType festival_message_type;
 signed int festival_volume = 0;
 
 int festival_stop_request = 0;
-int festival_stop = 0;
+int festival_stopped = 0;
 
 int festival_process_pid = 0;
 
@@ -199,7 +200,7 @@ pthread_mutex_t sound_output_mutex;
 
 /* Public functions */
 
-int module_load(void)
+static int festival_load(void)
 {
 
 	init_settings_tables();
@@ -235,7 +236,7 @@ int module_load(void)
 	g_string_free(info, 0); \
 	return -1;
 
-int module_init(char **status_info)
+static int festival_init(char **status_info)
 {
 	int ret;
 
@@ -313,17 +314,17 @@ int module_init(char **status_info)
 
 #undef ABORT
 
-int module_audio_init(char **status_info)
+static int festival_audio_init(char **status_info)
 {
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **festival_list_voices(void)
 {
 	return festival_voice_list;
 }
 
-int module_speak(char *data, size_t bytes, SPDMessageType msgtype)
+static int festival_speak(char *data, size_t bytes, SPDMessageType msgtype)
 {
 	int ret;
 
@@ -404,7 +405,7 @@ int module_speak(char *data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int festival_stop(void)
 {
 	log_msg(OTTS_LOG_INFO, "stop()\n");
 
@@ -429,9 +430,9 @@ int module_stop(void)
 			//      festival_stop_local();
 		}
 
-		if (!festival_stop) {
+		if (!festival_stopped) {
 			pthread_mutex_lock(&sound_output_mutex);
-			festival_stop = 1;
+			festival_stopped = 1;
 			if (festival_speaking && module_audio_id) {
 				opentts_audio_stop(module_audio_id);
 			}
@@ -442,7 +443,7 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t festival_pause(void)
 {
 	log_msg(OTTS_LOG_NOTICE, "pause requested\n");
 	if (festival_speaking) {
@@ -455,14 +456,14 @@ size_t module_pause(void)
 	}
 }
 
-void module_close(int status)
+static void festival_close(int status)
 {
 
 	log_msg(OTTS_LOG_NOTICE, "festival: close()\n");
 
 	log_msg(OTTS_LOG_NOTICE, "Stopping the module");
 	while (festival_speaking) {
-		module_stop();
+		festival_stop();
 		usleep(50);
 	}
 
@@ -492,7 +493,7 @@ void module_close(int status)
         { \
           if(!wave_cached) if (fwave) delete_FT_Wave(fwave); \
           pthread_mutex_lock(&sound_output_mutex); \
-          festival_stop = 0; \
+          festival_stopped = 0; \
           festival_speaking = 0; \
           pthread_mutex_unlock(&sound_output_mutex); \
           im(); \
@@ -502,7 +503,7 @@ void module_close(int status)
 #define CLP(code, im) \
         { \
           pthread_mutex_lock(&sound_output_mutex); \
-          festival_stop = 0; \
+          festival_stopped = 0; \
           festival_speaking = 0; \
           pthread_mutex_unlock(&sound_output_mutex); \
           im(); \
@@ -569,7 +570,7 @@ sem_wait:
 
 		opentts_audio_set_volume(module_audio_id, festival_volume);
 
-		festival_stop = 0;
+		festival_stopped = 0;
 		festival_speaking = 1;
 		wave_cached = 0;
 		fwave = NULL;
@@ -603,7 +604,7 @@ sem_wait:
 
 						festival_send_to_audio(fwave);
 
-						if (!festival_stop) {
+						if (!festival_stopped) {
 							CLEAN_UP(0,
 								 module_report_event_end);
 						} else {
@@ -669,7 +670,7 @@ sem_wait:
 			/* (speechd-next) */
 			if (is_text(festival_message_type)) {
 
-				if (festival_stop) {
+				if (festival_stopped) {
 					log_msg(OTTS_LOG_INFO,
 						"Module stopped 1");
 					CLEAN_UP(0, module_report_event_stop);
@@ -733,7 +734,7 @@ sem_wait:
 				wave_cached = 1;
 			}
 
-			if (festival_stop) {
+			if (festival_stopped) {
 				log_msg(OTTS_LOG_NOTICE, "Module stopped 2");
 				CLEAN_UP(0, module_report_event_stop);
 			}
@@ -766,7 +767,7 @@ sem_wait:
 				CLP(0, module_report_event_end);
 			}
 
-			if (festival_stop) {
+			if (festival_stopped) {
 				log_msg(OTTS_LOG_NOTICE, "Module stopped 3");
 				CLP(0, module_report_event_stop);
 			}
@@ -774,7 +775,7 @@ sem_wait:
 
 	}
 
-	festival_stop = 0;
+	festival_stopped = 0;
 	festival_speaking = 0;
 
 	log_msg(OTTS_LOG_INFO, "festival: speaking thread ended.......\n");
@@ -1202,3 +1203,24 @@ int stop_festival_local()
 		kill(festival_process_pid, SIGINT);
 	return 0;
 }
+
+static otts_synth_plugin_t festival_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	festival_load,
+	festival_init,
+	festival_audio_init,
+	festival_speak,
+	festival_stop,
+	festival_list_voices,
+	festival_pause,
+	festival_close
+};
+
+otts_synth_plugin_t * festival_plugin_get (void)
+{
+	return &festival_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("festival_plugin_get")));

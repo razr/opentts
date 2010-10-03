@@ -27,6 +27,7 @@
 #endif
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include <flite/flite.h>
 #include<logging.h>
 #include "audio.h"
@@ -65,14 +66,14 @@ static void *_flite_speak(void *);
 cst_voice *register_cmu_us_kal();
 cst_voice *flite_voice;
 
-int flite_stop = 0;
+int flite_stopped = 0;
 
 MOD_OPTION_1_INT(FliteMaxChunkLength);
 MOD_OPTION_1_STR(FliteDelimiters);
 
 /* Public functions */
 
-int module_load(void)
+static int fl_load(void)
 {
 	init_settings_tables();
 
@@ -90,7 +91,7 @@ int module_load(void)
 	g_string_free(info, 0); \
 	return -1;
 
-int module_init(char **status_info)
+static int fl_init(char **status_info)
 {
 	int ret;
 	GString *info;
@@ -144,18 +145,18 @@ int module_init(char **status_info)
 
 #undef ABORT
 
-int module_audio_init(char **status_info)
+static int fl_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_WARN, "Opening audio");
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **fl_list_voices(void)
 {
 	return NULL;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int fl_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_DEBUG, "write()\n");
 
@@ -186,12 +187,12 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int fl_stop(void)
 {
 	int ret;
 	log_msg(OTTS_LOG_NOTICE, "flite: stop()\n");
 
-	flite_stop = 1;
+	flite_stopped = 1;
 	if (module_audio_id) {
 		log_msg(OTTS_LOG_NOTICE, "Stopping audio");
 		ret = opentts_audio_stop(module_audio_id);
@@ -204,14 +205,14 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t fl_pause(void)
 {
 	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (flite_speaking) {
 		log_msg(OTTS_LOG_DEBUG,
 			"Flite doesn't support pause, stopping\n");
 
-		module_stop();
+		fl_stop();
 
 		return -1;
 	} else {
@@ -219,14 +220,14 @@ size_t module_pause(void)
 	}
 }
 
-void module_close(int status)
+static void fl_close(int status)
 {
 
 	log_msg(OTTS_LOG_DEBUG, "flite: close()\n");
 
 	log_msg(OTTS_LOG_INFO, "Stopping speech");
 	if (flite_speaking) {
-		module_stop();
+		fl_stop();
 	}
 
 	log_msg(OTTS_LOG_INFO, "Terminating threads");
@@ -279,7 +280,7 @@ void *_flite_speak(void *nothing)
 		sem_wait(flite_semaphore);
 		log_msg(OTTS_LOG_INFO, "Semaphore on\n");
 
-		flite_stop = 0;
+		flite_stopped = 0;
 		flite_speaking = 1;
 
 		if (opentts_audio_set_volume(module_audio_id, flite_volume) < 0) {
@@ -294,7 +295,7 @@ void *_flite_speak(void *nothing)
 		pos = 0;
 		module_report_event_begin();
 		while (1) {
-			if (flite_stop) {
+			if (flite_stopped) {
 				log_msg(OTTS_LOG_INFO,
 					"Stop in child, terminating");
 				flite_speaking = 0;
@@ -353,7 +354,7 @@ void *_flite_speak(void *nothing)
 				log_msg(OTTS_LOG_INFO, "Got %d samples",
 					track.num_samples);
 				if (track.samples != NULL) {
-					if (flite_stop) {
+					if (flite_stopped) {
 						log_msg(OTTS_LOG_NOTICE,
 							"Stop in child, terminating");
 						flite_speaking = 0;
@@ -380,7 +381,7 @@ void *_flite_speak(void *nothing)
 					if (ret < 0)
 						log_msg(OTTS_LOG_WARN,
 							"ERROR: spd_audio failed to play the track");
-					if (flite_stop) {
+					if (flite_stopped) {
 						log_msg(OTTS_LOG_NOTICE,
 							"Stop in child, terminating (s)");
 						flite_speaking = 0;
@@ -402,7 +403,7 @@ void *_flite_speak(void *nothing)
 				break;
 			}
 
-			if (flite_stop) {
+			if (flite_stopped) {
 				log_msg(OTTS_LOG_NOTICE,
 					"Stop in child, terminating");
 				flite_speaking = 0;
@@ -410,7 +411,7 @@ void *_flite_speak(void *nothing)
 				break;
 			}
 		}
-		flite_stop = 0;
+		flite_stopped = 0;
 		g_free(buf);
 	}
 
@@ -458,3 +459,24 @@ static void flite_set_pitch(signed int pitch)
 	f0 = (((float)pitch) * 0.8) + 100.0;
 	feat_set_float(flite_voice->features, "int_f0_target_mean", f0);
 }
+
+static otts_synth_plugin_t flite_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	fl_load,
+	fl_init,
+	fl_audio_init,
+	fl_speak,
+	fl_stop,
+	fl_list_voices,
+	fl_pause,
+	fl_close
+};
+
+otts_synth_plugin_t * flite_plugin_get (void)
+{
+	return &flite_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("flite_plugin_get")));

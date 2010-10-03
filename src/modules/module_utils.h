@@ -46,6 +46,7 @@
 
 #include <def.h>
 #include <opentts/opentts_types.h>
+#include "opentts/opentts_synth_plugin.h"
 #include "audio.h"
 
 extern AudioID *module_audio_id;
@@ -61,16 +62,6 @@ extern int module_num_dc_options;
 
 void clean_old_settings_table(void);
 void init_settings_tables(void);
-
-int module_load(void);
-int module_init(char **status_info);
-SPDVoice **module_list_voices(void);
-int module_audio_init_spd(char **status_info);
-int module_speak(char *data, size_t bytes, SPDMessageType msgtype);
-int module_stop(void);
-size_t module_pause(void);
-char *module_is_speaking(void);
-void module_close(int status);
 
 #define UPDATE_PARAMETER(value, setter) \
   if (msg_settings_old.value != msg_settings.value) \
@@ -133,19 +124,19 @@ void module_sigblockusr(sigset_t * signal_set);
 void module_sigunblockusr(sigset_t * signal_set);
 void module_signal_end(void);
 
-gchar *do_message(SPDMessageType msgtype);
-gchar *do_speak(void);
-gchar *do_sound_icon(void);
-gchar *do_char(void);
-gchar *do_key(void);
-void do_stop(void);
-void do_pause(void);
-gchar *do_list_voices(void);
-gchar *do_set(void);
-gchar *do_audio(void);
-gchar *do_loglevel(void);
-gchar *do_debug(char *cmd_buf);
-void do_quit(void);
+gchar *do_message(otts_synth_plugin_t *synth, SPDMessageType msgtype);
+gchar *do_speak(otts_synth_plugin_t *synth);
+gchar *do_sound_icon(otts_synth_plugin_t *synth);
+gchar *do_char(otts_synth_plugin_t *synth);
+gchar *do_key(otts_synth_plugin_t *synth);
+void do_stop(otts_synth_plugin_t *synth);
+void do_pause(otts_synth_plugin_t *synth);
+gchar *do_list_voices(otts_synth_plugin_t *synth);
+gchar *do_set(otts_synth_plugin_t *synth);
+gchar *do_audio(otts_synth_plugin_t *synth);
+gchar *do_loglevel(otts_synth_plugin_t *synth);
+gchar *do_debug(otts_synth_plugin_t *synth, char *cmd_buf);
+void do_quit(otts_synth_plugin_t *synth);
 
 typedef void (*TChildFunction) (TModuleDoublePipe dpipe, const size_t maxlen);
 typedef size_t(*TParentFunction) (TModuleDoublePipe dpipe, const char *message,

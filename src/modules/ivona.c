@@ -32,6 +32,7 @@
 
 #include<logging.h>
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include "module_utils.h"
 #include "ivona_client.h"
 
@@ -65,7 +66,7 @@ static void ivona_set_cap_let_recogn(SPDCapitalLetters cap_mode);
 
 static void *_ivona_speak(void *);
 
-int ivona_stop = 0;
+int ivona_stopped = 0;
 
 MOD_OPTION_1_STR(IvonaDelimiters);
 MOD_OPTION_1_STR(IvonaPunctuationSome);
@@ -82,7 +83,7 @@ static struct dumbtts_conf *ivona_conf;
 
 /* Public functions */
 
-int module_load(void)
+static int ivona_load(void)
 {
 	init_settings_tables();
 
@@ -111,7 +112,7 @@ int module_load(void)
 	g_string_free(info, 0); \
 	return -1;
 
-int module_init(char **status_info)
+static int ivona_init(char **status_info)
 {
 	int ret;
 	GString *info;
@@ -159,7 +160,7 @@ int module_init(char **status_info)
 
 #undef ABORT
 
-int module_audio_init(char **status_info)
+static int ivona_audio_init(char **status_info)
 {
 	log_msg(OTTS_LOG_NOTICE, "Opening audio");
 	return module_audio_init_spd(status_info);
@@ -168,14 +169,14 @@ int module_audio_init(char **status_info)
 static SPDVoice voice_jacek;
 static SPDVoice *voice_ivona[] = { &voice_jacek, NULL };
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **ivona_list_voices(void)
 {
 	voice_jacek.name = IvonaSpeakerName;
 	voice_jacek.language = IvonaSpeakerLanguage;
 	return voice_ivona;
 }
 
-int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
+static int ivona_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 {
 	log_msg(OTTS_LOG_INFO, "write()\n");
 
@@ -209,12 +210,12 @@ int module_speak(gchar * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int ivona_stop(void)
 {
 	int ret;
 	log_msg(OTTS_LOG_NOTICE, "ivona: stop()\n");
 
-	ivona_stop = 1;
+	ivona_stopped = 1;
 	if (module_audio_id) {
 		log_msg(OTTS_LOG_INFO, "Stopping audio");
 		ret = opentts_audio_stop(module_audio_id);
@@ -227,14 +228,14 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t ivona_pause(void)
 {
 	log_msg(OTTS_LOG_INFO, "pause requested\n");
 	if (ivona_speaking) {
 		log_msg(OTTS_LOG_WARN,
 			"Ivona doesn't support pause, stopping\n");
 
-		module_stop();
+		ivona_stop();
 
 		return -1;
 	} else {
@@ -242,14 +243,14 @@ size_t module_pause(void)
 	}
 }
 
-void module_close(int status)
+static void ivona_close(int status)
 {
 
 	log_msg(OTTS_LOG_NOTICE, "ivona: close()\n");
 
 	log_msg(OTTS_LOG_NOTICE, "Stopping speech");
 	if (ivona_speaking) {
-		module_stop();
+		ivona_stop();
 	}
 
 	log_msg(OTTS_LOG_DEBUG, "Terminating threads");
@@ -286,7 +287,7 @@ void *_ivona_speak(void *nothing)
 		sem_wait(ivona_semaphore);
 		log_msg(OTTS_LOG_INFO, "Semaphore on\n");
 
-		ivona_stop = 0;
+		ivona_stopped = 0;
 		ivona_speaking = 1;
 
 		opentts_audio_set_volume(module_audio_id, ivona_volume);
@@ -301,7 +302,7 @@ void *_ivona_speak(void *nothing)
 		next_audio = NULL;
 		next_icon[0] = 0;
 		while (1) {
-			if (ivona_stop) {
+			if (ivona_stopped) {
 				log_msg(OTTS_LOG_INFO,
 					"Stop in child, terminating");
 				ivona_speaking = 0;
@@ -345,7 +346,7 @@ void *_ivona_speak(void *nothing)
 							 IvonaPunctuationSome))
 				{
 					ivona_speaking = 0;
-					if (ivona_stop)
+					if (ivona_stopped)
 						module_report_event_stop();
 					else
 						module_report_event_end();
@@ -361,7 +362,7 @@ void *_ivona_speak(void *nothing)
 			}
 
 			/* tu mamy audio albo icon, mozna gadac */
-			if (ivona_stop) {
+			if (ivona_stopped) {
 				log_msg(OTTS_LOG_DEBUG,
 					"Stop in child, terminating");
 				ivona_speaking = 0;
@@ -397,7 +398,7 @@ void *_ivona_speak(void *nothing)
 					}
 				}
 			}
-			if (ivona_stop) {
+			if (ivona_stopped) {
 				log_msg(OTTS_LOG_INFO,
 					"Stop in child, terminating");
 				ivona_speaking = 0;
@@ -406,7 +407,7 @@ void *_ivona_speak(void *nothing)
 			}
 			if (icon[0]) {
 				play_icon(IvonaSoundIconPath, icon);
-				if (ivona_stop) {
+				if (ivona_stopped) {
 					ivona_speaking = 0;
 					module_report_event_stop();
 					break;
@@ -426,13 +427,13 @@ void *_ivona_speak(void *nothing)
 				g_free(audio);
 				audio = NULL;
 			}
-			if (ivona_stop) {
+			if (ivona_stopped) {
 				ivona_speaking = 0;
 				module_report_event_stop();
 				break;
 			}
 		}
-		ivona_stop = 0;
+		ivona_stopped = 0;
 		g_free(buf);
 		g_free(audio);
 		g_free(next_audio);
@@ -496,3 +497,24 @@ static void ivona_set_punctuation_mode(SPDPunctuation punct_mode)
 		break;
 	}
 }
+
+static otts_synth_plugin_t ivona_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	ivona_load,
+	ivona_init,
+	ivona_audio_init,
+	ivona_speak,
+	ivona_stop,
+	ivona_list_voices,
+	ivona_pause,
+	ivona_close
+};
+
+otts_synth_plugin_t * ivona_plugin_get (void)
+{
+	return &ivona_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("ivona_plugin_get")));

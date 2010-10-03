@@ -37,6 +37,7 @@
 #include <picoapi.h>
 
 #include "opentts/opentts_types.h"
+#include "opentts/opentts_synth_plugin.h"
 #include "module_utils.h"
 #include "logging.h"
 
@@ -276,8 +277,8 @@ pico_play_func(gpointer nothing)
 	return 0;
 }
 
-/* Public functions */
-int module_load(void)
+/* plugin functions */
+static int pico_load(void)
 {
 	init_settings_tables();
 
@@ -375,7 +376,7 @@ int pico_init_voice (int voice_index) {
 	return 0;
 }
 
-int module_init(char **status_info)
+static int pico_init(char **status_info)
 {
 	int ret, i;
 	pico_Retstring outMessage;
@@ -440,12 +441,12 @@ int module_init(char **status_info)
 	return 0;
 }
 
-int module_audio_init(char **status_info)
+static int pico_audio_init(char **status_info)
 {
 	return module_audio_init_spd(status_info);
 }
 
-SPDVoice **module_list_voices(void)
+static SPDVoice **pico_list_voices(void)
 {
 	return pico_voices_list;
 }
@@ -491,7 +492,7 @@ static void pico_set_language(char *lang)
 	return;
 }
 
-int module_speak(char * data, size_t bytes, SPDMessageType msgtype)
+static int pico_speak(char * data, size_t bytes, SPDMessageType msgtype)
 {
 	int value;
 	static pico_Char *tmp;
@@ -550,7 +551,7 @@ int module_speak(char * data, size_t bytes, SPDMessageType msgtype)
 	return bytes;
 }
 
-int module_stop(void)
+static int pico_stop(void)
 {
 	pico_Status ret;
 	pico_Retstring outMessage;
@@ -574,7 +575,7 @@ int module_stop(void)
 	return 0;
 }
 
-size_t module_pause(void)
+static size_t pico_pause(void)
 {
 	pico_Status ret;
 	pico_Retstring outMessage;
@@ -598,7 +599,7 @@ size_t module_pause(void)
 	return 0;
 }
 
-void module_close(int status)
+static void pico_close(int status)
 {
 	if (module_audio_id) {
 		opentts_audio_close(module_audio_id);
@@ -616,3 +617,24 @@ void module_close(int status)
 
 	g_free(pico_play_semaphore);
 }
+
+static otts_synth_plugin_t pico_plugin = {
+	MODULE_NAME,
+	MODULE_VERSION,
+	pico_load,
+	pico_init,
+	pico_audio_init,
+	pico_speak,
+	pico_stop,
+	pico_list_voices,
+	pico_pause,
+	pico_close
+};
+
+otts_synth_plugin_t *pico_plugin_get (void)
+{
+	return &pico_plugin;
+}
+
+otts_synth_plugin_t *SYNTH_PLUGIN_ENTRY(void)
+	__attribute__ ((weak, alias("pico_plugin_get")));
